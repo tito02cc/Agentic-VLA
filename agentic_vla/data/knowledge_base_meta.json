@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-01-14T14:16:02.405138",
+  "num_samples": 120,
+  "category_distribution": {
+    "tool": 8,
+    "electronics": 8,
+    "food_package": 8,
+    "cleaning": 8,
+    "clothing": 8,
+    "medicine": 8,
+    "fruit": 8,
+    "cup": 8,
+    "book": 8,
+    "stationery": 8,
+    "vegetable": 8,
+    "container": 8,
+    "kitchenware": 8,
+    "toy": 8,
+    "bottle": 8
+  },
+  "collection_name": "grasp_experiences_expanded"
+}

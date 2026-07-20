@@ -1,0 +1,30 @@
+# Note
+torch>=2.0.0
+transformers>=4.40.0
+vllm>=0.5.0
+accelerate>=0.30.0
+bitsandbytes>=0.43.0
+
+# Note
+chromadb>=0.4.0
+faiss-cpu>=1.7.4  # Note
+
+# Note
+sentence-transformers>=2.5.0
+open_clip_torch>=2.24.0
+timm>=0.9.0
+
+# Note
+pillow>=10.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Note
+pyyaml>=6.0
+pydantic>=2.0.0
+rich>=13.0.0
+tqdm>=4.66.0
+
+# Note
+# open3d>=0.18.0
+# scipy>=1.11.0

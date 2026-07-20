@@ -1,0 +1,68 @@
+# Note
+
+# Note
+vlm: model_path: ""
+  # Note
+  quantization: "bitsandbytes"  # bitsandbytes | gptq | awq | none
+  load_format: "bitsandbytes"
+  dtype: "half"
+  # Note
+  kv_cache_dtype: "fp8"  # fp8 | auto
+  # Note
+  max_model_len: 4096
+  gpu_memory_utilization: 0.8
+  # Note
+  limit_mm_per_prompt: image: 4  # Note
+
+# Note
+embedding: # Note
+  vision: model: "ViT-L-14"
+    pretrained: "openai"  # OpenAI CLIP
+    device: "cuda"
+    batch_size: 32
+  # Note
+  text: model: "BAAI/bge-large-zh-v1.5"  # Note
+    device: "cuda"
+    batch_size: 64
+
+# Note
+vector_store: type: "chromadb"  # chromadb | faiss
+  persist_directory: "./data/chroma_db"
+  collection_name: "grasp_experiences"
+  # Note
+  retrieval: top_k: 5  # Note
+    semantic_weight: 0.4  # Note
+    visual_weight: 0.6   # Note
+    min_similarity: 0.5  # Note
+
+# Note
+context: # Note
+  num_examples: 3  # Note
+  # Note
+  max_context_tokens: 2048
+  # Note
+  compression: enabled: true
+    method: "selective"  # selective | truncate | summarize
+
+# Note
+grasp_planning: # Note
+  output_format: "json"  # json | natural
+  # Note
+  pose_representation: "6dof"  # 6dof | quaternion | euler
+  # Note
+  validation: check_reachability: true
+    check_collision: false  # Note
+
+# Note
+memory: # Note
+  short_term: max_size: 50
+    ttl_seconds: 3600
+  # Note
+  long_term: auto_save: true
+    save_successful_only: true  # Note
+    min_confidence: 0.8
+
+# Note
+logging: level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "./logs/grasp_rag.log"

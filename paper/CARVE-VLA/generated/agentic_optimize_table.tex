@@ -1,0 +1,14 @@
+\begin{table}
+\caption{Same-state Agentic recovery under PI0.5 runtime profiles.}
+\label{tab:agentic_optimize}
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+Profile & Success & Recovery & P95 (ms) & 80-ms miss \\
+\midrule
+Eager BF16 & 2/2 & 2/2 & 166.26 & 236/236 \\
+Compiled BF16 & 2/2 & 2/2 & 65.75 & 0/239 \\
+Compiled BF16 + SMVE & 2/2 & 2/2 & 54.50 & 0/247 \\
+\bottomrule
+\end{tabular}
+\end{table}
