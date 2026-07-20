@@ -1,0 +1,186 @@
+{
+  "experiment": "optimized-profile-agentic-websocket-smoke",
+  "snapshot": "task06_episode000_step0019.npz",
+  "expected_profile": "pi05-torch_compile_masked_views-bf16-2step-h10",
+  "server_profile": {
+    "model_id": "pi05",
+    "adapter_id": "pi05",
+    "backend_id": "torch_compile_masked_views",
+    "profile": {
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "backend": "torch_compile_masked_views",
+      "deployment_precision": "bf16",
+      "module_precisions": {},
+      "inference_steps": 2,
+      "action_horizon": 10,
+      "async_execution": false,
+      "options": {
+        "elided_image_views": [
+          "right_wrist_0_rgb"
+        ],
+        "fullgraph": false,
+        "image_view_order": [
+          "base_0_rgb",
+          "left_wrist_0_rgb",
+          "right_wrist_0_rgb"
+        ],
+        "mode": "reduce-overhead"
+      }
+    },
+    "backend_metadata": {
+      "transformed": true,
+      "transform": "static_masked_view_elision+torch.compile",
+      "elided_image_indices": [
+        2
+      ],
+      "elided_image_views": [
+        "right_wrist_0_rgb"
+      ],
+      "input_view_contract": {
+        "view_order": [
+          "base_0_rgb",
+          "left_wrist_0_rgb",
+          "right_wrist_0_rgb"
+        ],
+        "masked_views": [
+          "right_wrist_0_rgb"
+        ],
+        "masked_indices": [
+          2
+        ],
+        "runtime_mask_requirement": "all_batch_entries_false"
+      },
+      "mask_contract": "all_batch_entries_false",
+      "compile_options": {
+        "mode": "reduce-overhead",
+        "fullgraph": false
+      },
+      "source_adapter_unchanged": true
+    },
+    "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_smve_promoted.json",
+    "manifest_created_at": "2026-07-17T03:27:34.494727+00:00",
+    "admission": {
+      "accepted": true,
+      "status": "promoted",
+      "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; input adapter guarantees an all-false padded right-wrist view",
+      "violations": [],
+      "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10"
+    },
+    "fallback_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_compiled_bf16_fallback_promoted.json"
+  },
+  "action_shape": [
+    10,
+    7
+  ],
+  "runtime_trace": {
+    "request_id": "9e8e056b3b9949838fe9f7dc72d1fd83",
+    "adapter_id": "pi05",
+    "policy_family": "vla",
+    "episode_id": "profile-smoke:6",
+    "timestep": 19,
+    "requested_controls": {
+      "inference_steps": 2,
+      "max_actions": 10,
+      "precision": null,
+      "reuse_context": false,
+      "deadline_ms": 80.0
+    },
+    "applied_controls": {
+      "inference_steps": 2,
+      "max_actions": 10,
+      "precision": null,
+      "reuse_context": false,
+      "deadline_ms": 80.0
+    },
+    "dropped_controls": [],
+    "queue_age_ms": 0.007393013220280409,
+    "runtime_latency_ms": 57.809129008091986,
+    "model_latency_ms": 41.03174799820408,
+    "action_count": 10,
+    "deadline_ms": 80.0,
+    "deadline_miss": false,
+    "success": true,
+    "error": null,
+    "metadata": {
+      "backend": "pi05",
+      "transport": "controlled_client",
+      "action_spec": null,
+      "optimization_profile": {
+        "model_id": "pi05",
+        "adapter_id": "pi05",
+        "backend_id": "torch_compile_masked_views",
+        "profile": {
+          "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+          "backend": "torch_compile_masked_views",
+          "deployment_precision": "bf16",
+          "module_precisions": {},
+          "inference_steps": 2,
+          "action_horizon": 10,
+          "async_execution": false,
+          "options": {
+            "elided_image_views": [
+              "right_wrist_0_rgb"
+            ],
+            "fullgraph": false,
+            "image_view_order": [
+              "base_0_rgb",
+              "left_wrist_0_rgb",
+              "right_wrist_0_rgb"
+            ],
+            "mode": "reduce-overhead"
+          }
+        },
+        "backend_metadata": {
+          "transformed": true,
+          "transform": "static_masked_view_elision+torch.compile",
+          "elided_image_indices": [
+            2
+          ],
+          "elided_image_views": [
+            "right_wrist_0_rgb"
+          ],
+          "input_view_contract": {
+            "view_order": [
+              "base_0_rgb",
+              "left_wrist_0_rgb",
+              "right_wrist_0_rgb"
+            ],
+            "masked_views": [
+              "right_wrist_0_rgb"
+            ],
+            "masked_indices": [
+              2
+            ],
+            "runtime_mask_requirement": "all_batch_entries_false"
+          },
+          "mask_contract": "all_batch_entries_false",
+          "compile_options": {
+            "mode": "reduce-overhead",
+            "fullgraph": false
+          },
+          "source_adapter_unchanged": true
+        },
+        "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_smve_promoted.json",
+        "manifest_created_at": "2026-07-17T03:27:34.494727+00:00",
+        "admission": {
+          "accepted": true,
+          "status": "promoted",
+          "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; input adapter guarantees an all-false padded right-wrist view",
+          "violations": [],
+          "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10"
+        },
+        "fallback_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_compiled_bf16_fallback_promoted.json"
+      },
+      "controller": {
+        "experiment": "optimized-profile-agentic-websocket-smoke",
+        "mode": "recovery_vla"
+      },
+      "agentic_event": {
+        "event": "stall",
+        "action": "retry",
+        "reason": "profile_smoke"
+      }
+    }
+  },
+  "passed": true
+}

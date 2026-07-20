@@ -1,0 +1,112 @@
+{
+  "experiment": "optimized-profile-agentic-websocket-smoke",
+  "snapshot": "task06_episode000_step0019.npz",
+  "expected_profile": "pi05-torch_compile-bf16-2step-h10",
+  "server_profile": {
+    "model_id": "pi05",
+    "adapter_id": "pi05",
+    "backend_id": "torch_compile",
+    "profile": {
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "backend": "torch_compile",
+      "deployment_precision": "bf16",
+      "module_precisions": {},
+      "inference_steps": 2,
+      "action_horizon": 10,
+      "async_execution": false,
+      "options": {
+        "fullgraph": false,
+        "mode": "reduce-overhead"
+      }
+    },
+    "backend_metadata": {
+      "transformed": true,
+      "transform": "torch.compile",
+      "compile_options": {
+        "mode": "reduce-overhead",
+        "fullgraph": false
+      },
+      "source_adapter_unchanged": true
+    },
+    "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+    "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+  },
+  "action_shape": [
+    10,
+    7
+  ],
+  "runtime_trace": {
+    "request_id": "0112a32046fa456086d8b69de1aefe68",
+    "adapter_id": "pi05",
+    "policy_family": "vla",
+    "episode_id": "profile-smoke:6",
+    "timestep": 19,
+    "requested_controls": {
+      "inference_steps": 2,
+      "max_actions": 10,
+      "precision": null,
+      "reuse_context": false,
+      "deadline_ms": 80.0
+    },
+    "applied_controls": {
+      "inference_steps": 2,
+      "max_actions": 10,
+      "precision": null,
+      "reuse_context": false,
+      "deadline_ms": 80.0
+    },
+    "dropped_controls": [],
+    "queue_age_ms": 0.00756699955672957,
+    "runtime_latency_ms": 39306.57236600018,
+    "model_latency_ms": 39062.99931299873,
+    "action_count": 10,
+    "deadline_ms": 80.0,
+    "deadline_miss": true,
+    "success": true,
+    "error": null,
+    "metadata": {
+      "backend": "pi05",
+      "transport": "controlled_client",
+      "action_spec": null,
+      "optimization_profile": {
+        "model_id": "pi05",
+        "adapter_id": "pi05",
+        "backend_id": "torch_compile",
+        "profile": {
+          "profile_id": "pi05-torch_compile-bf16-2step-h10",
+          "backend": "torch_compile",
+          "deployment_precision": "bf16",
+          "module_precisions": {},
+          "inference_steps": 2,
+          "action_horizon": 10,
+          "async_execution": false,
+          "options": {
+            "fullgraph": false,
+            "mode": "reduce-overhead"
+          }
+        },
+        "backend_metadata": {
+          "transformed": true,
+          "transform": "torch.compile",
+          "compile_options": {
+            "mode": "reduce-overhead",
+            "fullgraph": false
+          },
+          "source_adapter_unchanged": true
+        },
+        "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+        "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+      },
+      "controller": {
+        "experiment": "optimized-profile-agentic-websocket-smoke",
+        "mode": "recovery_vla"
+      },
+      "agentic_event": {
+        "event": "stall",
+        "action": "retry",
+        "reason": "profile_smoke"
+      }
+    }
+  },
+  "passed": true
+}

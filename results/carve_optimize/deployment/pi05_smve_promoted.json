@@ -1,0 +1,120 @@
+{
+  "adapter_id": "pi05",
+  "admission": {
+    "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10",
+    "gates": {
+      "closed_loop": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/MASKED_VIEW_ELISION_GATE.md",
+          "sha256": "a29001947bc80174ec51a648f5811fbff610476bb6f8726fb05170a8441ff3a9"
+        },
+        "passed": true
+      },
+      "realtime": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_masked_view_compile_bf16_2step_h10_fidelity45_rep1.json",
+          "sha256": "3c7b2c366596253ee7a8d63dcb2199ec9a940ebe7f0b4b36c8c414fa34be23f4"
+        },
+        "passed": true
+      },
+      "replay_fidelity": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_masked_view_compile_bf16_2step_h10_fidelity45_rep1.json",
+          "sha256": "3c7b2c366596253ee7a8d63dcb2199ec9a940ebe7f0b4b36c8c414fa34be23f4"
+        },
+        "passed": true
+      }
+    },
+    "notes": "Promoted by replay fidelity, zero-miss 80 ms replay gate, and paired T8/T9 closed-loop non-inferiority; 8/10 versus 7/10 is not a competence claim.",
+    "promoted_at": "2026-07-19T07:08:09.162206+00:00",
+    "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; input adapter guarantees an all-false padded right-wrist view",
+    "source_manifest": {
+      "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_masked_view_compile_bf16_2step_h10_fidelity45_rep1.json",
+      "sha256": "3c7b2c366596253ee7a8d63dcb2199ec9a940ebe7f0b4b36c8c414fa34be23f4"
+    },
+    "status": "promoted"
+  },
+  "benchmark": {
+    "deadline_miss_rate": 0.0,
+    "mean_action_count": 10.0,
+    "metadata": {
+      "backend_id": "torch_compile_masked_views",
+      "backend_metadata": {
+        "compile_options": {
+          "fullgraph": false,
+          "mode": "reduce-overhead"
+        },
+        "elided_image_indices": [
+          2
+        ],
+        "mask_contract": "all_batch_entries_false",
+        "source_adapter_unchanged": true,
+        "transform": "static_masked_view_elision+torch.compile",
+        "transformed": true
+      },
+      "model_id": "pi05",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "warmup_calls": 3
+    },
+    "model_p50_ms": 41.13540050457232,
+    "model_p95_ms": 42.621508052252466,
+    "peak_vram_gb": 6.970125198364258,
+    "runtime_p50_ms": 54.35263500112342,
+    "runtime_p95_ms": 56.18731285067042,
+    "runtime_p99_ms": 57.020974926272174,
+    "samples": 50
+  },
+  "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+  "created_at": "2026-07-17T03:27:34.494727+00:00",
+  "fidelity": {
+    "aggregation": "worst_case",
+    "metrics": {
+      "chunk_cosine": 0.9998971156635306,
+      "chunk_mae": 0.002323485182243911,
+      "chunk_rmse": 0.0051959599552477065,
+      "endpoint_l2": 0.055244757056881255,
+      "first_action_mae": 0.0033993693410573106,
+      "gripper_agreement": 1.0,
+      "jerk_rmse": 0.009620746186725844
+    },
+    "passed": true,
+    "samples": 45,
+    "violations": []
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "pi05",
+  "plugin_versions": {
+    "pi05": "builtin",
+    "torch_compile_masked_views": "builtin"
+  },
+  "profile": {
+    "action_horizon": 10,
+    "async_execution": false,
+    "backend": "torch_compile_masked_views",
+    "deployment_precision": "bf16",
+    "inference_steps": 2,
+    "module_precisions": {},
+    "options": {
+      "elided_image_views": [
+        "right_wrist_0_rgb"
+      ],
+      "fullgraph": false,
+      "image_view_order": [
+        "base_0_rgb",
+        "left_wrist_0_rgb",
+        "right_wrist_0_rgb"
+      ],
+      "mode": "reduce-overhead"
+    },
+    "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10"
+  },
+  "schema_version": 1
+}

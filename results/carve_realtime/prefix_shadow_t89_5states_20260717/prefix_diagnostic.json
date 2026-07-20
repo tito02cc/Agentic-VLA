@@ -1,0 +1,149 @@
+{
+  "source": "results/carve_realtime/prefix_shadow_t89_5states_20260717/episode_traces.jsonl",
+  "episodes": [
+    {
+      "episode_id": "task8:trial0",
+      "task_id": 8,
+      "success": true,
+      "checks": 49,
+      "would_reject": 5,
+      "reject_rate": 0.10204081632653061,
+      "continuous_rms_mean": 0.0274644447490705,
+      "translation_endpoint_l2_p95": 0.256852666040366,
+      "rotation_endpoint_l2_p95": 0.06267649861077929,
+      "gripper_agreement_mean": 0.9489795918367347
+    },
+    {
+      "episode_id": "task8:trial1",
+      "task_id": 8,
+      "success": true,
+      "checks": 44,
+      "would_reject": 1,
+      "reject_rate": 0.022727272727272728,
+      "continuous_rms_mean": 0.025212585038402704,
+      "translation_endpoint_l2_p95": 0.25740394821191376,
+      "rotation_endpoint_l2_p95": 0.07549287441264518,
+      "gripper_agreement_mean": 1.0
+    },
+    {
+      "episode_id": "task8:trial2",
+      "task_id": 8,
+      "success": false,
+      "checks": 15,
+      "would_reject": 1,
+      "reject_rate": 0.06666666666666667,
+      "continuous_rms_mean": 0.023103900789071687,
+      "translation_endpoint_l2_p95": 0.26874864058363607,
+      "rotation_endpoint_l2_p95": 0.06883574782566887,
+      "gripper_agreement_mean": 1.0
+    },
+    {
+      "episode_id": "task8:trial3",
+      "task_id": 8,
+      "success": false,
+      "checks": 35,
+      "would_reject": 2,
+      "reject_rate": 0.05714285714285714,
+      "continuous_rms_mean": 0.024019264059844513,
+      "translation_endpoint_l2_p95": 0.19258419101196614,
+      "rotation_endpoint_l2_p95": 0.047698844086274644,
+      "gripper_agreement_mean": 0.9714285714285714
+    },
+    {
+      "episode_id": "task8:trial4",
+      "task_id": 8,
+      "success": false,
+      "checks": 39,
+      "would_reject": 4,
+      "reject_rate": 0.10256410256410256,
+      "continuous_rms_mean": 0.029430940377565527,
+      "translation_endpoint_l2_p95": 0.3695059591618951,
+      "rotation_endpoint_l2_p95": 0.08965258738905015,
+      "gripper_agreement_mean": 0.9615384615384616
+    },
+    {
+      "episode_id": "task9:trial0",
+      "task_id": 9,
+      "success": true,
+      "checks": 31,
+      "would_reject": 3,
+      "reject_rate": 0.0967741935483871,
+      "continuous_rms_mean": 0.038590513642873935,
+      "translation_endpoint_l2_p95": 0.3934791770036385,
+      "rotation_endpoint_l2_p95": 0.18059172082313363,
+      "gripper_agreement_mean": 1.0
+    },
+    {
+      "episode_id": "task9:trial1",
+      "task_id": 9,
+      "success": false,
+      "checks": 10,
+      "would_reject": 1,
+      "reject_rate": 0.1,
+      "continuous_rms_mean": 0.039657454050040626,
+      "translation_endpoint_l2_p95": 0.4463616464042489,
+      "rotation_endpoint_l2_p95": 0.07423629439654052,
+      "gripper_agreement_mean": 1.0
+    },
+    {
+      "episode_id": "task9:trial2",
+      "task_id": 9,
+      "success": true,
+      "checks": 30,
+      "would_reject": 2,
+      "reject_rate": 0.06666666666666667,
+      "continuous_rms_mean": 0.039631749721483846,
+      "translation_endpoint_l2_p95": 0.3683890628026136,
+      "rotation_endpoint_l2_p95": 0.15204996400858942,
+      "gripper_agreement_mean": 0.9833333333333333
+    },
+    {
+      "episode_id": "task9:trial3",
+      "task_id": 9,
+      "success": false,
+      "checks": 11,
+      "would_reject": 0,
+      "reject_rate": 0.0,
+      "continuous_rms_mean": 0.03877449474692642,
+      "translation_endpoint_l2_p95": 0.2841024310420698,
+      "rotation_endpoint_l2_p95": 0.0855508156756183,
+      "gripper_agreement_mean": 1.0
+    },
+    {
+      "episode_id": "task9:trial4",
+      "task_id": 9,
+      "success": false,
+      "checks": 15,
+      "would_reject": 2,
+      "reject_rate": 0.13333333333333333,
+      "continuous_rms_mean": 0.04296160858869893,
+      "translation_endpoint_l2_p95": 0.6112111384666074,
+      "rotation_endpoint_l2_p95": 0.09491736440754744,
+      "gripper_agreement_mean": 1.0
+    }
+  ],
+  "groups": {
+    "success": {
+      "episodes": 4,
+      "reject_rate_mean": 0.07205223731721427,
+      "continuous_rms_mean": 0.03272482328795775,
+      "translation_endpoint_l2_p95_mean": 0.3190312135146329,
+      "rotation_endpoint_l2_p95_mean": 0.11770276446378689,
+      "gripper_agreement_mean": 0.983078231292517
+    },
+    "failure": {
+      "episodes": 6,
+      "reject_rate_mean": 0.07661782661782661,
+      "continuous_rms_mean": 0.03299127710202462,
+      "translation_endpoint_l2_p95_mean": 0.3620856677784039,
+      "rotation_endpoint_l2_p95_mean": 0.07681527563011666,
+      "gripper_agreement_mean": 0.9888278388278389
+    }
+  },
+  "diagnostic": {
+    "failure_correlation": 0.05812452389045163,
+    "failure_auc": 0.5625,
+    "supports_enforcement": false,
+    "decision": "Do not enforce: action-prefix reject rate does not separate successful and failed episodes in this fixed-state diagnostic."
+  }
+}

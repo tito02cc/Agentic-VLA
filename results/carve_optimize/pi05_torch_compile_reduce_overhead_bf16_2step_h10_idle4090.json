@@ -1,0 +1,74 @@
+{
+  "adapter_id": "pi05",
+  "benchmark": {
+    "deadline_miss_rate": 0.0,
+    "mean_action_count": 10.0,
+    "metadata": {
+      "backend_id": "torch_compile",
+      "backend_metadata": {
+        "compile_options": {
+          "fullgraph": false,
+          "mode": "reduce-overhead"
+        },
+        "source_adapter_unchanged": true,
+        "transform": "torch.compile",
+        "transformed": true
+      },
+      "model_id": "pi05",
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "warmup_calls": 2
+    },
+    "model_p50_ms": 50.88275549951504,
+    "model_p95_ms": 51.594314101203054,
+    "peak_vram_gb": 6.981287956237793,
+    "runtime_p50_ms": 65.69549300002109,
+    "runtime_p95_ms": 67.65075074899869,
+    "runtime_p99_ms": 68.19201895055812,
+    "samples": 20
+  },
+  "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+  "created_at": "2026-07-16T09:03:57.053943+00:00",
+  "fidelity": {
+    "aggregation": "worst_case",
+    "metrics": {
+      "chunk_cosine": 0.9999819232844969,
+      "chunk_mae": 0.0017151162385917358,
+      "chunk_rmse": 0.002657073282264187,
+      "endpoint_l2": 0.03429066327020036,
+      "first_action_mae": 0.0035321941904870057,
+      "gripper_agreement": 1.0,
+      "jerk_rmse": 0.005538822654036513
+    },
+    "passed": true,
+    "samples": 5,
+    "violations": []
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "pi05",
+  "plugin_versions": {
+    "pi05": "builtin",
+    "torch_compile": "builtin"
+  },
+  "profile": {
+    "action_horizon": 10,
+    "async_execution": false,
+    "backend": "torch_compile",
+    "deployment_precision": "bf16",
+    "inference_steps": 2,
+    "module_precisions": {},
+    "options": {
+      "fullgraph": false,
+      "mode": "reduce-overhead"
+    },
+    "profile_id": "pi05-torch_compile-bf16-2step-h10"
+  },
+  "schema_version": 1
+}

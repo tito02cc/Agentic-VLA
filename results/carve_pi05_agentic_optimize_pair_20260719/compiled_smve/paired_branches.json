@@ -1,0 +1,811 @@
+{
+  "experiment": "E3-failure-state-branch-pilot",
+  "status": "completed",
+  "snapshot_count": 2,
+  "branches": [
+    "physical_recovery"
+  ],
+  "branch_horizon": 440,
+  "fixed_inference_steps": 2,
+  "deadline_ms": 80.0,
+  "policy_call_trace": "/home/admin1/ct/CARVE-VLA/results/carve_pi05_agentic_optimize_pair_20260719/compiled_smve/paired_branches_policy_calls.jsonl",
+  "records": [
+    {
+      "snapshot": "task06_episode001_step0013",
+      "task_id": 6,
+      "trigger": "stall",
+      "successful_branches": [
+        "physical_recovery"
+      ],
+      "oracle_success": true,
+      "branches": [
+        {
+          "branch": "physical_recovery",
+          "success_within_horizon": true,
+          "environment_terminated": true,
+          "executed_steps": 257,
+          "vla_calls": 123,
+          "agentic_retry_calls": 0,
+          "inference_ms_total": 6458.356694725808,
+          "inference_ms_mean": 52.506964997770794,
+          "branch_wall_ms": 17275.81120596733,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 123,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile_masked_views",
+            "profile": {
+              "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+              "backend": "torch_compile_masked_views",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "elided_image_views": [
+                  "right_wrist_0_rgb"
+                ],
+                "fullgraph": false,
+                "image_view_order": [
+                  "base_0_rgb",
+                  "left_wrist_0_rgb",
+                  "right_wrist_0_rgb"
+                ],
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "static_masked_view_elision+torch.compile",
+              "elided_image_indices": [
+                2
+              ],
+              "elided_image_views": [
+                "right_wrist_0_rgb"
+              ],
+              "input_view_contract": {
+                "view_order": [
+                  "base_0_rgb",
+                  "left_wrist_0_rgb",
+                  "right_wrist_0_rgb"
+                ],
+                "masked_views": [
+                  "right_wrist_0_rgb"
+                ],
+                "masked_indices": [
+                  2
+                ],
+                "runtime_mask_requirement": "all_batch_entries_false"
+              },
+              "mask_contract": "all_batch_entries_false",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_smve_promoted.json",
+            "manifest_created_at": "2026-07-17T03:27:34.494727+00:00",
+            "admission": {
+              "accepted": true,
+              "status": "promoted",
+              "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; input adapter guarantees an all-false padded right-wrist view",
+              "violations": [],
+              "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10"
+            },
+            "fallback_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_compiled_bf16_fallback_promoted.json"
+          },
+          "physical_recovery": {
+            "skill_id": "cartesian_retract_lift_reobserve",
+            "planned_actions": 12,
+            "phase_records": [
+              {
+                "session_id": "75b54195372a41039cfe5e8447af1ed8",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 0,
+                "phase_name": "stabilize",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 2,
+                "eef_response": 0.0014443159587530182,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "75b54195372a41039cfe5e8447af1ed8",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 1,
+                "phase_name": "retract",
+                "actions": [
+                  [
+                    -0.009506944566965103,
+                    0.06282539665699005,
+                    0.001777256024070084,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    -0.009506944566965103,
+                    0.06282539665699005,
+                    0.001777256024070084,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    -0.009506944566965103,
+                    0.06282539665699005,
+                    0.001777256024070084,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    -0.009506944566965103,
+                    0.06282539665699005,
+                    0.001777256024070084,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 4,
+                "eef_response": 0.002353061643993682,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "75b54195372a41039cfe5e8447af1ed8",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 2,
+                "phase_name": "lift",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 4,
+                "eef_response": 0.0062493810478292475,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "75b54195372a41039cfe5e8447af1ed8",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 3,
+                "phase_name": "settle_reobserve",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9975689649581909
+                  ]
+                ],
+                "request_verification": true,
+                "executed_actions": 2,
+                "eef_response": 0.0011906912016526484,
+                "environment_terminated": false
+              }
+            ],
+            "outcome": {
+              "session_id": "75b54195372a41039cfe5e8447af1ed8",
+              "episode_id": "branch:task06_episode001_step0013:physical_recovery",
+              "trigger_event": "stall",
+              "skill_id": "cartesian_retract_lift_reobserve",
+              "attempt": 0,
+              "status": "succeeded",
+              "actions_executed": 12,
+              "request_replan": true,
+              "evidence": {
+                "eef_state_response": 0.008616968299664058,
+                "minimum_state_response": 0.0001,
+                "task_success": false,
+                "environment_terminated": false
+              }
+            }
+          },
+          "physical_recovery_error": null,
+          "safe_stop": false,
+          "used_cached_prefix": false,
+          "video_path": "/home/admin1/ct/CARVE-VLA/results/carve_pi05_agentic_optimize_pair_20260719/compiled_smve/paired_branches_videos/task06_episode001_step0013_physical_recovery.mp4",
+          "final_state_digest": "d01267d025126afc38531fb26971dbe76a48e1dc304336de5bd9c4b73488182b"
+        }
+      ]
+    },
+    {
+      "snapshot": "task09_episode001_step0013",
+      "task_id": 9,
+      "trigger": "stall",
+      "successful_branches": [
+        "physical_recovery"
+      ],
+      "oracle_success": true,
+      "branches": [
+        {
+          "branch": "physical_recovery",
+          "success_within_horizon": true,
+          "environment_terminated": true,
+          "executed_steps": 259,
+          "vla_calls": 124,
+          "agentic_retry_calls": 0,
+          "inference_ms_total": 6464.320118364412,
+          "inference_ms_mean": 52.131613857777516,
+          "branch_wall_ms": 17372.729545051698,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 124,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile_masked_views",
+            "profile": {
+              "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+              "backend": "torch_compile_masked_views",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "elided_image_views": [
+                  "right_wrist_0_rgb"
+                ],
+                "fullgraph": false,
+                "image_view_order": [
+                  "base_0_rgb",
+                  "left_wrist_0_rgb",
+                  "right_wrist_0_rgb"
+                ],
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "static_masked_view_elision+torch.compile",
+              "elided_image_indices": [
+                2
+              ],
+              "elided_image_views": [
+                "right_wrist_0_rgb"
+              ],
+              "input_view_contract": {
+                "view_order": [
+                  "base_0_rgb",
+                  "left_wrist_0_rgb",
+                  "right_wrist_0_rgb"
+                ],
+                "masked_views": [
+                  "right_wrist_0_rgb"
+                ],
+                "masked_indices": [
+                  2
+                ],
+                "runtime_mask_requirement": "all_batch_entries_false"
+              },
+              "mask_contract": "all_batch_entries_false",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_smve_promoted.json",
+            "manifest_created_at": "2026-07-17T03:27:34.494727+00:00",
+            "admission": {
+              "accepted": true,
+              "status": "promoted",
+              "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; input adapter guarantees an all-false padded right-wrist view",
+              "violations": [],
+              "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10"
+            },
+            "fallback_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/deployment/pi05_compiled_bf16_fallback_promoted.json"
+          },
+          "physical_recovery": {
+            "skill_id": "cartesian_retract_lift_reobserve",
+            "planned_actions": 12,
+            "phase_records": [
+              {
+                "session_id": "ca959ca115a4460e8033af55108ed5ab",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 0,
+                "phase_name": "stabilize",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 2,
+                "eef_response": 0.002680679763426861,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "ca959ca115a4460e8033af55108ed5ab",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 1,
+                "phase_name": "retract",
+                "actions": [
+                  [
+                    -0.07540886849164963,
+                    -0.0039464570581912994,
+                    -0.0069643305614590645,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    -0.07540886849164963,
+                    -0.0039464570581912994,
+                    -0.0069643305614590645,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    -0.07540886849164963,
+                    -0.0039464570581912994,
+                    -0.0069643305614590645,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    -0.07540886849164963,
+                    -0.0039464570581912994,
+                    -0.0069643305614590645,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 4,
+                "eef_response": 0.0018837256133772586,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "ca959ca115a4460e8033af55108ed5ab",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 2,
+                "phase_name": "lift",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.15000000596046448,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ]
+                ],
+                "request_verification": false,
+                "executed_actions": 4,
+                "eef_response": 0.006364325970936754,
+                "environment_terminated": false
+              },
+              {
+                "session_id": "ca959ca115a4460e8033af55108ed5ab",
+                "skill_id": "cartesian_retract_lift_reobserve",
+                "phase_index": 3,
+                "phase_name": "settle_reobserve",
+                "actions": [
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -0.9982703924179077
+                  ]
+                ],
+                "request_verification": true,
+                "executed_actions": 2,
+                "eef_response": 0.0011347275251204494,
+                "environment_terminated": false
+              }
+            ],
+            "outcome": {
+              "session_id": "ca959ca115a4460e8033af55108ed5ab",
+              "episode_id": "branch:task09_episode001_step0013:physical_recovery",
+              "trigger_event": "stall",
+              "skill_id": "cartesian_retract_lift_reobserve",
+              "attempt": 0,
+              "status": "succeeded",
+              "actions_executed": 12,
+              "request_replan": true,
+              "evidence": {
+                "eef_state_response": 0.010515253823108223,
+                "minimum_state_response": 0.0001,
+                "task_success": false,
+                "environment_terminated": false
+              }
+            }
+          },
+          "physical_recovery_error": null,
+          "safe_stop": false,
+          "used_cached_prefix": false,
+          "video_path": "/home/admin1/ct/CARVE-VLA/results/carve_pi05_agentic_optimize_pair_20260719/compiled_smve/paired_branches_videos/task09_episode001_step0013_physical_recovery.mp4",
+          "final_state_digest": "7bd3baa8227c104b14338526992805222a26dd5947edb39a7295d3ffae3a56bd"
+        }
+      ]
+    }
+  ]
+}

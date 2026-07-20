@@ -1,0 +1,164 @@
+{
+  "task_suite": "libero_10",
+  "ablation_tag": "carve_prefix_shadow",
+  "evaluated_task_ids": [
+    8,
+    9
+  ],
+  "skipped_task_ids": [],
+  "completed_tasks": [
+    "8",
+    "9"
+  ],
+  "total_successes": 4,
+  "total_episodes": 10,
+  "episode_lengths": [
+    417,
+    392,
+    530,
+    530,
+    530,
+    265,
+    530,
+    254,
+    530,
+    530
+  ],
+  "success_episode_lengths": [
+    417,
+    392,
+    265,
+    254
+  ],
+  "task_metrics": {
+    "8": {
+      "success_rate": 0.4,
+      "episodes": 5.0,
+      "avg_episode_length": 479.8,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 5
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    },
+    "9": {
+      "success_rate": 0.4,
+      "episodes": 5.0,
+      "avg_episode_length": 421.8,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 5
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    }
+  },
+  "transition_stats": null,
+  "critic_stats": null,
+  "expert_stats": {
+    "switch_counts": {
+      "default_vla_expert": 10
+    },
+    "success_counts": {},
+    "escalation_counts": {},
+    "replan_counts": {}
+  },
+  "episode_trace_jsonl": "results/carve_realtime/prefix_shadow_t89_5states_20260717/episode_traces.jsonl",
+  "trace_aggregate": {
+    "episodes_with_trace": 10,
+    "inference": {
+      "vla_calls_total": 337,
+      "full_vla_calls_total": 337,
+      "skipped_vla_calls_total": 0,
+      "planner_calls_total": 0,
+      "verifier_calls_total": 0,
+      "vlm_calls_total": 0,
+      "vla_calls_per_episode": 33.7,
+      "full_vla_calls_per_episode": 33.7,
+      "skipped_vla_calls_per_episode": 0.0,
+      "planner_calls_per_episode": 0.0,
+      "verifier_calls_per_episode": 0.0,
+      "vlm_calls_per_episode": 0.0,
+      "planner_ms_per_episode": 0.0,
+      "verifier_ms_per_episode": 0.0,
+      "vla_ms_per_episode": 2270.235215208959,
+      "vla_model_wall_ms_per_episode": 2270.235215208959,
+      "vla_latency_ms_mean": 67.36603012489492,
+      "vla_latency_ms_p50": 67.34044299810193,
+      "vla_latency_ms_p95": 74.11491060338449,
+      "vla_latency_ms_p99": 75.97273868217599,
+      "episode_wall_sec_mean": 19.66927513630362
+    },
+    "lightweight": {
+      "full_vla_calls_total": 337,
+      "skipped_vla_calls_total": 0,
+      "skipped_vla_call_ratio": 0.0,
+      "fallback_count_total": 0,
+      "action_chunk_age_mean": 3.3823471666698075,
+      "action_chunk_age_p95": 9.0
+    },
+    "realtime": {
+      "ttfa_ms_mean": 75.65612960170256,
+      "ttfa_ms_p90": 81.67445720173419,
+      "ttfa_ms_p99": 84.22053992340807,
+      "reaction_latency_ms_mean": 0.004303286134797547,
+      "reaction_latency_ms_p90": 0.004951700975652784,
+      "deadline_miss_rate_mean": 0.010347964503086256,
+      "blocking_reasoning_ms_mean": 0.0,
+      "fast_path_ratio_mean": 1.0,
+      "success_under_deadline": 0.39792126626614455,
+      "async_prefetch": {
+        "submitted": 287,
+        "ready": 279,
+        "waited": 3,
+        "discarded": 8,
+        "errors": 0,
+        "actions_committed": 2232,
+        "prefix_consistency": {
+          "checks": 279,
+          "would_accept": 258,
+          "would_reject": 21,
+          "enforced_rejections": 0,
+          "continuous_rms_mean": 0.03097823472820986,
+          "continuous_rms_p95": 0.07576409993328119,
+          "translation_endpoint_l2_p95": 0.36051096750920414,
+          "rotation_endpoint_l2_p95": 0.10294011664168018,
+          "gripper_agreement_mean": 0.9802867383512545
+        }
+      }
+    },
+    "recovery": {
+      "recoveries_triggered_total": 13,
+      "recoveries_successful_total": 1,
+      "recovery_precision": 0.07692307692307693,
+      "physical_recoveries_triggered_total": 13,
+      "physical_recoveries_verified_total": 13,
+      "physical_recovery_actions_total": 156,
+      "physical_verification_rate": 1.0
+    },
+    "gpu": {
+      "peak_mem_gb_max": 20.55859375
+    }
+  },
+  "current_task": null,
+  "status": "completed"
+}

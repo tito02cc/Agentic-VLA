@@ -1,0 +1,474 @@
+{
+  "protocol": {
+    "vla": "OpenPI pi0.5 LIBERO PyTorch",
+    "agent_vlm": "Qwen3.5-4B BF16 vision-language server",
+    "hardware": "NVIDIA GeForce RTX 4090 24GB",
+    "deadlines_ms": [
+      50.0,
+      60.0,
+      70.0,
+      80.0,
+      90.0,
+      100.0,
+      120.0
+    ],
+    "condition": "continuous co-resident visual VLM inference"
+  },
+  "fairness_audit": {
+    "passed": true,
+    "checks": {
+      "checkpoint_equal": true,
+      "hardware_equal": true,
+      "inference_steps_equal": true,
+      "action_horizon_equal": true,
+      "both_fidelity_passed": true,
+      "vlm_success_rate_equal": true
+    }
+  },
+  "profiles": {
+    "compile": {
+      "backend": "torch_compile",
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "samples": 500,
+      "runtime_p50_ms": 81.11978949455079,
+      "runtime_p95_ms": 91.85329358952002,
+      "runtime_p99_ms": 93.72346970354556,
+      "mean_ms": 82.21085415413836,
+      "deadline_misses": {
+        "50": 500,
+        "60": 500,
+        "70": 490,
+        "80": 364,
+        "90": 58,
+        "100": 1,
+        "120": 0
+      },
+      "deadline_miss_rates": {
+        "50": 1.0,
+        "60": 1.0,
+        "70": 0.98,
+        "80": 0.728,
+        "90": 0.116,
+        "100": 0.002,
+        "120": 0.0
+      },
+      "deadline_miss_wilson_95": {
+        "50": [
+          0.9923756595384479,
+          1.0
+        ],
+        "60": [
+          0.9923756595384479,
+          1.0
+        ],
+        "70": [
+          0.9635798167531208,
+          0.9891008164037892
+        ],
+        "80": [
+          0.6873673929547526,
+          0.7651559077947796
+        ],
+        "90": [
+          0.09081365651103794,
+          0.1470418369634342
+        ],
+        "100": [
+          0.00035313639455927456,
+          0.011240706705146758
+        ],
+        "120": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ]
+      },
+      "fidelity": {
+        "aggregation": "worst_case",
+        "metrics": {
+          "chunk_cosine": 0.9999819232844969,
+          "chunk_mae": 0.0019623716404347027,
+          "chunk_rmse": 0.002918496753278674,
+          "endpoint_l2": 0.05288070410979744,
+          "first_action_mae": 0.0035321941904870057,
+          "gripper_agreement": 1.0,
+          "jerk_rmse": 0.005894280533545282
+        },
+        "passed": true,
+        "samples": 10,
+        "violations": []
+      },
+      "deployment_condition": {
+        "co_resident_model": "Qwen3.5-4B-bf16-vision",
+        "label": "active_vlm_continuous_500calls",
+        "system_gpu_memory_used_mib_after": 18051.0,
+        "system_gpu_memory_used_mib_before": 18051.0
+      }
+    },
+    "smve": {
+      "backend": "torch_compile_masked_views",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "samples": 500,
+      "runtime_p50_ms": 65.93175200396217,
+      "runtime_p95_ms": 75.57476535876049,
+      "runtime_p99_ms": 78.89762499980861,
+      "mean_ms": 67.34711680616601,
+      "deadline_misses": {
+        "50": 500,
+        "60": 481,
+        "70": 126,
+        "80": 3,
+        "90": 0,
+        "100": 0,
+        "120": 0
+      },
+      "deadline_miss_rates": {
+        "50": 1.0,
+        "60": 0.962,
+        "70": 0.252,
+        "80": 0.006,
+        "90": 0.0,
+        "100": 0.0,
+        "120": 0.0
+      },
+      "deadline_miss_wilson_95": {
+        "50": [
+          0.9923756595384479,
+          1.0
+        ],
+        "60": [
+          0.9414152274693561,
+          0.9755398819441696
+        ],
+        "70": [
+          0.21593384838137186,
+          0.2918478244875581
+        ],
+        "80": [
+          0.0020425962719602363,
+          0.01749025210405338
+        ],
+        "90": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ],
+        "100": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ],
+        "120": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ]
+      },
+      "fidelity": {
+        "aggregation": "worst_case",
+        "metrics": {
+          "chunk_cosine": 0.9999839389908736,
+          "chunk_mae": 0.0019359789121035954,
+          "chunk_rmse": 0.002833809553704916,
+          "endpoint_l2": 0.051833331912315136,
+          "first_action_mae": 0.0033993693410573106,
+          "gripper_agreement": 1.0,
+          "jerk_rmse": 0.005862247534309832
+        },
+        "passed": true,
+        "samples": 10,
+        "violations": []
+      },
+      "deployment_condition": {
+        "co_resident_model": "Qwen3.5-4B-bf16-vision",
+        "label": "active_vlm_continuous_500calls",
+        "system_gpu_memory_used_mib_after": 18006.0,
+        "system_gpu_memory_used_mib_before": 18005.0
+      }
+    }
+  },
+  "vlm_load": {
+    "compile": {
+      "requests": 131,
+      "successes": 131,
+      "success_rate": 1.0,
+      "latency_p50_ms": 1573.541732999729,
+      "latency_p95_ms": 2292.193134999252,
+      "latency_mean_ms": 1686.3093512751054,
+      "prompt_tokens": [
+        751
+      ]
+    },
+    "smve": {
+      "requests": 126,
+      "successes": 126,
+      "success_rate": 1.0,
+      "latency_p50_ms": 1576.6822150035296,
+      "latency_p95_ms": 2078.837820499757,
+      "latency_mean_ms": 1674.1702772461206,
+      "prompt_tokens": [
+        751
+      ]
+    }
+  },
+  "event_triggered_profiles": {
+    "compile": {
+      "backend": "torch_compile",
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "samples": 500,
+      "runtime_p50_ms": 66.27519299945561,
+      "runtime_p95_ms": 85.5337908004003,
+      "runtime_p99_ms": 90.55734610738,
+      "mean_ms": 69.17700552247697,
+      "deadline_misses": {
+        "50": 500,
+        "60": 500,
+        "70": 107,
+        "80": 68,
+        "90": 8,
+        "100": 0,
+        "120": 0
+      },
+      "deadline_miss_rates": {
+        "50": 1.0,
+        "60": 1.0,
+        "70": 0.214,
+        "80": 0.136,
+        "90": 0.016,
+        "100": 0.0,
+        "120": 0.0
+      },
+      "deadline_miss_wilson_95": {
+        "50": [
+          0.9923756595384479,
+          1.0
+        ],
+        "60": [
+          0.9923756595384479,
+          1.0
+        ],
+        "70": [
+          0.18030299998759533,
+          0.2520581227564126
+        ],
+        "80": [
+          0.10871544340723721,
+          0.16883507644877283
+        ],
+        "90": [
+          0.008129253033388314,
+          0.03125110853339426
+        ],
+        "100": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ],
+        "120": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ]
+      },
+      "fidelity": {
+        "aggregation": "worst_case",
+        "metrics": {
+          "chunk_cosine": 0.9999819232844969,
+          "chunk_mae": 0.0019623716404347027,
+          "chunk_rmse": 0.002918496753278674,
+          "endpoint_l2": 0.05288070410979744,
+          "first_action_mae": 0.0035321941904870057,
+          "gripper_agreement": 1.0,
+          "jerk_rmse": 0.005894280533545282
+        },
+        "passed": true,
+        "samples": 10,
+        "violations": []
+      },
+      "deployment_condition": {
+        "co_resident_model": "Qwen3.5-4B-bf16-vision",
+        "label": "event_vlm_interval5_500calls",
+        "system_gpu_memory_used_mib_after": 18053.0,
+        "system_gpu_memory_used_mib_before": 18052.0
+      }
+    },
+    "smve": {
+      "backend": "torch_compile_masked_views",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "samples": 500,
+      "runtime_p50_ms": 54.69350299972575,
+      "runtime_p95_ms": 69.2998225429619,
+      "runtime_p99_ms": 76.47266821732046,
+      "mean_ms": 56.88828390996787,
+      "deadline_misses": {
+        "50": 500,
+        "60": 96,
+        "70": 24,
+        "80": 2,
+        "90": 0,
+        "100": 0,
+        "120": 0
+      },
+      "deadline_miss_rates": {
+        "50": 1.0,
+        "60": 0.192,
+        "70": 0.048,
+        "80": 0.004,
+        "90": 0.0,
+        "100": 0.0,
+        "120": 0.0
+      },
+      "deadline_miss_wilson_95": {
+        "50": [
+          0.9923756595384479,
+          1.0
+        ],
+        "60": [
+          0.15987621859588308,
+          0.22882037512843312
+        ],
+        "70": [
+          0.03246520694135317,
+          0.07042719683589006
+        ],
+        "80": [
+          0.0010976305226827934,
+          0.014465715215177033
+        ],
+        "90": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ],
+        "100": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ],
+        "120": [
+          4.336808689942018e-19,
+          0.007624340461552241
+        ]
+      },
+      "fidelity": {
+        "aggregation": "worst_case",
+        "metrics": {
+          "chunk_cosine": 0.9999839389908736,
+          "chunk_mae": 0.0019359789121035954,
+          "chunk_rmse": 0.002833809553704916,
+          "endpoint_l2": 0.051833331912315136,
+          "first_action_mae": 0.0033993693410573106,
+          "gripper_agreement": 1.0,
+          "jerk_rmse": 0.005862247534309832
+        },
+        "passed": true,
+        "samples": 10,
+        "violations": []
+      },
+      "deployment_condition": {
+        "co_resident_model": "Qwen3.5-4B-bf16-vision",
+        "label": "event_vlm_interval5_500calls",
+        "system_gpu_memory_used_mib_after": 18007.0,
+        "system_gpu_memory_used_mib_before": 18006.0
+      }
+    }
+  },
+  "event_triggered_vlm_load": {
+    "compile": {
+      "requests": 32,
+      "successes": 32,
+      "success_rate": 1.0,
+      "latency_p50_ms": 1510.5674389997148,
+      "latency_p95_ms": 2353.7240267520247,
+      "latency_mean_ms": 1654.696238469569,
+      "prompt_tokens": [
+        751
+      ]
+    },
+    "smve": {
+      "requests": 32,
+      "successes": 32,
+      "success_rate": 1.0,
+      "latency_p50_ms": 1550.9412924948265,
+      "latency_p95_ms": 2069.630883556965,
+      "latency_mean_ms": 1626.9001606874554,
+      "prompt_tokens": [
+        751
+      ]
+    }
+  },
+  "effect": {
+    "runtime_p50_reduction": 0.18722974486526334,
+    "runtime_p95_reduction": 0.17722313043564974,
+    "runtime_p99_reduction": 0.15818710884938658,
+    "miss_rate_80ms_absolute_reduction": 0.722,
+    "miss_rate_80ms_relative_reduction": 0.9917582417582418,
+    "event_smve_vs_continuous_compile_p50_reduction": 0.32576867690959943,
+    "event_smve_vs_continuous_compile_p95_reduction": 0.24553796783103432,
+    "event_smve_vs_continuous_compile_miss_reduction": 0.724
+  },
+  "repeats": {
+    "compile": [
+      {
+        "path": "results/carve_optimize/pi05_compile_2step_h10_active_qwen35_4b_pilot_20260717.json",
+        "samples": 50,
+        "runtime_p50_ms": 80.79038048890652,
+        "runtime_p95_ms": 90.62329835796845,
+        "runtime_p99_ms": 93.89209049331839,
+        "deadline_miss_rate": 0.7
+      },
+      {
+        "path": "results/carve_optimize/pi05_compile_2step_h10_active_qwen35_4b_200calls_20260717.json",
+        "samples": 200,
+        "runtime_p50_ms": 81.13951599807478,
+        "runtime_p95_ms": 92.46573884738609,
+        "runtime_p99_ms": 95.6065997305268,
+        "deadline_miss_rate": 0.78
+      },
+      {
+        "path": "results/carve_optimize/pi05_compile_2step_h10_active_qwen35_4b_500calls_20260717.json",
+        "samples": 500,
+        "runtime_p50_ms": 81.11978949455079,
+        "runtime_p95_ms": 91.85329358952002,
+        "runtime_p99_ms": 93.72346970354556,
+        "deadline_miss_rate": 0.728
+      }
+    ],
+    "smve": [
+      {
+        "path": "results/carve_optimize/pi05_smve_2step_h10_active_qwen35_4b_pilot_20260717.json",
+        "samples": 50,
+        "runtime_p50_ms": 65.98183149617398,
+        "runtime_p95_ms": 74.69277299096575,
+        "runtime_p99_ms": 77.4379461359058,
+        "deadline_miss_rate": 0.0
+      },
+      {
+        "path": "results/carve_optimize/pi05_smve_2step_h10_active_qwen35_4b_200calls_20260717.json",
+        "samples": 200,
+        "runtime_p50_ms": 66.14978500147117,
+        "runtime_p95_ms": 75.00947030275711,
+        "runtime_p99_ms": 83.00867324520367,
+        "deadline_miss_rate": 0.02
+      },
+      {
+        "path": "results/carve_optimize/pi05_smve_2step_h10_active_qwen35_4b_500calls_20260717.json",
+        "samples": 500,
+        "runtime_p50_ms": 65.93175200396217,
+        "runtime_p95_ms": 75.57476535876049,
+        "runtime_p99_ms": 78.89762499980861,
+        "deadline_miss_rate": 0.006
+      }
+    ]
+  },
+  "evidence": {
+    "manifests": {
+      "compile": "results/carve_optimize/pi05_compile_2step_h10_active_qwen35_4b_500calls_20260717.json",
+      "smve": "results/carve_optimize/pi05_smve_2step_h10_active_qwen35_4b_500calls_20260717.json"
+    },
+    "vlm_loads": {
+      "compile": "results/carve_optimize/qwen35_4b_active_vlm_load_compile_500_20260717.jsonl",
+      "smve": "results/carve_optimize/qwen35_4b_active_vlm_load_smve_500_20260717.jsonl"
+    },
+    "event_manifests": {
+      "compile": "results/carve_optimize/pi05_compile_2step_h10_event5_qwen35_4b_500calls_20260717.json",
+      "smve": "results/carve_optimize/pi05_smve_2step_h10_event5_qwen35_4b_500calls_20260717.json"
+    },
+    "event_vlm_loads": {
+      "compile": "results/carve_optimize/qwen35_4b_event5_vlm_load_compile_500_20260717.jsonl",
+      "smve": "results/carve_optimize/qwen35_4b_event5_vlm_load_smve_500_20260717.jsonl"
+    }
+  }
+}

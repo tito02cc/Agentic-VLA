@@ -24,6 +24,10 @@ The canonical current status entry point is:
 
 - `docs/status/CARVE_VLA_COMPLETED_WORK.md`
 
+For an AI assistant or a new collaborator preparing a report, start with:
+
+- `docs/AI_PROJECT_CONTEXT.md`
+
 Supporting architecture and execution documents:
 
 - `docs/plans/CARVE_VLA_NEXT_STAGE_PLAN.md`
@@ -102,6 +106,11 @@ Main result files:
 - `paper/archive/Agentic-VLA-v1-submission/agentic_vla_paper_v1.tex`
 - `results/carve_pi05_recovery_challenge_20260719/REPORT.md`
 - `docs/reports/CARVE_VLA_MIDTERM_REPORT_20260717.md`
+
+The tracked subset under `results/` is a compact evidence package. It contains
+the reports, machine-readable summaries, figures, traces, and short videos used
+by the current midterm claims; model weights and full rollout caches remain
+local-only.
 
 ## Important Directories
 

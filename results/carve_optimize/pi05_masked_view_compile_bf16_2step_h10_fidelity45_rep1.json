@@ -1,0 +1,81 @@
+{
+  "adapter_id": "pi05",
+  "benchmark": {
+    "deadline_miss_rate": 0.0,
+    "mean_action_count": 10.0,
+    "metadata": {
+      "backend_id": "torch_compile_masked_views",
+      "backend_metadata": {
+        "compile_options": {
+          "fullgraph": false,
+          "mode": "reduce-overhead"
+        },
+        "elided_image_indices": [
+          2
+        ],
+        "mask_contract": "all_batch_entries_false",
+        "source_adapter_unchanged": true,
+        "transform": "static_masked_view_elision+torch.compile",
+        "transformed": true
+      },
+      "model_id": "pi05",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "warmup_calls": 3
+    },
+    "model_p50_ms": 41.13540050457232,
+    "model_p95_ms": 42.621508052252466,
+    "peak_vram_gb": 6.970125198364258,
+    "runtime_p50_ms": 54.35263500112342,
+    "runtime_p95_ms": 56.18731285067042,
+    "runtime_p99_ms": 57.020974926272174,
+    "samples": 50
+  },
+  "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+  "created_at": "2026-07-17T03:27:34.494727+00:00",
+  "fidelity": {
+    "aggregation": "worst_case",
+    "metrics": {
+      "chunk_cosine": 0.9998971156635306,
+      "chunk_mae": 0.002323485182243911,
+      "chunk_rmse": 0.0051959599552477065,
+      "endpoint_l2": 0.055244757056881255,
+      "first_action_mae": 0.0033993693410573106,
+      "gripper_agreement": 1.0,
+      "jerk_rmse": 0.009620746186725844
+    },
+    "passed": true,
+    "samples": 45,
+    "violations": []
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "pi05",
+  "plugin_versions": {
+    "pi05": "builtin",
+    "torch_compile_masked_views": "builtin"
+  },
+  "profile": {
+    "action_horizon": 10,
+    "async_execution": false,
+    "backend": "torch_compile_masked_views",
+    "deployment_precision": "bf16",
+    "inference_steps": 2,
+    "module_precisions": {},
+    "options": {
+      "elided_image_indices": [
+        2
+      ],
+      "fullgraph": false,
+      "mode": "reduce-overhead"
+    },
+    "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10"
+  },
+  "schema_version": 1
+}

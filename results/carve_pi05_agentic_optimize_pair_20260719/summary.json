@@ -1,0 +1,103 @@
+{
+  "experiment": "CARVE-PI0.5-Agentic-Optimize-Pair",
+  "claim": "same-state Agentic physical recovery under research-reference eager BF16 and deployment-admitted compiled BF16/SMVE profiles",
+  "profiles": {
+    "eager_bf16": {
+      "label": "Eager BF16",
+      "profile_id": "pi05-eager-bf16-2step-h10",
+      "admission_accepted": false,
+      "admission_status": "unreviewed",
+      "exact_state_successes": 2,
+      "exact_state_scenarios": 2,
+      "exact_state_outcomes": [
+        true,
+        true
+      ],
+      "verified_recoveries": 2,
+      "safe_stops": 0,
+      "vla_calls": 236,
+      "model_p50_ms": 144.4112210010644,
+      "model_p95_ms": 153.40361651033163,
+      "runtime_p50_ms": 155.87950000190176,
+      "runtime_p95_ms": 166.26242751954123,
+      "deadline_misses": 236,
+      "deadline_calls": 236,
+      "deadline_miss_rate": 1.0,
+      "online_successes": 1,
+      "online_episodes": 1,
+      "online_physical_triggered": 1,
+      "online_physical_verified": 1,
+      "online_vla_p95_ms": 171.76518377964382,
+      "online_control_miss_rate": 0.10434782608695652
+    },
+    "compiled_bf16": {
+      "label": "Compiled BF16",
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "admission_accepted": true,
+      "admission_status": "promoted",
+      "exact_state_successes": 2,
+      "exact_state_scenarios": 2,
+      "exact_state_outcomes": [
+        true,
+        true
+      ],
+      "verified_recoveries": 2,
+      "safe_stops": 0,
+      "vla_calls": 239,
+      "model_p50_ms": 50.7407039985992,
+      "model_p95_ms": 52.91574642760679,
+      "runtime_p50_ms": 62.54277698462829,
+      "runtime_p95_ms": 65.75126099050976,
+      "deadline_misses": 0,
+      "deadline_calls": 239,
+      "deadline_miss_rate": 0.0,
+      "online_successes": 0,
+      "online_episodes": 1,
+      "online_physical_triggered": 2,
+      "online_physical_verified": 2,
+      "online_vla_p95_ms": 64.01041491189972,
+      "online_control_miss_rate": 0.04230769230769231
+    },
+    "compiled_smve": {
+      "label": "Compiled BF16 + SMVE",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "admission_accepted": true,
+      "admission_status": "promoted",
+      "exact_state_successes": 2,
+      "exact_state_scenarios": 2,
+      "exact_state_outcomes": [
+        true,
+        true
+      ],
+      "verified_recoveries": 2,
+      "safe_stops": 0,
+      "vla_calls": 247,
+      "model_p50_ms": 40.90548702515662,
+      "model_p95_ms": 42.43664072128013,
+      "runtime_p50_ms": 52.5369819952175,
+      "runtime_p95_ms": 54.49579528067261,
+      "deadline_misses": 0,
+      "deadline_calls": 247,
+      "deadline_miss_rate": 0.0,
+      "online_successes": 1,
+      "online_episodes": 1,
+      "online_physical_triggered": 1,
+      "online_physical_verified": 1,
+      "online_vla_p95_ms": 57.0899028214626,
+      "online_control_miss_rate": 0.10638297872340426
+    }
+  },
+  "comparisons": {
+    "exact_state_outcome_parity": true,
+    "compiled_runtime_p95_reduction_vs_eager": 0.6045332552191813,
+    "smve_runtime_p95_reduction_vs_eager": 0.6722302441165333,
+    "smve_runtime_p95_reduction_vs_compiled": 0.17118250722920303
+  },
+  "gates": {
+    "evidence_complete": true,
+    "outcome_parity": true,
+    "compiled_deadline_compliant": true,
+    "smve_deadline_compliant": true,
+    "eager_reference_misses_deadline": true
+  }
+}

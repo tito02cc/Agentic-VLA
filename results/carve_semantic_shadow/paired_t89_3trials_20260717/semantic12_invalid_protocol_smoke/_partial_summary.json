@@ -1,0 +1,229 @@
+{
+  "task_suite": "libero_10",
+  "trials_per_task": 3,
+  "ablation_tag": "CARVE-semantic12",
+  "status": "running",
+  "current_task": null,
+  "evaluated_task_ids": [
+    8,
+    9
+  ],
+  "skipped_task_ids": [],
+  "flags": {
+    "transition": false,
+    "graph_rag": false,
+    "critic": false,
+    "vision_prompt": false,
+    "agentic_planner": false,
+    "carve_runtime": true,
+    "carve_joint_controller": true,
+    "carve_physical_recovery": true,
+    "carve_async_prefetch": false,
+    "carve_prefetch_lead_actions": 2,
+    "carve_prefetch_interval": 1,
+    "carve_prefetch_prefix_mode": "off",
+    "carve_prefetch_prefix_rms_max": 0.35,
+    "carve_prefetch_prefix_translation_max": 0.35,
+    "carve_prefetch_prefix_rotation_max": 0.5,
+    "carve_prefetch_prefix_gripper_min": 1.0,
+    "carve_fixed_inference_steps": 0,
+    "carve_fast_inference_steps": 2,
+    "carve_accurate_inference_steps": 2,
+    "carve_commit_steps": 10,
+    "method_tag": "",
+    "ba_harness": false,
+    "qwen_quant": "4bit",
+    "control_deadline_ms": 80.0
+  },
+  "episode_trace_jsonl": "results/carve_semantic_shadow/paired_t89_3trials_20260717/semantic12/episode_traces.jsonl",
+  "trace_aggregate": {
+    "episodes_with_trace": 3,
+    "inference": {
+      "vla_calls_total": 107,
+      "full_vla_calls_total": 107,
+      "skipped_vla_calls_total": 0,
+      "planner_calls_total": 0,
+      "verifier_calls_total": 0,
+      "semantic_calls_total": 3,
+      "vlm_calls_total": 3,
+      "vla_calls_per_episode": 35.666666666666664,
+      "full_vla_calls_per_episode": 35.666666666666664,
+      "skipped_vla_calls_per_episode": 0.0,
+      "planner_calls_per_episode": 0.0,
+      "verifier_calls_per_episode": 0.0,
+      "semantic_calls_per_episode": 1.0,
+      "vlm_calls_per_episode": 1.0,
+      "planner_ms_per_episode": 0.0,
+      "verifier_ms_per_episode": 0.0,
+      "vla_ms_per_episode": 1936.9657630304573,
+      "vla_model_wall_ms_per_episode": 1936.9657630304573,
+      "vla_latency_ms_mean": 54.307451299919364,
+      "vla_latency_ms_p50": 53.48493599740323,
+      "vla_latency_ms_p95": 62.71233250299701,
+      "vla_latency_ms_p99": 67.70638790650992,
+      "episode_wall_sec_mean": 18.444330972997705
+    },
+    "lightweight": {
+      "full_vla_calls_total": 107,
+      "skipped_vla_calls_total": 0,
+      "skipped_vla_call_ratio": 0.0,
+      "fallback_count_total": 0,
+      "action_chunk_age_mean": 3.460666840387187,
+      "action_chunk_age_p95": 9.0
+    },
+    "realtime": {
+      "ttfa_ms_mean": 65.17587533259454,
+      "ttfa_ms_p90": 69.70523519848939,
+      "ttfa_ms_p99": 71.41099871747429,
+      "reaction_latency_ms_mean": 0.0041627536120358855,
+      "reaction_latency_ms_p90": 0.004290958895580843,
+      "deadline_miss_rate_mean": 0.08314963312320543,
+      "blocking_reasoning_ms_mean": 0.0,
+      "fast_path_ratio_mean": 1.0,
+      "success_under_deadline": 0.5989016489280766,
+      "async_prefetch": {
+        "submitted": 0,
+        "ready": 0,
+        "waited": 0,
+        "discarded": 0,
+        "errors": 0,
+        "actions_committed": 0,
+        "prefix_consistency": {
+          "checks": 0,
+          "would_accept": 0,
+          "would_reject": 0,
+          "enforced_rejections": 0,
+          "continuous_rms_mean": null,
+          "continuous_rms_p95": null,
+          "translation_endpoint_l2_p95": null,
+          "rotation_endpoint_l2_p95": null,
+          "gripper_agreement_mean": null
+        }
+      },
+      "semantic_observer": {
+        "submitted": 3,
+        "completed": 3,
+        "errors": 0,
+        "suppressed": 0,
+        "latency_ms_mean": 1064.2444843348737,
+        "latency_ms_p95": 1109.3420264034648,
+        "observations": [
+          {
+            "ticket_id": "59a50b55dcc8449eac16def8f63f2475",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 105,
+            "latency_ms": 1116.0971600038465,
+            "valid": true,
+            "error": null,
+            "content": "STATUS|FAILURE\nFAILURE|MISALIGN\n",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 11,
+              "prompt_tokens": 219,
+              "total_tokens": 230
+            }
+          },
+          {
+            "ticket_id": "fa4e85acd5894aca80597610b92cb2b8",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 103,
+            "latency_ms": 1048.5458240000298,
+            "valid": true,
+            "error": null,
+            "content": "STATUS|FAILURE\nFAILURE|NONE\n",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 10,
+              "prompt_tokens": 247,
+              "total_tokens": 257
+            }
+          },
+          {
+            "ticket_id": "fd394111caa4475788b551da49f77d97",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 103,
+            "latency_ms": 1028.0904690007446,
+            "valid": true,
+            "error": null,
+            "content": "STATUS|FAILURE\nFAILURE|NONE\n",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 10,
+              "prompt_tokens": 247,
+              "total_tokens": 257
+            }
+          }
+        ]
+      }
+    },
+    "recovery": {
+      "recoveries_triggered_total": 3,
+      "recoveries_successful_total": 1,
+      "recovery_precision": 0.3333333333333333,
+      "physical_recoveries_triggered_total": 3,
+      "physical_recoveries_verified_total": 3,
+      "physical_recovery_actions_total": 36,
+      "physical_verification_rate": 1.0
+    },
+    "gpu": {
+      "peak_mem_gb_max": 17.70703125
+    }
+  },
+  "hardware_config": {
+    "host": "127.0.0.1",
+    "port": 18083,
+    "openpi_root": "/home/admin1/openpi",
+    "qwen_model": "Qwen/Qwen3-VL-8B-Instruct",
+    "qwen_quant": "4bit",
+    "resize_size": 224
+  },
+  "overall_success_rate": 0.6666666666666666,
+  "total_successes": 2,
+  "total_episodes": 3,
+  "avg_episode_length": 455.6666666666667,
+  "avg_success_episode_length": 418.5,
+  "task_metrics": {
+    "8": {
+      "success_rate": 0.6666666666666666,
+      "episodes": 3.0,
+      "avg_episode_length": 455.6666666666667,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 3
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    }
+  },
+  "transition_stats": null,
+  "critic_stats": null,
+  "planner_stats": null,
+  "expert_stats": {
+    "switch_counts": {
+      "default_vla_expert": 3
+    },
+    "success_counts": {},
+    "escalation_counts": {},
+    "replan_counts": {}
+  },
+  "mechanism_summary": {
+    "avg_transitions_per_episode": 0.0,
+    "transition_success_rate_when_used": 0.0,
+    "avg_retries_per_episode": 0.0,
+    "retry_success_rate_when_used": 0.0,
+    "avg_episode_length": 455.6666666666667,
+    "avg_success_episode_length": 418.5
+  }
+}

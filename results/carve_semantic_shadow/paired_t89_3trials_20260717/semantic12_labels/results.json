@@ -1,0 +1,315 @@
+{
+  "task_suite": "libero_10",
+  "trials_per_task": 3,
+  "ablation_tag": "CARVE-semantic12-labels",
+  "status": "completed",
+  "current_task": null,
+  "evaluated_task_ids": [
+    8,
+    9
+  ],
+  "skipped_task_ids": [],
+  "flags": {
+    "transition": false,
+    "graph_rag": false,
+    "critic": false,
+    "vision_prompt": false,
+    "agentic_planner": false,
+    "carve_runtime": true,
+    "carve_joint_controller": true,
+    "carve_physical_recovery": true,
+    "carve_async_prefetch": false,
+    "carve_prefetch_lead_actions": 2,
+    "carve_prefetch_interval": 1,
+    "carve_prefetch_prefix_mode": "off",
+    "carve_prefetch_prefix_rms_max": 0.35,
+    "carve_prefetch_prefix_translation_max": 0.35,
+    "carve_prefetch_prefix_rotation_max": 0.5,
+    "carve_prefetch_prefix_gripper_min": 1.0,
+    "carve_fixed_inference_steps": 0,
+    "carve_fast_inference_steps": 2,
+    "carve_accurate_inference_steps": 2,
+    "carve_commit_steps": 10,
+    "method_tag": "",
+    "ba_harness": false,
+    "qwen_quant": "4bit",
+    "control_deadline_ms": 80.0
+  },
+  "episode_trace_jsonl": "results/carve_semantic_shadow/paired_t89_3trials_20260717/semantic12_labels/episode_traces.jsonl",
+  "trace_aggregate": {
+    "episodes_with_trace": 6,
+    "inference": {
+      "vla_calls_total": 174,
+      "full_vla_calls_total": 174,
+      "skipped_vla_calls_total": 0,
+      "planner_calls_total": 0,
+      "verifier_calls_total": 0,
+      "semantic_calls_total": 6,
+      "vlm_calls_total": 6,
+      "vla_calls_per_episode": 29.0,
+      "full_vla_calls_per_episode": 29.0,
+      "skipped_vla_calls_per_episode": 0.0,
+      "planner_calls_per_episode": 0.0,
+      "verifier_calls_per_episode": 0.0,
+      "semantic_calls_per_episode": 1.0,
+      "vlm_calls_per_episode": 1.0,
+      "planner_ms_per_episode": 0.0,
+      "verifier_ms_per_episode": 0.0,
+      "vla_ms_per_episode": 1584.7654764923693,
+      "vla_model_wall_ms_per_episode": 1584.7654764923693,
+      "vla_latency_ms_mean": 54.6470853962886,
+      "vla_latency_ms_p50": 53.83488199731801,
+      "vla_latency_ms_p95": 63.47885420473176,
+      "vla_latency_ms_p99": 67.44955998976369,
+      "episode_wall_sec_mean": 16.206161434003054
+    },
+    "lightweight": {
+      "full_vla_calls_total": 174,
+      "skipped_vla_calls_total": 0,
+      "skipped_vla_call_ratio": 0.0,
+      "fallback_count_total": 0,
+      "action_chunk_age_mean": 3.2919843023919335,
+      "action_chunk_age_p95": 9.0
+    },
+    "realtime": {
+      "ttfa_ms_mean": 63.88710700169516,
+      "ttfa_ms_p90": 68.06548000167822,
+      "ttfa_ms_p99": 71.73163630141062,
+      "reaction_latency_ms_mean": 0.0046030017983866856,
+      "reaction_latency_ms_p90": 0.005266949301585555,
+      "deadline_miss_rate_mean": 0.08016499312280666,
+      "blocking_reasoning_ms_mean": 0.0,
+      "fast_path_ratio_mean": 1.0,
+      "success_under_deadline": 0.5983606479028344,
+      "async_prefetch": {
+        "submitted": 0,
+        "ready": 0,
+        "waited": 0,
+        "discarded": 0,
+        "errors": 0,
+        "actions_committed": 0,
+        "prefix_consistency": {
+          "checks": 0,
+          "would_accept": 0,
+          "would_reject": 0,
+          "enforced_rejections": 0,
+          "continuous_rms_mean": null,
+          "continuous_rms_p95": null,
+          "translation_endpoint_l2_p95": null,
+          "rotation_endpoint_l2_p95": null,
+          "gripper_agreement_mean": null
+        }
+      },
+      "semantic_observer": {
+        "submitted": 6,
+        "completed": 6,
+        "errors": 0,
+        "suppressed": 0,
+        "latency_ms_mean": 948.6069118308175,
+        "latency_ms_p95": 1005.2867707527184,
+        "observations": [
+          {
+            "ticket_id": "9b62c22ebeea4485aaaa752bda687648",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 102,
+            "latency_ms": 1013.6236800026381,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISGRASP\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISGRASP",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 9,
+              "prompt_tokens": 238,
+              "total_tokens": 247
+            }
+          },
+          {
+            "ticket_id": "a048030b660642029fef1f90a1817ed8",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 101,
+            "latency_ms": 957.7434249949874,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISALIGN\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISALIGN",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 8,
+              "prompt_tokens": 266,
+              "total_tokens": 274
+            }
+          },
+          {
+            "ticket_id": "00edb91ef99d4be1baaa79e1c3289542",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 101,
+            "latency_ms": 875.9480479930062,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISALIGN\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISALIGN",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 8,
+              "prompt_tokens": 266,
+              "total_tokens": 274
+            }
+          },
+          {
+            "ticket_id": "1688461b854642aca3caf355b5a5b420",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 101,
+            "latency_ms": 923.793661990203,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISGRASP\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISGRASP",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 9,
+              "prompt_tokens": 244,
+              "total_tokens": 253
+            }
+          },
+          {
+            "ticket_id": "813ac66463e743879b74e880f1d1d398",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 101,
+            "latency_ms": 980.2760430029593,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISGRASP\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISGRASP",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 9,
+              "prompt_tokens": 271,
+              "total_tokens": 280
+            }
+          },
+          {
+            "ticket_id": "2c37a4cb2e5548018263ebf74e4bbea2",
+            "event": "perturbation",
+            "submitted_timestep": 80,
+            "collected_timestep": 101,
+            "latency_ms": 940.256613001111,
+            "valid": true,
+            "error": null,
+            "content": "REPLAN|MISGRASP\n",
+            "protocol_valid": true,
+            "status": "REPLAN",
+            "failure_mode": "MISGRASP",
+            "response_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B@main",
+            "usage": {
+              "completion_tokens": 9,
+              "prompt_tokens": 272,
+              "total_tokens": 281
+            }
+          }
+        ]
+      }
+    },
+    "recovery": {
+      "recoveries_triggered_total": 6,
+      "recoveries_successful_total": 2,
+      "recovery_precision": 0.3333333333333333,
+      "physical_recoveries_triggered_total": 6,
+      "physical_recoveries_verified_total": 6,
+      "physical_recovery_actions_total": 72,
+      "physical_verification_rate": 1.0
+    },
+    "gpu": {
+      "peak_mem_gb_max": 17.9404296875
+    }
+  },
+  "hardware_config": {
+    "host": "127.0.0.1",
+    "port": 18083,
+    "openpi_root": "/home/admin1/openpi",
+    "qwen_model": "Qwen/Qwen3-VL-8B-Instruct",
+    "qwen_quant": "4bit",
+    "resize_size": 224
+  },
+  "overall_success_rate": 0.6666666666666666,
+  "total_successes": 4,
+  "total_episodes": 6,
+  "avg_episode_length": 406.6666666666667,
+  "avg_success_episode_length": 345.0,
+  "task_metrics": {
+    "8": {
+      "success_rate": 0.6666666666666666,
+      "episodes": 3.0,
+      "avg_episode_length": 455.6666666666667,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 3
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    },
+    "9": {
+      "success_rate": 0.6666666666666666,
+      "episodes": 3.0,
+      "avg_episode_length": 357.6666666666667,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 3
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    }
+  },
+  "transition_stats": null,
+  "critic_stats": null,
+  "planner_stats": null,
+  "expert_stats": {
+    "switch_counts": {
+      "default_vla_expert": 6
+    },
+    "success_counts": {},
+    "escalation_counts": {},
+    "replan_counts": {}
+  },
+  "mechanism_summary": {
+    "avg_transitions_per_episode": 0.0,
+    "transition_success_rate_when_used": 0.0,
+    "avg_retries_per_episode": 0.0,
+    "retry_success_rate_when_used": 0.0,
+    "avg_episode_length": 406.6666666666667,
+    "avg_success_episode_length": 345.0
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "experiment": "E3-failure-state-branch-pilot",
+  "snapshot_count": 1,
+  "branches": [
+    "continue",
+    "fast",
+    "accurate",
+    "recovery"
+  ],
+  "branch_horizon": 10,
+  "policy_call_trace": "results/carve_profile_branches/compiled_bf16_snapshot1_h10_policy_calls.jsonl",
+  "records": [
+    {
+      "snapshot": "task06_episode000_step0019",
+      "task_id": 6,
+      "trigger": "stale_action",
+      "successful_branches": [],
+      "oracle_success": false,
+      "branches": [
+        {
+          "branch": "continue",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 2,
+          "inference_ms_total": 109969.82449100142,
+          "inference_ms_mean": 54984.91224550071,
+          "branch_wall_ms": 110393.98258000074,
+          "applied_step_budgets": [
+            1,
+            1
+          ],
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile",
+            "profile": {
+              "profile_id": "pi05-torch_compile-bf16-2step-h10",
+              "backend": "torch_compile",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "fullgraph": false,
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torch.compile",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+            "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+          },
+          "used_cached_prefix": true,
+          "final_state_digest": "7b1d18d80f1008766c408a4db6e0ff44d0f413e67b6e98038e56f0cc9493cbe2"
+        },
+        {
+          "branch": "fast",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 2,
+          "inference_ms_total": 120.73775600038061,
+          "inference_ms_mean": 60.36887800019031,
+          "branch_wall_ms": 501.62928799909423,
+          "applied_step_budgets": [
+            1,
+            1
+          ],
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile",
+            "profile": {
+              "profile_id": "pi05-torch_compile-bf16-2step-h10",
+              "backend": "torch_compile",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "fullgraph": false,
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torch.compile",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+            "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "89058b2dc46e7eddae65506a883127e58e95faf918058ff348d3157b4898f1ca"
+        },
+        {
+          "branch": "accurate",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 5,
+          "inference_ms_total": 4082.489248001366,
+          "inference_ms_mean": 816.4978496002732,
+          "branch_wall_ms": 4479.53022099864,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile",
+            "profile": {
+              "profile_id": "pi05-torch_compile-bf16-2step-h10",
+              "backend": "torch_compile",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "fullgraph": false,
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torch.compile",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+            "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "7ac44462deba909acd2187de01a70e2c9088a465ec836fb76dc5f601f6774ae7"
+        },
+        {
+          "branch": "recovery",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 5,
+          "inference_ms_total": 318.77633500153024,
+          "inference_ms_mean": 63.75526700030605,
+          "branch_wall_ms": 680.0473259991122,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torch_compile",
+            "profile": {
+              "profile_id": "pi05-torch_compile-bf16-2step-h10",
+              "backend": "torch_compile",
+              "deployment_precision": "bf16",
+              "module_precisions": {},
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "fullgraph": false,
+                "mode": "reduce-overhead"
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torch.compile",
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": true
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+            "manifest_created_at": "2026-07-16T10:03:59.258678+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "87fa59438b97c79849009530e6ffd79f6154a3dfdad157abed1cc7502edb2209"
+        }
+      ]
+    }
+  ]
+}

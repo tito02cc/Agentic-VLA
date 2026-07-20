@@ -1,0 +1,169 @@
+{
+  "task_suite": "libero_10",
+  "ablation_tag": "CARVE-no_semantic",
+  "evaluated_task_ids": [
+    8,
+    9
+  ],
+  "skipped_task_ids": [],
+  "completed_tasks": [
+    "8",
+    "9"
+  ],
+  "total_successes": 4,
+  "total_episodes": 6,
+  "episode_lengths": [
+    438,
+    399,
+    530,
+    301,
+    530,
+    242
+  ],
+  "success_episode_lengths": [
+    438,
+    399,
+    301,
+    242
+  ],
+  "task_metrics": {
+    "8": {
+      "success_rate": 0.6666666666666666,
+      "episodes": 3.0,
+      "avg_episode_length": 455.6666666666667,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 3
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    },
+    "9": {
+      "success_rate": 0.6666666666666666,
+      "episodes": 3.0,
+      "avg_episode_length": 357.6666666666667,
+      "transition_total": 0,
+      "transition_episode_count": 0,
+      "transition_success_count": 0,
+      "critic_checks": 0,
+      "retry_total": 0,
+      "retry_episode_count": 0,
+      "retry_success_count": 0,
+      "expert_stats": {
+        "switch_counts": {
+          "default_vla_expert": 3
+        },
+        "success_counts": {},
+        "escalation_counts": {},
+        "replan_counts": {}
+      }
+    }
+  },
+  "transition_stats": null,
+  "critic_stats": null,
+  "expert_stats": {
+    "switch_counts": {
+      "default_vla_expert": 6
+    },
+    "success_counts": {},
+    "escalation_counts": {},
+    "replan_counts": {}
+  },
+  "episode_trace_jsonl": "results/carve_semantic_shadow/paired_t89_3trials_20260717/no_semantic/episode_traces.jsonl",
+  "trace_aggregate": {
+    "episodes_with_trace": 6,
+    "inference": {
+      "vla_calls_total": 174,
+      "full_vla_calls_total": 174,
+      "skipped_vla_calls_total": 0,
+      "planner_calls_total": 0,
+      "verifier_calls_total": 0,
+      "vlm_calls_total": 0,
+      "vla_calls_per_episode": 29.0,
+      "full_vla_calls_per_episode": 29.0,
+      "skipped_vla_calls_per_episode": 0.0,
+      "planner_calls_per_episode": 0.0,
+      "verifier_calls_per_episode": 0.0,
+      "vlm_calls_per_episode": 0.0,
+      "planner_ms_per_episode": 0.0,
+      "verifier_ms_per_episode": 0.0,
+      "vla_ms_per_episode": 1572.1145481826777,
+      "vla_model_wall_ms_per_episode": 1572.1145481826777,
+      "vla_latency_ms_mean": 54.21084648905785,
+      "vla_latency_ms_p50": 53.901934006717056,
+      "vla_latency_ms_p95": 58.60279509288375,
+      "vla_latency_ms_p99": 60.334651059674805,
+      "episode_wall_sec_mean": 17.352987774659898
+    },
+    "lightweight": {
+      "full_vla_calls_total": 174,
+      "skipped_vla_calls_total": 0,
+      "skipped_vla_call_ratio": 0.0,
+      "fallback_count_total": 0,
+      "action_chunk_age_mean": 3.2919843023919335,
+      "action_chunk_age_p95": 9.0
+    },
+    "realtime": {
+      "ttfa_ms_mean": 64.57016100224185,
+      "ttfa_ms_p90": 67.36514850490494,
+      "ttfa_ms_p99": 67.54853385282331,
+      "reaction_latency_ms_mean": 0.004786621502717026,
+      "reaction_latency_ms_p90": 0.005148600757820532,
+      "deadline_miss_rate_mean": 0.08016499312280666,
+      "blocking_reasoning_ms_mean": 0.0,
+      "fast_path_ratio_mean": 1.0,
+      "success_under_deadline": 0.5983606479028344,
+      "async_prefetch": {
+        "submitted": 0,
+        "ready": 0,
+        "waited": 0,
+        "discarded": 0,
+        "errors": 0,
+        "actions_committed": 0,
+        "prefix_consistency": {
+          "checks": 0,
+          "would_accept": 0,
+          "would_reject": 0,
+          "enforced_rejections": 0,
+          "continuous_rms_mean": null,
+          "continuous_rms_p95": null,
+          "translation_endpoint_l2_p95": null,
+          "rotation_endpoint_l2_p95": null,
+          "gripper_agreement_mean": null
+        }
+      },
+      "semantic_observer": {
+        "submitted": 0,
+        "completed": 0,
+        "errors": 0,
+        "suppressed": 0,
+        "latency_ms_mean": null,
+        "latency_ms_p95": null,
+        "observations": []
+      }
+    },
+    "recovery": {
+      "recoveries_triggered_total": 6,
+      "recoveries_successful_total": 2,
+      "recovery_precision": 0.3333333333333333,
+      "physical_recoveries_triggered_total": 6,
+      "physical_recoveries_verified_total": 6,
+      "physical_recovery_actions_total": 72,
+      "physical_verification_rate": 1.0
+    },
+    "gpu": {
+      "peak_mem_gb_max": 18.4521484375
+    }
+  },
+  "current_task": null,
+  "status": "completed"
+}

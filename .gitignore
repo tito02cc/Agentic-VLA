@@ -19,7 +19,39 @@ venv.bak/
 weights/
 checkpoints/
 models/
-results/
+# Experiment outputs are ignored by default. The small, reviewable evidence
+# package below is tracked so a fresh clone can reproduce the reported tables,
+# figures, and qualitative checks without carrying full rollout caches.
+results/*
+!results/CARVE_EVIDENCE_README.md
+!results/carve_pi05_recovery_challenge_20260719/
+!results/carve_pi05_recovery_challenge_20260719/**
+!results/carve_pi05_agentic_optimize_pair_20260719/
+!results/carve_pi05_agentic_optimize_pair_20260719/**
+!results/carve_optimize/
+!results/carve_optimize/**
+!results/carve_realtime/
+results/carve_realtime/*
+!results/carve_realtime/ASYNC_PREFETCH_STATUS.md
+!results/carve_realtime/HELDOUT_T89_PREFETCH_GATE.md
+!results/carve_realtime/PREFETCH_5STATE_GATE.md
+!results/carve_realtime/heldout_t89_5states_sync_commit8_20260717/
+!results/carve_realtime/heldout_t89_5states_sync_commit8_20260717/**
+!results/carve_realtime/heldout_t89_5states_async_lead2_20260717/
+!results/carve_realtime/heldout_t89_5states_async_lead2_20260717/**
+!results/carve_realtime/heldout_t89_5states_async_interval2_20260717/
+!results/carve_realtime/heldout_t89_5states_async_interval2_20260717/**
+!results/carve_realtime/prefix_shadow_t89_5states_20260717/
+!results/carve_realtime/prefix_shadow_t89_5states_20260717/**
+!results/carve_semantic_shadow/
+results/carve_semantic_shadow/*
+!results/carve_semantic_shadow/paired_t89_3trials_20260717/
+!results/carve_semantic_shadow/paired_t89_3trials_20260717/**
+!results/carve_profile_branches/
+results/carve_profile_branches/*
+!results/carve_profile_branches/PROFILE_BRANCH_SMOKE_COMPARISON.md
+!results/carve_profile_branches/PAIRED_FAILURE_STATE_PILOT.md
+!results/carve_profile_branches/*.json
 LIBERO/
 .libero/
 *.zip

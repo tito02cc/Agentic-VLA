@@ -1,0 +1,110 @@
+{
+  "adapter_id": "pi05",
+  "benchmark": {
+    "deadline_miss_rate": 0.02,
+    "deployment_condition": {
+      "co_resident_model": "Qwen3.5-4B-bf16-vision",
+      "label": "active_vlm_continuous_200calls",
+      "system_gpu_memory_used_mib_after": 18008.0,
+      "system_gpu_memory_used_mib_before": 18006.0
+    },
+    "mean_action_count": 10.0,
+    "metadata": {
+      "backend_id": "torch_compile_masked_views",
+      "backend_metadata": {
+        "compile_options": {
+          "fullgraph": false,
+          "mode": "reduce-overhead"
+        },
+        "elided_image_indices": [
+          2
+        ],
+        "elided_image_views": [
+          "right_wrist_0_rgb"
+        ],
+        "input_view_contract": {
+          "masked_indices": [
+            2
+          ],
+          "masked_views": [
+            "right_wrist_0_rgb"
+          ],
+          "runtime_mask_requirement": "all_batch_entries_false",
+          "view_order": [
+            "base_0_rgb",
+            "left_wrist_0_rgb",
+            "right_wrist_0_rgb"
+          ]
+        },
+        "mask_contract": "all_batch_entries_false",
+        "source_adapter_unchanged": true,
+        "transform": "static_masked_view_elision+torch.compile",
+        "transformed": true
+      },
+      "model_id": "pi05",
+      "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "warmup_calls": 5
+    },
+    "model_p50_ms": 51.24731299292762,
+    "model_p95_ms": 58.75030435490771,
+    "peak_vram_gb": 6.970125198364258,
+    "replay_observation_schema": "libero",
+    "runtime_p50_ms": 66.14978500147117,
+    "runtime_p95_ms": 75.00947030275711,
+    "runtime_p99_ms": 83.00867324520367,
+    "samples": 200
+  },
+  "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+  "created_at": "2026-07-17T08:58:11.752974+00:00",
+  "fidelity": {
+    "aggregation": "worst_case",
+    "metrics": {
+      "chunk_cosine": 0.9999839389908736,
+      "chunk_mae": 0.0019359789121035954,
+      "chunk_rmse": 0.002833809553704916,
+      "endpoint_l2": 0.051833331912315136,
+      "first_action_mae": 0.0033993693410573106,
+      "gripper_agreement": 1.0,
+      "jerk_rmse": 0.005862247534309832
+    },
+    "passed": true,
+    "samples": 10,
+    "violations": []
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "pi05",
+  "plugin_versions": {
+    "pi05": "builtin",
+    "torch_compile_masked_views": "builtin"
+  },
+  "profile": {
+    "action_horizon": 10,
+    "async_execution": false,
+    "backend": "torch_compile_masked_views",
+    "deployment_precision": "bf16",
+    "inference_steps": 2,
+    "module_precisions": {},
+    "options": {
+      "elided_image_views": [
+        "right_wrist_0_rgb"
+      ],
+      "fullgraph": false,
+      "image_view_order": [
+        "base_0_rgb",
+        "left_wrist_0_rgb",
+        "right_wrist_0_rgb"
+      ],
+      "mode": "reduce-overhead"
+    },
+    "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10"
+  },
+  "schema_version": 1
+}

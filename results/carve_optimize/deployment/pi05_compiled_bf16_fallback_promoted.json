@@ -1,0 +1,108 @@
+{
+  "adapter_id": "pi05",
+  "admission": {
+    "fallback_profile_id": null,
+    "gates": {
+      "closed_loop": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/MASKED_VIEW_ELISION_GATE.md",
+          "sha256": "a29001947bc80174ec51a648f5811fbff610476bb6f8726fb05170a8441ff3a9"
+        },
+        "passed": true
+      },
+      "realtime": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+          "sha256": "7533995fa359e21258602ef6412f3fd986b8fb100640bd152f0496d6560cc835"
+        },
+        "passed": true
+      },
+      "replay_fidelity": {
+        "evidence": {
+          "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+          "sha256": "7533995fa359e21258602ef6412f3fd986b8fb100640bd152f0496d6560cc835"
+        },
+        "passed": true
+      }
+    },
+    "notes": "Validated synchronous reference and fallback profile; 7/10 paired T8/T9 is the reference arm, not a competence claim.",
+    "promoted_at": "2026-07-19T07:08:08.850839+00:00",
+    "scope": "pi0.5 LIBERO PyTorch checkpoint on RTX 4090; active or dynamic camera views",
+    "source_manifest": {
+      "path": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torch_compile_bf16_2step_h10_fidelity45.json",
+      "sha256": "7533995fa359e21258602ef6412f3fd986b8fb100640bd152f0496d6560cc835"
+    },
+    "status": "promoted"
+  },
+  "benchmark": {
+    "deadline_miss_rate": 0.0,
+    "mean_action_count": 10.0,
+    "metadata": {
+      "backend_id": "torch_compile",
+      "backend_metadata": {
+        "compile_options": {
+          "fullgraph": false,
+          "mode": "reduce-overhead"
+        },
+        "source_adapter_unchanged": true,
+        "transform": "torch.compile",
+        "transformed": true
+      },
+      "model_id": "pi05",
+      "profile_id": "pi05-torch_compile-bf16-2step-h10",
+      "warmup_calls": 2
+    },
+    "model_p50_ms": 51.133274000676465,
+    "model_p95_ms": 51.81116079984349,
+    "peak_vram_gb": 6.981287002563477,
+    "runtime_p50_ms": 65.0220610004908,
+    "runtime_p95_ms": 66.69923100052984,
+    "runtime_p99_ms": 66.81251660062117,
+    "samples": 5
+  },
+  "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+  "created_at": "2026-07-16T10:03:59.258678+00:00",
+  "fidelity": {
+    "aggregation": "worst_case",
+    "metrics": {
+      "chunk_cosine": 0.9999383277423048,
+      "chunk_mae": 0.002149111725428895,
+      "chunk_rmse": 0.004032699301939208,
+      "endpoint_l2": 0.05416841822465596,
+      "first_action_mae": 0.0035321941904870057,
+      "gripper_agreement": 1.0,
+      "jerk_rmse": 0.008480326058408089
+    },
+    "passed": true,
+    "samples": 45,
+    "violations": []
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "pi05",
+  "plugin_versions": {
+    "pi05": "builtin",
+    "torch_compile": "builtin"
+  },
+  "profile": {
+    "action_horizon": 10,
+    "async_execution": false,
+    "backend": "torch_compile",
+    "deployment_precision": "bf16",
+    "inference_steps": 2,
+    "module_precisions": {},
+    "options": {
+      "fullgraph": false,
+      "mode": "reduce-overhead"
+    },
+    "profile_id": "pi05-torch_compile-bf16-2step-h10"
+  },
+  "schema_version": 1
+}

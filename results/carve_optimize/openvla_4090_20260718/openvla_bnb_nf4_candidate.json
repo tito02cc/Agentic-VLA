@@ -1,0 +1,279 @@
+{
+  "adapter_id": "openvla-7b-libero10",
+  "benchmark": {
+    "deadline_miss_rate": 1.0,
+    "libero_preprocessing": {
+      "center_crop_area": 0.9,
+      "environment_gripper_postprocess_applied": false,
+      "implementation": "tensorflow_free_pillow_equivalent",
+      "prompt_format": "OpenVLA In/Out",
+      "resize": [
+        224,
+        224
+      ]
+    },
+    "load_configuration": {
+      "attention": "sdpa",
+      "code_revision": "47a0ec7fc4ec123775a391911046cf33cf9ed83f",
+      "precision": "nf4"
+    },
+    "load_seconds": 13.451373354007956,
+    "mean_action_count": 1.0,
+    "metadata": {
+      "backend_id": "eager",
+      "backend_metadata": {
+        "backend_execution": "eager",
+        "behavioral_reference": false,
+        "predeployed_precision": "nf4",
+        "transformed": false
+      },
+      "latency_samples": {
+        "deadline_miss": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "model_ms": [
+          739.5497420220636,
+          733.1194810103625,
+          730.6703939975705,
+          742.8755529981572,
+          743.7184099981096,
+          729.1267969994806,
+          738.4802029991988,
+          715.6323909875937,
+          741.9539660040755,
+          742.2803810040932
+        ],
+        "runtime_ms": [
+          746.8938160163816,
+          740.5214960162994,
+          737.9358650068752,
+          750.2034240169451,
+          750.9761349938344,
+          737.1276209887583,
+          746.1789200024214,
+          769.8054930078797,
+          749.798890989041,
+          749.8919530189596
+        ]
+      },
+      "model_id": "openvla",
+      "profile_id": "openvla-sdpa-nf4-single-action",
+      "warmup_calls": 2
+    },
+    "model_p50_ms": 739.0149725106312,
+    "model_p95_ms": 743.339124348131,
+    "peak_vram_gb": 4.4122514724731445,
+    "replay_actions": [
+      {
+        "action": [
+          0.16756829619407654,
+          -0.2116859406232834,
+          -0.05969013273715973,
+          0.08310714364051819,
+          -0.02566646970808506,
+          -0.22143906354904175,
+          0.9960784316062927
+        ],
+        "episode_id": "task08_episode000_step0059",
+        "instruction": "put both moka pots on the stove",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task08_episode000_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.040730055421590805,
+          -0.008324586786329746,
+          -0.18642333149909973,
+          0.04967857152223587,
+          -0.044982098042964935,
+          -0.27311134338378906,
+          0.9960784316062927
+        ],
+        "episode_id": "task08_episode001_step0059",
+        "instruction": "put both moka pots on the stove",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task08_episode001_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.4047006368637085,
+          -0.059164922684431076,
+          0.0003413818485569209,
+          0.027392858639359474,
+          0.014172018505632877,
+          -0.2472752034664154,
+          0.9960784316062927
+        ],
+        "episode_id": "task08_episode002_step0059",
+        "instruction": "put both moka pots on the stove",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task08_episode002_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.0352153480052948,
+          -0.001969544915482402,
+          -0.09971114248037338,
+          -0.00046428394853137434,
+          0.026244288310408592,
+          -0.27311134338378906,
+          0.9960784316062927
+        ],
+        "episode_id": "task08_episode003_step0059",
+        "instruction": "put both moka pots on the stove",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task08_episode003_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.04624476283788681,
+          -0.001969544915482402,
+          -0.19309349358081818,
+          -0.00046428394853137434,
+          -0.00031470434623770416,
+          -0.27311134338378906,
+          0.9960784316062927
+        ],
+        "episode_id": "task08_episode004_step0059",
+        "instruction": "put both moka pots on the stove",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task08_episode004_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.26683300733566284,
+          -0.37056198716163635,
+          0.0003413818485569209,
+          0.09332142770290375,
+          0.14575974643230438,
+          -0.1885567158460617,
+          0.9960784316062927
+        ],
+        "episode_id": "task09_episode000_step0059",
+        "instruction": "put the yellow and white mug in the microwave and close it",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task09_episode000_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.04624476283788681,
+          -0.14178046584129333,
+          -0.14640231430530548,
+          0.13882142305374146,
+          0.15903924405574799,
+          -0.27311134338378906,
+          0.9960784316062927
+        ],
+        "episode_id": "task09_episode001_step0059",
+        "instruction": "put the yellow and white mug in the microwave and close it",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task09_episode001_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.34955358505249023,
+          -0.2243960201740265,
+          -0.19976365566253662,
+          0.07846428453922272,
+          0.10109235346317291,
+          -0.2120441049337387,
+          0.9960784316062927
+        ],
+        "episode_id": "task09_episode002_step0059",
+        "instruction": "put the yellow and white mug in the microwave and close it",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task09_episode002_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.08484770357608795,
+          -0.14178046584129333,
+          -0.09304097294807434,
+          0.035750001668930054,
+          0.15903924405574799,
+          -0.27311134338378906,
+          0.9960784316062927
+        ],
+        "episode_id": "task09_episode003_step0059",
+        "instruction": "put the yellow and white mug in the microwave and close it",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task09_episode003_step0059_no_op_after.png"
+      },
+      {
+        "action": [
+          0.3385241627693176,
+          -0.001969544915482402,
+          -0.41320905089378357,
+          -0.003249998204410076,
+          0.08539840579032898,
+          -0.2190903276205063,
+          0.9960784316062927
+        ],
+        "episode_id": "task09_episode004_step0059",
+        "instruction": "put the yellow and white mug in the microwave and close it",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/images/task09_episode004_step0059_no_op_after.png"
+      }
+    ],
+    "replay_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_semantic_precision/temporal_pairs_t89/manifest.json",
+    "replay_samples": 10,
+    "runtime_p50_ms": 748.3463535027113,
+    "runtime_p95_ms": 761.3322819015593,
+    "runtime_p99_ms": 768.1108507866156,
+    "samples": 10,
+    "system_gpu_memory_mib_after_benchmark": 5747.0,
+    "system_gpu_memory_mib_after_load": 5473.0,
+    "system_gpu_memory_mib_before_load": 641.0
+  },
+  "checkpoint_id": "/home/admin1/ct/CARVE-VLA/checkpoints/openvla-7b-finetuned-libero-10:4shards:15082600832bytes:99a0f89b366ca7f2470567c6b1ea93a273186ee283b9b2d5597939c376fcc65c",
+  "created_at": "2026-07-18T09:58:14.404150+00:00",
+  "fidelity": {
+    "metrics": {
+      "action_exact_rate": 0.1,
+      "action_mae": 0.01482621196150181,
+      "action_rmse": 0.028564726866982183,
+      "dimension_exact_rate": 0.5571428571428572,
+      "gripper_decision_agreement": 1.0,
+      "sample_mae_p95": 0.02580965764583587
+    },
+    "passed": false,
+    "protocol": "paired_independent_autoregressive_actions_v1",
+    "reference_manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/openvla_4090_20260718/openvla_eager_bf16_reference.json",
+    "samples": 10,
+    "thresholds": {
+      "maximum_action_mae": 0.03,
+      "maximum_sample_mae_p95": 0.05,
+      "minimum_action_exact_rate": 0.9,
+      "minimum_gripper_decision_agreement": 1.0
+    },
+    "violations": [
+      "action_exact_rate"
+    ]
+  },
+  "hardware": {
+    "accelerator": "cuda",
+    "device_name": "NVIDIA GeForce RTX 4090",
+    "software": {
+      "cuda": "12.1",
+      "python": "3.10.20",
+      "torch": "2.5.1+cu121",
+      "transformers": "4.40.1"
+    },
+    "total_memory_gb": 23.48553466796875
+  },
+  "model_id": "openvla",
+  "plugin_versions": {
+    "eager": "builtin",
+    "openvla": "hf-remote-code-pinned"
+  },
+  "profile": {
+    "action_horizon": 1,
+    "async_execution": false,
+    "backend": "eager",
+    "deployment_precision": "nf4",
+    "inference_steps": null,
+    "module_precisions": {},
+    "options": {},
+    "profile_id": "openvla-sdpa-nf4-single-action"
+  },
+  "schema_version": 1
+}

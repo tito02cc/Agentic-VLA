@@ -1,0 +1,89 @@
+{
+  "gate": "CARVE asynchronous semantic observation under PI0.5 contention",
+  "setting": {
+    "tasks": [
+      8,
+      9
+    ],
+    "trials_per_task": 3,
+    "perturbation": "mid_episode_nudge@80, xy=0.03m",
+    "vla": "PI0.5 PyTorch, SMVE BF16, 2 flow steps, horizon 10",
+    "vlm": "Qwen3.5-4B BF16, co-resident on one RTX 4090",
+    "deadline_ms": 80
+  },
+  "variants": {
+    "no_semantic": {
+      "episodes": 6,
+      "successes": 4,
+      "success_rate": 0.6666666666666666,
+      "semantic_calls": 0,
+      "semantic_errors": 0,
+      "semantic_protocol_valid": 0,
+      "semantic_latency_ms_mean": null,
+      "semantic_latency_ms_p95": null,
+      "vla_latency_ms_p50": 53.901934006717056,
+      "vla_latency_ms_p95": 58.60279509288375,
+      "deadline_miss_rate_mean": 0.08016499312280666,
+      "blocking_reasoning_ms_mean": 0.0
+    },
+    "semantic32": {
+      "episodes": 6,
+      "successes": 4,
+      "success_rate": 0.6666666666666666,
+      "semantic_calls": 6,
+      "semantic_errors": 0,
+      "semantic_protocol_valid": 0,
+      "semantic_latency_ms_mean": 2478.517367334765,
+      "semantic_latency_ms_p95": 2545.6639137446473,
+      "vla_latency_ms_p50": 53.24403799022548,
+      "vla_latency_ms_p95": 64.50626170408214,
+      "deadline_miss_rate_mean": 0.07954269159844327,
+      "blocking_reasoning_ms_mean": 0.0,
+      "paired_agreement": {
+        "pairs": 6,
+        "success_agreement": 1.0,
+        "episode_length_agreement": 0.8333333333333334
+      }
+    },
+    "semantic12_labels": {
+      "episodes": 6,
+      "successes": 4,
+      "success_rate": 0.6666666666666666,
+      "semantic_calls": 6,
+      "semantic_errors": 0,
+      "semantic_protocol_valid": 6,
+      "semantic_latency_ms_mean": 948.6069118308175,
+      "semantic_latency_ms_p95": 1005.2867707527184,
+      "vla_latency_ms_p50": 53.83488199731801,
+      "vla_latency_ms_p95": 63.47885420473176,
+      "deadline_miss_rate_mean": 0.08016499312280666,
+      "blocking_reasoning_ms_mean": 0.0,
+      "paired_agreement": {
+        "pairs": 6,
+        "success_agreement": 1.0,
+        "episode_length_agreement": 1.0
+      }
+    }
+  },
+  "smoke96": {
+    "episodes": 1,
+    "successes": 1,
+    "success_rate": 1.0,
+    "semantic_calls": 1,
+    "semantic_errors": 0,
+    "semantic_protocol_valid": 0,
+    "semantic_latency_ms_mean": 9078.928955001174,
+    "semantic_latency_ms_p95": 9078.928955001174,
+    "vla_latency_ms_p50": 56.92720400111284,
+    "vla_latency_ms_p95": 68.33495630125981,
+    "deadline_miss_rate_mean": 0.10046728971962617,
+    "blocking_reasoning_ms_mean": 0.0
+  },
+  "findings": {
+    "selected_profile": "semantic12_labels",
+    "semantic_p95_reduction_vs_32_pct": 60.50983928691706,
+    "semantic_p95_reduction_vs_96_smoke_pct": 88.9272536910981,
+    "vla_p95_overhead_vs_no_semantic_pct": 8.320523115185186,
+    "deadline_miss_delta_percentage_points": 0.0
+  }
+}

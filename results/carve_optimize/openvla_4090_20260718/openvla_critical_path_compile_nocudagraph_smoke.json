@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "diagnostic": "openvla_bf16_cuda_critical_path_v1",
+  "device": "cuda:0",
+  "checkpoint": "/home/admin1/ct/CARVE-VLA/checkpoints/openvla-7b-finetuned-libero-10",
+  "attention": "sdpa",
+  "align_action_token_mask": true,
+  "compile_language_model": true,
+  "compile_mode": "default",
+  "compile_dynamic": true,
+  "compile_wrap_seconds": 1.142361448990414,
+  "warmup_wall_seconds": [
+    289.6470001139969
+  ],
+  "warmup_calls": 1,
+  "measured_calls": 3,
+  "summary": {
+    "preprocess_and_transfer_ms": {
+      "mean_ms": 8.118252328131348,
+      "p50_ms": 7.672085979720578,
+      "p95_ms": 9.095850904122926
+    },
+    "model_wall_ms": {
+      "mean_ms": 224.98131133033894,
+      "p50_ms": 225.39923898875713,
+      "p95_ms": 229.22249840630684
+    },
+    "model_cuda_span_ms": {
+      "mean_ms": 224.86720275878906,
+      "p50_ms": 225.29933166503906,
+      "p95_ms": 229.09568481445314
+    },
+    "vision_ms": {
+      "mean_ms": 39.78668721516927,
+      "p50_ms": 41.04079818725586,
+      "p95_ms": 42.464094161987305
+    },
+    "projector_ms": {
+      "mean_ms": 0.5094186464945475,
+      "p50_ms": 0.536575973033905,
+      "p95_ms": 0.5814463794231415
+    },
+    "prefill_ms": {
+      "mean_ms": 52.3325449625651,
+      "p50_ms": 51.748863220214844,
+      "p95_ms": 53.52939682006836
+    },
+    "decode_ms": {
+      "mean_ms": 125.27571233113606,
+      "p50_ms": 124.72607803344727,
+      "p95_ms": 126.64375877380371
+    },
+    "mean_cuda_share_percent": {
+      "vision_ms": 17.693414925362738,
+      "projector_ms": 0.2265419946727365,
+      "prefill_ms": 23.2726446189226,
+      "decode_ms": 55.71097554209229
+    },
+    "mean_language_calls": 7.0,
+    "mean_decode_calls": 6.0
+  },
+  "records": [
+    {
+      "episode_id": "task08_episode000_step0059",
+      "preprocess_and_transfer_ms": 9.254047006834298,
+      "model_wall_ms": 229.6473050082568,
+      "model_cuda_span_ms": 229.5175018310547,
+      "vision_ms": 41.04079818725586,
+      "projector_ms": 0.536575973033905,
+      "prefill_ms": 53.72723388671875,
+      "decode_ms": 126.8568344116211,
+      "decode_calls": 6,
+      "language_calls": 7,
+      "action": [
+        0.2172006368637085,
+        -0.16720063984394073,
+        -0.03300945833325386,
+        0.07474999874830246,
+        -0.022044789046049118,
+        -0.22613655030727386,
+        0.9960784316062927
+      ]
+    },
+    {
+      "episode_id": "task08_episode001_step0059",
+      "preprocess_and_transfer_ms": 7.672085979720578,
+      "model_wall_ms": 219.89738999400288,
+      "model_cuda_span_ms": 219.78477478027344,
+      "vision_ms": 35.697025299072266,
+      "projector_ms": 0.5864319801330566,
+      "prefill_ms": 51.748863220214844,
+      "decode_ms": 124.72607803344727,
+      "decode_calls": 6,
+      "language_calls": 7,
+      "action": [
+        0.040730055421590805,
+        -0.09094013273715973,
+        -0.23311449587345123,
+        0.1035357117652893,
+        -0.036531511694192886,
+        -0.27311134338378906,
+        0.9960784316062927
+      ]
+    },
+    {
+      "episode_id": "task08_episode002_step0059",
+      "preprocess_and_transfer_ms": 7.428623997839168,
+      "model_wall_ms": 225.39923898875713,
+      "model_cuda_span_ms": 225.29933166503906,
+      "vision_ms": 42.62223815917969,
+      "projector_ms": 0.4052479863166809,
+      "prefill_ms": 51.52153778076172,
+      "decode_ms": 124.24422454833984,
+      "decode_calls": 6,
+      "language_calls": 7,
+      "action": [
+        0.4047006368637085,
+        -0.059164922684431076,
+        0.0003413818485569209,
+        0.027392858639359474,
+        0.014172018505632877,
+        -0.2472752034664154,
+        0.9960784316062927
+      ]
+    }
+  ]
+}

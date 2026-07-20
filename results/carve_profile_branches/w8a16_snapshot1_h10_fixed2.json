@@ -1,0 +1,239 @@
+{
+  "experiment": "E3-failure-state-branch-pilot",
+  "snapshot_count": 1,
+  "branches": [
+    "continue",
+    "fast",
+    "accurate",
+    "recovery"
+  ],
+  "branch_horizon": 10,
+  "fixed_inference_steps": 2,
+  "deadline_ms": 80.0,
+  "policy_call_trace": "results/carve_profile_branches/w8a16_snapshot1_h10_fixed2_policy_calls.jsonl",
+  "records": [
+    {
+      "snapshot": "task06_episode000_step0019",
+      "task_id": 6,
+      "trigger": "stale_action",
+      "successful_branches": [],
+      "oracle_success": false,
+      "branches": [
+        {
+          "branch": "continue",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 2,
+          "inference_ms_total": 131.79761600076745,
+          "inference_ms_mean": 65.89880800038372,
+          "branch_wall_ms": 535.6454899992968,
+          "applied_step_budgets": [
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 2,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torchao_int8",
+            "profile": {
+              "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_early4",
+              "backend": "torchao_int8",
+              "deployment_precision": "bf16",
+              "module_precisions": {
+                "vlm_early4": "int8"
+              },
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "compile_mode": "reduce-overhead",
+                "fullgraph": false
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torchao.int8_weight_only+torch.compile",
+              "quantized_components": [
+                "vlm_early4"
+              ],
+              "quantized_linear_count": 28,
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": false
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_w8a16_vlm_early4_fidelity45_deadline80_rep1.json",
+            "manifest_created_at": "2026-07-16T10:00:25.739882+00:00"
+          },
+          "used_cached_prefix": true,
+          "final_state_digest": "3275e1382c1b839119520b5c40f2989ac0f7d6398246ddff3592ce9f310242d8"
+        },
+        {
+          "branch": "fast",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 2,
+          "inference_ms_total": 128.29364700155566,
+          "inference_ms_mean": 64.14682350077783,
+          "branch_wall_ms": 485.3576059995248,
+          "applied_step_budgets": [
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 2,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torchao_int8",
+            "profile": {
+              "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_early4",
+              "backend": "torchao_int8",
+              "deployment_precision": "bf16",
+              "module_precisions": {
+                "vlm_early4": "int8"
+              },
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "compile_mode": "reduce-overhead",
+                "fullgraph": false
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torchao.int8_weight_only+torch.compile",
+              "quantized_components": [
+                "vlm_early4"
+              ],
+              "quantized_linear_count": 28,
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": false
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_w8a16_vlm_early4_fidelity45_deadline80_rep1.json",
+            "manifest_created_at": "2026-07-16T10:00:25.739882+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "3ea4dddb07434ec88e43971c17b9ea490a191efbe50f0e16d882669cebcb37fb"
+        },
+        {
+          "branch": "accurate",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 5,
+          "inference_ms_total": 305.8941440049239,
+          "inference_ms_mean": 61.178828800984775,
+          "branch_wall_ms": 663.87796699928,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 5,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torchao_int8",
+            "profile": {
+              "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_early4",
+              "backend": "torchao_int8",
+              "deployment_precision": "bf16",
+              "module_precisions": {
+                "vlm_early4": "int8"
+              },
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "compile_mode": "reduce-overhead",
+                "fullgraph": false
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torchao.int8_weight_only+torch.compile",
+              "quantized_components": [
+                "vlm_early4"
+              ],
+              "quantized_linear_count": 28,
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": false
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_w8a16_vlm_early4_fidelity45_deadline80_rep1.json",
+            "manifest_created_at": "2026-07-16T10:00:25.739882+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "5c04735752a7995dc67122025cc3250b4d130820b9a51d5e3517e276f87191ac"
+        },
+        {
+          "branch": "recovery",
+          "success_within_horizon": false,
+          "executed_steps": 10,
+          "vla_calls": 5,
+          "inference_ms_total": 317.59858499935945,
+          "inference_ms_mean": 63.51971699987189,
+          "branch_wall_ms": 687.0129449998785,
+          "applied_step_budgets": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "deadline_miss_count": 0,
+          "deadline_call_count": 5,
+          "optimization_profile": {
+            "model_id": "pi05",
+            "adapter_id": "pi05",
+            "backend_id": "torchao_int8",
+            "profile": {
+              "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_early4",
+              "backend": "torchao_int8",
+              "deployment_precision": "bf16",
+              "module_precisions": {
+                "vlm_early4": "int8"
+              },
+              "inference_steps": 2,
+              "action_horizon": 10,
+              "async_execution": false,
+              "options": {
+                "compile_mode": "reduce-overhead",
+                "fullgraph": false
+              }
+            },
+            "backend_metadata": {
+              "transformed": true,
+              "transform": "torchao.int8_weight_only+torch.compile",
+              "quantized_components": [
+                "vlm_early4"
+              ],
+              "quantized_linear_count": 28,
+              "compile_options": {
+                "mode": "reduce-overhead",
+                "fullgraph": false
+              },
+              "source_adapter_unchanged": false
+            },
+            "manifest": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_w8a16_vlm_early4_fidelity45_deadline80_rep1.json",
+            "manifest_created_at": "2026-07-16T10:00:25.739882+00:00"
+          },
+          "used_cached_prefix": false,
+          "final_state_digest": "94f5da17b7b041c7777e8f1af4d69762cb05360942a2b2b5993e0d7bb55e3d11"
+        }
+      ]
+    }
+  ]
+}

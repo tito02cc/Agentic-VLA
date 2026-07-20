@@ -1,0 +1,141 @@
+{
+  "experiment": "CARVE-PI0.5-Recovery-Challenge",
+  "claim": "paired intervention efficacy and online recovery lifecycle in real LIBERO MuJoCo; not a benchmark-wide success-rate claim",
+  "scenario_count": 3,
+  "profile_audit": {
+    "passed": true,
+    "profile_ids": [
+      "pi05-torch_compile_masked_views-bf16-2step-h10"
+    ],
+    "violations": []
+  },
+  "scenarios": [
+    {
+      "snapshot": "task06_episode001_step0013",
+      "task_id": 6,
+      "trigger": "stall",
+      "outcomes": {
+        "continue": true,
+        "accurate": true,
+        "recovery": true,
+        "physical_recovery": true
+      },
+      "safe_stops": {
+        "continue": false,
+        "accurate": false,
+        "recovery": false,
+        "physical_recovery": false
+      }
+    },
+    {
+      "snapshot": "task09_episode001_step0013",
+      "task_id": 9,
+      "trigger": "stall",
+      "outcomes": {
+        "continue": true,
+        "accurate": true,
+        "recovery": true,
+        "physical_recovery": true
+      },
+      "safe_stops": {
+        "continue": false,
+        "accurate": false,
+        "recovery": false,
+        "physical_recovery": false
+      }
+    },
+    {
+      "snapshot": "task08_episode003_step0099",
+      "task_id": 8,
+      "trigger": "stale_action",
+      "outcomes": {
+        "continue": false,
+        "accurate": false,
+        "recovery": false,
+        "physical_recovery": false
+      },
+      "safe_stops": {
+        "continue": false,
+        "accurate": false,
+        "recovery": false,
+        "physical_recovery": true
+      }
+    }
+  ],
+  "branches": {
+    "continue": {
+      "label": "Frozen VLA continuation",
+      "successes": 2,
+      "scenarios": 3,
+      "vla_calls": 113,
+      "mean_vla_calls": 37.666666666666664,
+      "executed_scenarios": 3,
+      "safe_stops": 0,
+      "mean_executed_steps_when_executed": 304.0,
+      "mean_wall_sec_when_executed": 14.905238180033242,
+      "deadline_misses": 0,
+      "deadline_calls": 113,
+      "deadline_miss_rate": 0.0,
+      "verified_physical_recoveries": 0
+    },
+    "accurate": {
+      "label": "Frequent VLA replan",
+      "successes": 2,
+      "scenarios": 3,
+      "vla_calls": 452,
+      "mean_vla_calls": 150.66666666666666,
+      "executed_scenarios": 3,
+      "safe_stops": 0,
+      "mean_executed_steps_when_executed": 301.3333333333333,
+      "mean_wall_sec_when_executed": 20.396146234008484,
+      "deadline_misses": 0,
+      "deadline_calls": 452,
+      "deadline_miss_rate": 0.0,
+      "verified_physical_recoveries": 0
+    },
+    "recovery": {
+      "label": "Agentic prompt retry",
+      "successes": 2,
+      "scenarios": 3,
+      "vla_calls": 508,
+      "mean_vla_calls": 169.33333333333334,
+      "executed_scenarios": 3,
+      "safe_stops": 0,
+      "mean_executed_steps_when_executed": 338.6666666666667,
+      "mean_wall_sec_when_executed": 23.0810399390175,
+      "deadline_misses": 0,
+      "deadline_calls": 508,
+      "deadline_miss_rate": 0.0,
+      "verified_physical_recoveries": 0
+    },
+    "physical_recovery": {
+      "label": "Physical recovery + VLA replan",
+      "successes": 2,
+      "scenarios": 3,
+      "vla_calls": 251,
+      "mean_vla_calls": 83.66666666666667,
+      "executed_scenarios": 2,
+      "safe_stops": 1,
+      "mean_executed_steps_when_executed": 262.5,
+      "mean_wall_sec_when_executed": 17.477575044496916,
+      "deadline_misses": 0,
+      "deadline_calls": 251,
+      "deadline_miss_rate": 0.0,
+      "verified_physical_recoveries": 2
+    }
+  },
+  "online_controller": {
+    "successes": 1,
+    "episodes": 1,
+    "physical_triggered": 1,
+    "physical_verified": 1,
+    "physical_actions": 12,
+    "vla_p95_ms": 56.412127579096705,
+    "deadline_miss_rate": 0.10638297872340426
+  },
+  "gates": {
+    "profile_identity": true,
+    "online_lifecycle": true,
+    "complete": true
+  }
+}
