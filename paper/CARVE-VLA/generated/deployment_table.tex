@@ -1,0 +1,15 @@
+\begin{table}
+\caption{RTX 4090 deployment profiles at two flow steps and horizon 10.}
+\label{tab:deployment}
+\centering\small
+\begin{tabular}{lccccc}
+\toprule
+Profile & P50 & P95 & Miss & VRAM & Decision \\
+\midrule
+Eager BF16 & 154.34 & 159.59 & 100\% & 7.12 GB & reference \\
+Compiled BF16 & 65.73 & 67.40 & 0\% & 6.98 GB & default \\
+Compiled BF16 + SMVE & 54.35 & 56.19 & 0\% & 6.97 GB & padded-view default \\
+Compiled W8A16 & 69.74 & 71.72 & 0\% & 6.56 GB & closed-loop rejected \\
+\bottomrule
+\end{tabular}
+\end{table}

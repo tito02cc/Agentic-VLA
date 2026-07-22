@@ -1,0 +1,13 @@
+\begin{table}
+\caption{Paired T8/T9 masked-view elision gate (ten episodes).}
+\label{tab:smve}
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+Profile & Success & Calls & Wall (s) & Wall/ep (s) \\
+\midrule
+Compiled BF16 & 7/10 & 417 & 205.79 & 20.58 \\
+Compiled BF16 + SMVE & 8/10 & 420 & 199.12 & 19.91 \\
+\bottomrule
+\end{tabular}
+\end{table}

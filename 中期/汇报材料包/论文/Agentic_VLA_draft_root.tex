@@ -1,0 +1,570 @@
+% CARVE-VLA WAICA/LNCS-style draft.
+% The submitted Agentic-VLA v1 paper is preserved under paper/archive.
+\documentclass[runningheads]{waica}
+
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{xcolor}
+
+\newcommand{\method}{CARVE-VLA}
+\newcommand{\pizero}{$\pi_{0.5}$}
+\input{generated/runtime_macros.tex}
+
+\begin{document}
+
+\title{CARVE-VLA: A Compute-Adaptive Agentic Runtime for Reliable Long-Horizon VLA Execution}
+\titlerunning{CARVE-VLA}
+
+% Double-blind placeholder. Replace after the review policy is finalized.
+\author{Anonymous Authors}
+\authorrunning{Anonymous Authors}
+\institute{Anonymous Institution}
+
+\maketitle
+
+\begin{abstract}
+Vision-language-action (VLA) policies provide strong local manipulation skills,
+but long-horizon deployment requires both execution supervision and a feasible
+control-loop latency. Agentic wrappers can monitor progress and recover from
+failure, yet their additional inference and verification can make this timing
+problem worse. We present \method{}, a model-agnostic runtime that co-designs
+an Agentic Harness with an
+Optimize Runtime around a frozen VLA. The Harness provides typed action and
+capability contracts. It monitors execution risk and manages bounded recovery,
+memory, and auditable escalation. The optimizer calibrates flow steps and action
+commitment, fidelity-gates profiles, and contract-checks padding-view removal.
+
+On LIBERO-10, the Agentic system improves a strong \texttt{pi05\_libero}
+baseline from 90.0\% (180/200) to 92.5\% (185/200), with its dominant weak task
+improving from 55.0\% to 75.0\%. A paired 15-episode calibration preserves
+14/15 successes while reducing mean VLA-call latency by 2.46$\times$ and
+episode wall time by 32.3\%. On an RTX 4090, compiled BF16 reduces deployment
+P95 from 159.59 to \CarveCompiledPninetyfive{} with zero 80-ms policy-call
+misses. Static masked-view elision lowers P95 further to
+\CarveSmvePninetyfive{}, passes 45 replay states, and is non-inferior in a
+ten-episode gate (\CarveSmveSuccess{} vs. \CarveSyncEightSuccess{}). A W8A16 profile passes replay fidelity but loses a
+closed-loop recovery outcome and is therefore rejected. Finally, a ten-episode
+asynchronous gate reduces deadline misses from 417/3931 to 48/4287, but
+success falls from \CarveSyncEightSuccess{} to \CarveAsyncSuccess{} under both
+tested schedules, so neither is promoted. Reliable Agentic control and
+efficient VLA deployment must therefore be validated jointly.
+On a second autoregressive OpenVLA-7B backend, prewarmed LLM compilation
+reduces P95 from 310.92 to 231.84 ms with exact paired actions, while generic
+INT8/NF4 profiles save memory but are slower and fail action fidelity.
+
+\keywords{Vision-language-action models \and Agentic policy \and Robot manipulation \and Long-horizon control \and Efficient inference}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Vision-language-action (VLA) policies couple perception, language grounding, and low-level control within a single action model.
+RT-1 and RT-2 demonstrated large-scale visuomotor policies and web-knowledge transfer to robot control~\cite{brohan2022rt1,brohan2023rt2}.
+Open X-Embodiment, Octo, OpenVLA, \pizero{}, and \pizero{}-style policies have further made generalist robot policies increasingly accessible~\cite{oneill2023openx,octo2024octo,kim2024openvla,black2024pi0,physicalintelligence2025pi05}.
+Once such policies become strong on short-horizon skills, the next question is no longer whether a robot can execute one local behavior, but whether it can organize many local behaviors into a reliable long-horizon process.
+
+Long-horizon manipulation exposes failures that are easy to miss in atomic tasks.
+Benchmarks such as CALVIN and LIBERO require skill chaining, temporal coherence, and recovery from off-nominal states~\cite{mees2021calvin,liu2023libero}.
+Recent long-horizon VLA analyses make the same point: stronger action models improve local competence, yet subtask handoff, accumulated drift, and recovery remain persistent bottlenecks~\cite{fan2025longvla,han2025robocerebra}.
+For a strong fine-tuned VLA, many residual failures are therefore better described as missing \emph{process control} rather than missing low-level control.
+The policy may know how to reach, grasp, or place, but the execution loop may not know when progress has stalled, when a transition motion is needed, when a task-specific prior should be injected, or when the current attempt should be retried.
+
+This paper frames the issue as an \emph{execution-supervision problem} for frozen VLAs:
+\begin{quote}
+\emph{How should a strong frozen VLA be embedded in a monitored, recoverable, and realtime-aware long-horizon execution loop?}
+\end{quote}
+The framing matters because it separates two roles that are often conflated.
+The VLA is the local action generator.
+The runtime is responsible for progress monitoring, context injection, recovery, call scheduling, and evidence logging.
+This separation is especially relevant when the available compute budget cannot support retraining a foundation-scale robot policy, but can support a careful control layer around it.
+
+We instantiate this idea as \method{}, a Compute-Adaptive Agentic Runtime for
+VLA Execution. Its Agentic Harness contains transition, memory/prior,
+critic/retry, deployable risk monitoring, and stateful physical-recovery
+components. Its Optimize Runtime prepares a hardware-bound inference profile
+and schedules the resulting policy online. The two layers meet only through
+typed observations, actions, capabilities, deadlines, and Agentic-event traces.
+This boundary lets the same Harness wrap another chunked VLA while preventing
+an unsupported optimization from being silently reported as active. All
+modules operate around the original policy server; the VLA backbone remains
+frozen.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.96\textwidth]{figures/fig1_framework.png}
+    \caption{Overview of \method{}.
+    A frozen VLA remains the action generator. The Agentic Harness supervises
+    execution and recovery, while the Optimize Runtime calibrates and schedules
+    policy inference under an explicit control deadline.}
+    \label{fig:overview}
+\end{figure}
+
+Our contributions are:
+\begin{itemize}
+    \item We formulate frozen-VLA deployment as a joint execution-supervision and control-latency problem, separating the Agentic Harness from a reusable Optimize Runtime through explicit action, capability, and trace contracts.
+    \item We introduce deployable risk monitoring and staged escalation from replanning to bounded physical recovery, verification, semantic planning, or safe stop, without simulator privileged state.
+    \item We develop a hierarchical deployment gate. It calibrates flow steps and action commitment independently, then uses replay and closed-loop tests to reject distorted quantized policies and unsafe asynchronous schedules.
+    \item We provide a completed LIBERO-10 Agentic evaluation and paired runtime evidence on \pizero{}, plus a cross-family OpenVLA-7B gate that separates faithful decode acceleration from rejected generic low-bit deployment.
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Foundation VLA policies.}
+Modern VLA research has progressed from RT-1 and RT-2 to open and generalist policy stacks such as Octo, OpenVLA, \pizero{}, and \pizero{}~\cite{brohan2022rt1,brohan2023rt2,octo2024octo,kim2024openvla,black2024pi0,physicalintelligence2025pi05}.
+Open X-Embodiment and related efforts emphasize shared datasets and cross-robot policy learning~\cite{oneill2023openx}.
+These models make frozen or lightly adapted VLA policies strong enough that remaining failures become more diagnostically useful: when local skills are present, long-horizon performance depends increasingly on execution organization.
+
+\paragraph{Long-horizon benchmarks.}
+CALVIN and LIBERO evaluate language-conditioned manipulation across temporally extended tasks~\cite{mees2021calvin,liu2023libero}.
+Long-VLA and RoboCerebra further emphasize that temporal consistency, state transitions, and off-nominal recovery remain difficult even for strong policies~\cite{fan2025longvla,han2025robocerebra}.
+Our main evaluation uses LIBERO because it provides official interactive rollouts, task-level success signals, and a challenging but reproducible long-horizon suite.
+
+\paragraph{Agentic augmentation and memory.}
+Agentic robot systems augment policy execution with planners, verifiers, memory, tools, or online adaptation~\cite{yang2025agenticrobot,li2026roboclaw,pang2026scivla,jin2026agenticvla}.
+Embodied memory work studies how short-term and long-term memory can support manipulation~\cite{torne2026mem,shi2025memoryvla}.
+\method{} is aligned with this direction but takes a conservative stance: modules remain lightweight, execution-time, and attributable to rollout events rather than absorbed into a new monolithic planner.
+
+\paragraph{Failure detection and efficient inference.}
+Failure-aware systems use VLMs or specialized monitors to detect execution errors, reason about failures, and trigger recovery~\cite{duan2024aha,grislain2025ifailsense,lin2025failsafe}.
+ECoT and Fast ECoT show that explicit embodied reasoning can also improve action generation and efficiency~\cite{zawalski2024ecot,duan2025fastecot}.
+Realtime robot control imposes constraints that are not captured by success rate alone.
+Recent efficient VLA work studies caching, low-latency decoding, and realtime diffusion-policy execution~\cite{xu2025vlacache,guan2025efficientvlasurvey,niu2026realtimevlaflash,yang2026realtimevlav2}.
+Our runtime study is complementary: instead of treating kernel speed, low-step
+sampling, or quantization as sufficient in isolation, we require action-level
+fidelity and paired closed-loop behavior before a profile can serve the
+Agentic execution loop.
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Frozen Policy and Chunked Execution}
+
+The baseline policy is a frozen \texttt{pi05\_libero} policy derived from the \pizero{} family and served through the OpenPI stack.
+At control step $t$, the policy receives visual observations $o_t$, robot state $s_t$, and language instruction $\ell$, and predicts an action chunk
+\begin{equation}
+A_t = \pi_\theta(o_t,s_t,\ell) =
+(a_t,a_{t+1},\ldots,a_{t+H-1}).
+\end{equation}
+The executor applies part of the chunk before replanning.
+This scheme is effective for many short and medium-horizon tasks, but it can fail when locally plausible chunks do not smoothly connect adjacent subtask states.
+\method{} repairs this failure mode without changing $\pi_\theta$: the backbone remains frozen, and external modules intervene only at inference time.
+
+\subsection{Execution-Supervision Loop}
+
+The key algorithmic object is the execution-supervision loop in Fig.~\ref{fig:execution_loop}.
+During normal progress, the system observes the state, queries the frozen VLA, executes a partial chunk, monitors progress, and continues.
+When the monitor detects stall, drift, or off-nominal progress, the runtime activates the agentic supervisor.
+The supervisor can insert a transition, retrieve scene priors or memory, request critic/retry, repair the prompt, and resume VLA execution.
+Every intervention is logged with state, action, context, outcome, and timing information.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.90\textwidth]{figures/fig2_execution_supervision.png}
+    \caption{Execution-supervision loop.
+    Under normal progress, the frozen VLA continues chunked execution.
+    Under stalled or off-nominal progress, an external runtime supervisor activates transition repair, memory/priors, or critic/retry, then resumes VLA execution and logs the intervention.}
+    \label{fig:execution_loop}
+\end{figure}
+
+\subsection{Failure Taxonomy}
+
+\method{} is organized around a concrete failure taxonomy rather than a generic ``reasoning helps'' claim.
+We distinguish four recurring long-horizon failure modes:
+\textit{transition failures}, where adjacent subtask phases do not connect smoothly;
+\textit{contact or grasp failures}, where object interaction is locally unstable;
+\textit{completion failures}, where the object is moved but the terminal condition is not reached; and
+\textit{recovery failures}, where a failed segment is detected but the system cannot re-enter a useful state.
+Table~\ref{tab:taxonomy} maps these failures to modules and expected evidence.
+
+\begin{table}
+\caption{Failure modes are tied to observable rollout evidence rather than post-hoc labels.}
+\label{tab:taxonomy}
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{0.22\textwidth}p{0.30\textwidth}p{0.22\textwidth}X}
+\toprule
+Failure mode & Observable signal & Helpful module & Expected ablation signal \\
+\midrule
+Transition gap & low recent motion near a subtask boundary; repeated replans without phase change & Transition Agent & removing transition should hurt boundary-heavy tasks \\
+Contact ambiguity & object is reached but grasp/place geometry remains unstable & Priors/memory & removing priors should hurt object/target-specific weak tasks \\
+Incomplete rollout & object is manipulated but terminal condition is not achieved & Priors/memory or retry & task-specific hints or retry should improve weak tasks \\
+Derailment & rollout state inconsistent with task progress after an intervention & Critic/Retry & retry count and recovery-to-success should rise when critic is active \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+This taxonomy defines how the method should be falsified.
+If a module is claimed to repair a failure mode, the corresponding rollout signal should change in the logs or in a targeted ablation.
+For example, a useful Transition Agent should affect boundary-heavy weak tasks and appear in intervention counts, while a useful Critic/Retry module should produce nonzero retry events and recovery-to-success episodes.
+This is why we report the critic as under-activated rather than simply including it as a successful component of the full system.
+
+\subsection{Process-Control Modules}
+
+Fig.~\ref{fig:modules} summarizes the three process-control modules.
+The Transition Agent targets state-gap failures between adjacent subtask phases.
+It monitors recent motion and detects stalled progress when displacement over a sliding window falls below a threshold.
+Once triggered, it temporarily modifies the prompt with a transition instruction that requests a safe neutral motion and a reconnection maneuver.
+The VLA then generates a short intermediate chunk intended to move the robot to a more controllable state before normal task execution resumes.
+
+The scene-prior and memory module injects lightweight structured hints based on task-relevant entities.
+Examples include suggested vertical offsets, approach direction, target-region bias, or grip-strength hints.
+The module is deliberately interpretable: instead of retrieving large document collections or training a memory policy, it maps object and scene keywords to compact priors and records episodic cues from successful executions.
+Its role is to reduce avoidable ambiguity at execution time and bias the frozen policy toward more stable interaction patterns.
+
+The Critic/Retry module periodically evaluates whether execution appears stuck, incomplete, or inconsistent with the task objective.
+When a likely failure is detected, the module clears the current plan and issues a recovery or retry prompt tailored to the inferred error type.
+The intended behavior is not to replace the base policy, but to give it a better re-entry state after local derailment.
+In the current tuned configuration, critic-triggered retries are rare; we report this explicitly because it affects how the full system should be interpreted.
+
+The online controller extends these semantic modules with a deployable physical
+risk monitor. It uses recent proprioceptive response, commanded motion, action
+age, uncertainty when available, and measured deadline slack; object poses and
+simulator state are excluded. A first confirmed stall requests a fresh VLA
+chunk. Repeated stall, slip, misgrasp, or contact can start a bounded
+retract, lift, and reobserve skill. Its normalized delta-Cartesian actions
+are checked against the policy action contract, executed in auditable phases,
+and followed by end-effector response verification. Only verified recovery
+permits a post-recovery VLA replan; exhausted budget escalates to a planner or
+safe stop. Terminal outcomes are stored in bounded episodic recovery memory.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.90\textwidth]{figures/fig3_modules.png}
+    \caption{Process-control modules in \method{}.
+    Transition repair, scene priors/memory, and critic/retry target different observable rollout failures while leaving the VLA backbone unchanged.}
+    \label{fig:modules}
+\end{figure}
+
+\subsection{Compute-Adaptive Realtime Runtime}
+
+Long-horizon recovery is useful only if the control loop remains feasible under
+robot timing constraints. \method{} separates offline deployment calibration
+from online scheduling. Offline, an \emph{optimization profile} binds a model
+checkpoint and hardware identity to precision, backend, flow-step count, and
+committed action horizon. Candidate profiles first pass paired fixed-noise
+action checks for first-action error, chunk error, cosine similarity, gripper
+agreement, endpoint drift, and jerk. Surviving profiles then pass paired
+closed-loop states; replay fidelity alone cannot promote a quantized backend.
+
+Online, the joint controller selects reuse, calibrated VLA inference, physical
+recovery, semantic escalation, or safe stop from risk and deadline evidence.
+Flow steps and commitment are not changed by an unvalidated stall heuristic.
+For low-risk execution, a single-flight prefetch can submit the next VLA call
+while the final two cached actions execute. The returned chunk is aligned by
+discarding its temporally covered prefix. Any physical-risk event, accurate
+replan, recovery, planner escalation, or safe stop invalidates the ticket;
+first inference and recovery-critical replans remain synchronous. This design
+optimizes end-to-end control latency rather than reporting model latency as a
+proxy for robot real time. A duty-cycle parameter can require fresh synchronous
+chunks between prefetches, allowing the closed-loop gate to evaluate both
+continuous and conservative schedules.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.90\textwidth]{figures/fig4_realtime_runtime.png}
+    \caption{Compute-adaptive realtime runtime.
+    A calibrated backend bounds policy cost, while risk-aware scheduling,
+    bounded recovery, action reuse, and asynchronous prefetch manage the full
+    control critical path.}
+    \label{fig:runtime}
+\end{figure}
+
+\section{Experimental Design}
+\label{sec:experiments}
+
+\subsection{Evidence Hierarchy}
+
+We separate four evidence tiers. The benchmark tier is the completed
+head-to-head \texttt{libero\_10} comparison and targeted weak-task ablations.
+The calibration tier uses 15 paired T6/T8/T9 episodes to select flow steps and
+commitment without changing the frozen checkpoint. The deployment tier uses 45
+fixed-noise replay observations and 50 timed calls per backend on an otherwise
+idle RTX 4090. Finally, the intervention tier restores identical failure states
+or initial states to test recovery and end-to-end scheduling. Simulator state
+is used only for evaluator-side restoration and labels, never by the online
+controller. This hierarchy prevents open-loop similarity, kernel timing, or a
+single successful recovery from being presented as benchmark success.
+
+\begin{table}
+\caption{Evaluation design and claim boundary.}
+\label{tab:evidence}
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{0.18\textwidth}p{0.38\textwidth}X}
+\toprule
+Tier & Protocol & Role in paper \\
+\midrule
+Benchmark & 200 episodes/method on \texttt{libero\_10} & long-horizon Agentic effectiveness \\
+Calibration & 15 paired T6/T8/T9 episodes & select flow steps and action commitment \\
+Deployment & 45 replay states; 50 timed calls/profile & fidelity, latency, VRAM, and deadline gate \\
+Intervention & paired failures and held-out T8/T9 states & recovery and end-to-end real-time behavior \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Metrics and Configurations}
+
+The main metric is task success from the simulator completion signal. Agentic
+runs additionally report interventions, recovery phase/outcome, action count,
+and episode length. Runtime metrics distinguish policy-call latency from the
+full control critical path, including observation preparation, simulator step,
+controller overhead, prefetch wait, deadline misses, wall time, and peak VRAM.
+Every policy call records requested, applied, dropped, and fallback controls
+together with deployment-profile identity and the triggering Agentic event.
+Each reported runtime uses warmup and fixed noise; videos and JSONL traces are
+retained.
+
+The baseline is the unmodified \texttt{pi05\_libero} checkpoint. The original
+full Agentic system combines Transition, scene priors/memory, and Critic/Retry;
+follow-up diagnosis changes only control-side prompts and thresholds. Runtime
+experiments use the same PyTorch checkpoint. The fidelity-first profile uses
+two flow steps, ten committed actions, compiled BF16, and synchronous control.
+When an adapter guarantees a permanently padded camera slot, static masked-view
+elision (SMVE) asserts its all-false mask and removes it before visual encoding
+and prefix-KV construction.
+The real-time profile adds two-action, risk-gated prefetch; its causal control
+uses synchronous commit eight because both execute eight newly predicted
+actions per aligned chunk.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Main LIBERO-10 Comparison}
+
+Table~\ref{tab:main} shows the main completed comparison.
+The verified baseline reaches 90.0\% (180/200), indicating that the frozen policy is already strong.
+Refined full \method{} reaches 92.5\% (185/200).
+The gain is modest at the suite level because many tasks are near saturation, but it is meaningful because the backbone is unchanged and the improvement comes from inference-time process control.
+
+\begin{table}
+\caption{Main completed comparison on \texttt{libero\_10}.}
+\label{tab:main}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & Success & Episodes \\
+\midrule
+\texttt{pi05\_libero} & 90.0\% & 180/200 \\
+Refined full \method{} & \textbf{92.5\%} & \textbf{185/200} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The per-task pattern in Fig.~\ref{fig:libero_task} and Table~\ref{tab:per_task} is more informative than the aggregate alone.
+The dominant weak task improves from 55.0\% to 75.0\%.
+Most saturated tasks remain stable, while small task-dependent fluctuations persist.
+This supports a restrained interpretation: \method{} is not a uniformly beneficial wrapper, but a process-control layer that is most useful when the baseline has visible long-horizon weakness.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.90\textwidth]{figures/fig5_libero10_task_comparison.png}
+    \caption{Task-level comparison on \texttt{libero\_10}.
+    The main gain is concentrated in the weak-task region rather than distributed uniformly across saturated tasks.}
+    \label{fig:libero_task}
+\end{figure}
+
+\begin{table}
+\caption{Per-task success on \texttt{libero\_10}. Values are percentages.}
+\label{tab:per_task}
+\centering
+\small
+\begin{tabular}{lcccccccccc}
+\toprule
+Method & T0 & T1 & T2 & T3 & T4 & T5 & T6 & T7 & T8 & T9 \\
+\midrule
+\texttt{pi05\_libero} & 90 & 100 & 95 & 90 & 100 & 95 & 80 & 100 & 55 & 95 \\
+Refined full \method{} & \textbf{95} & 100 & 90 & \textbf{95} & 95 & \textbf{100} & 80 & 100 & \textbf{75} & 95 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Weak-Task Diagnosis and Ablation}
+
+The weak-task subset is the most useful diagnostic regime because saturated tasks hide process-control differences.
+Table~\ref{tab:weak} summarizes the targeted follow-up on T6/T8/T9.
+After the original full-stack configuration exposed the weak region, a task-targeted v2 follow-up reaches 90.0\% on T6, 70.0\% on T8, and 100.0\% on T9.
+This run should be interpreted as targeted repair of exposed failure modes, not as a new suite-level claim.
+
+\begin{table}
+\caption{Targeted weak-task diagnosis. Values are percentages.}
+\label{tab:weak}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & T6 & T8 & T9 \\
+\midrule
+\texttt{pi05\_libero} & 80 & 55 & 95 \\
+Original full & 80 & 40 & 90 \\
+Task-targeted v2 & 90 & 70 & \textbf{100} \\
+Transition only & \textbf{100} & \textbf{80} & 90 \\
+Priors/memory only & 80 & 60 & \textbf{100} \\
+Critic only & 90 & 70 & 90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The ablations reveal two important points.
+First, scene priors and memory contribute positively on difficult cases: removing them drops T8 performance in the targeted setting.
+Second, module interaction is non-trivial.
+On T8, Transition-only reaches 80.0\%, higher than the task-targeted full setting.
+This does not invalidate the framework; it indicates that the remaining bottleneck is coordination among useful modules rather than the absence of process control.
+
+Mechanism traces support the same diagnosis. In the audited full-stack run,
+transition interventions average 0.81 per episode and intervened episodes
+succeed in 88.9\% of cases. Critic-triggered retries are absent, so the critic
+is retained as an audit/escalation interface rather than credited with the
+observed benchmark gain.
+
+\subsection{Flow-Step and Backend Calibration}
+
+Table~\ref{tab:calibration} separates policy sampling from action commitment.
+Reducing seven flow steps to two while keeping commitment at ten preserves
+14/15 paired successes, lowers mean VLA-call latency from 366.9 to 149.0 ms
+(2.46$\times$), and reduces episode wall time from 21.27 to 14.40 s (32.3\%).
+The seemingly more adaptive 2/4-step controller reaches only 13/15. We
+therefore select the simple two-step profile instead of claiming that more
+online compute variation is automatically better.
+
+\input{generated/calibration_table.tex}
+
+The selected policy profile is then evaluated through the actual deployment
+boundary. Table~\ref{tab:deployment} reports 50 measured calls after three
+warmups. Compiled BF16 reduces P95 from 159.59 to 67.40 ms and changes the
+80-ms miss rate from 100\% to 0\%. SMVE reduces P95 by
+\CarveSmveRuntimeReduction{} further, to \CarveSmvePninetyfive{}. All three
+compiled candidates pass all 45 paired replay observations. W8A16 quantizes only VLM language layers 0--3, reducing
+peak VRAM from 6.98 to \CarveWMemory{} relative to compiled BF16, but is not
+faster on this batch-one workload.
+
+\input{generated/deployment_table.tex}
+
+The same contract is exercised on autoregressive OpenVLA-7B using ten paired
+T8/T9 frames. Eager BF16 reaches P50/P95 of 303.48/310.92 ms at 14.42 GB.
+INT8/NF4 lower VRAM to 7.76/4.41 GB, but are slower and match only 50\%/10\%
+of action vectors, so both are rejected. Decode accounts for 67.2\% of CUDA
+time; exact token-mask alignment and prewarmed LLM compilation reduce P50/P95
+to 224.25/231.84 ms with 10/10 exact actions. Preparation takes 200.19 s and
+all calls still exceed 100 ms, making this a scoped speedup, not a 10-Hz claim.
+
+In the paired synchronous T8/T9 gate, SMVE reaches \CarveSmveSuccess{} versus
+\CarveSyncEightSuccess{} and reduces wall time from 205.79 to 199.12 s. This
+supports non-inferiority, not a task-competence improvement claim.
+
+\subsection{Physical Recovery and Closed-Loop Gating}
+
+Replay acceptance is necessary but not sufficient. From the same restored T6
+stall state, compiled BF16 accurate replanning fails at the 280-step horizon,
+whereas a two-call Agentic retry succeeds in 235 steps and bounded physical
+recovery plus replan succeeds in 236. Repeating the physical branch reproduces
+success, step count, 112 VLA calls, 12 recovery actions, and final-state digest.
+The online sentinel further executes first-stall replanning, repeated-stall
+physical recovery, response verification, and post-recovery replanning in one
+controller lifecycle; it succeeds with a 0.0180-m end-effector response and
+zero policy-call deadline misses.
+
+The W8A16 profile loses the compiled-BF16 T6 recovery success despite passing
+all replay checks and satisfying the latency deadline. It is therefore rejected
+by the closed-loop gate. This negative result is important for lightweight VLA
+deployment: small action error can accumulate into a different intervention
+outcome even when open-loop aggregate metrics appear acceptable. Compiled BF16
+remains the default. On the corrected synchronous commit-10 held-out T8/T9
+gate, the controller completes \CarveSyncTenSuccess{} tasks and verifies
+\CarveSyncTenRecovery{} physical recovery attempts.
+
+\subsection{Risk-Gated Asynchronous Execution}
+
+Model-call real time does not imply control-loop real time. In the synchronous
+T6 profile, image preparation and MuJoCo stepping raise a 69.09-ms policy P95
+to 114.01-ms VLA-step control P95. A repeated single-state pilot verified that
+risk-gated prefetch can overlap this critical path; it is implementation
+evidence rather than the deployment decision.
+
+The initial two-episode check preserved both successes, but
+Table~\ref{tab:prefetch} gives the decisive five-state-per-task expansion.
+Full-duty prefetch reduces deadline misses from 417/3931 to 48/4287
+(\CarveRealtimeMissReduction{} relative), yet success drops from
+\CarveSyncEightSuccess{} to \CarveAsyncSuccess{}. Requiring a fresh synchronous
+chunk after every prefetched chunk still reaches only
+\CarveAsyncIntervalSuccess{}. The failures are not worker faults: both profiles
+have zero inference errors and verified physical recoveries, but temporally
+shifted observations alter the subsequent VLA trajectory. We therefore reject
+asynchronous prefetch from the promoted runtime. Compiled BF16 remains the
+fidelity-first default, and the residual end-to-end synchronization problem is
+left explicit rather than hidden behind model-call latency.
+
+\input{generated/prefetch_table.tex}
+
+\section{Discussion and Limitations}
+\label{sec:discussion}
+
+\paragraph{Supported claim.}
+The completed LIBERO-10 comparison supports a conservative claim: a strong frozen VLA can be improved by an external inference-time process-control layer.
+The improvement is modest at the suite level because the baseline is already strong and many tasks are saturated, but the gain appears where the process-control hypothesis predicts it should: in exposed weak long-horizon tasks.
+The runtime studies support a complementary deployment claim: flow-step
+calibration, compilation, and contract-checked padding elimination preserve
+paired success while reducing model cost.
+The closed-loop rejection of both W8A16 and asynchronous scheduling shows why
+latency, memory, and replay fidelity cannot replace embodied evaluation.
+
+\paragraph{What is not claimed.}
+\method{} is not a new VLA backbone and does not claim universal benchmark dominance.
+The current runtime uses explicit risk- and deadline-conditioned scheduling; it
+does not claim a learned globally optimal compute-allocation policy or hard
+real-time guarantees. SMVE applies only when an adapter guarantees a static
+padding view. The OpenVLA result validates the shared adapter, profiling, and
+fidelity boundary, not transfer of this PI0.5-specific transform or a universal
+speedup.
+W8A16 is a standard deployment transform evaluated inside
+our gate, not a novel quantization algorithm, and its closed-loop rejection
+precludes a positive compressed-model claim. Likewise, physical recovery is
+supplied by the external execution loop rather than learned by the VLA.
+This distinction is central to the paper: the contribution is deciding how a frozen policy should be supervised during execution.
+
+\paragraph{Ablation lesson.}
+The weak-task ablations prevent overclaiming.
+Transition and priors/memory are useful, but their combination is not automatically optimal.
+The critic is aligned with failure recovery, yet under-activated in the tuned configuration.
+The next algorithmic problem is therefore module routing under rollout uncertainty: when should the runtime activate Transition, memory, retry, or plain VLA execution?
+
+\paragraph{Scope and next experiments.}
+Benchmark claims are restricted to completed LIBERO-10 rollouts; the
+calibration, recovery, and prefetch studies are acceptance gates rather than
+benchmark-scale estimates. OpenVLA supplies cross-family runtime evidence, not
+a second closed-loop benchmark result; LIBERO-Plus remains necessary for a
+broader task claim. Key transfer risks are heuristic overfitting, module
+interference, temporal observation shift, and robot-specific recovery skills.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \method{}, a modular runtime that treats frozen-VLA deployment as
+a joint process-control and inference-efficiency problem. On LIBERO-10 it
+improves \texttt{pi05\_libero} from 90.0\% to 92.5\%, while stateful recovery
+closes the repeated-stall controller lifecycle. The Optimize Runtime preserves
+paired success under two-step sampling, selects compiled BF16, and rejects
+quantization and asynchronous schedules when closed-loop outcomes regress.
+For padded-view inputs, SMVE passes both gates and reduces deployment P95 by
+\CarveSmveRuntimeReduction{} beyond compilation.
+Agentic reliability and deployment efficiency should therefore be validated as
+one embodied runtime rather than as disconnected modules.
+
+\begin{credits}
+\subsubsection{\ackname}
+Omitted for double-blind review.
+
+\subsubsection{\discintname}
+The authors have no competing interests to declare that are relevant to the content of this article.
+\end{credits}
+
+\bibliographystyle{waica}
+\bibliography{references}
+
+\end{document}

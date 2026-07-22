@@ -1,99 +1,140 @@
-# Agentic-VLA
+# CARVE-VLA
 
-`Agentic-VLA` is a research codebase for long-horizon embodied manipulation. It studies how a strong frozen VLA policy can be improved at inference time with lightweight process-control modules, rather than by replacing the action model itself.
+This repository contains **CARVE-VLA: a Compute-Adaptive Agentic Runtime for reliable long-horizon VLA execution**.
 
-The current system keeps `pi0.5 / pi05_libero` as the low-level action expert and augments it with an agentic execution layer built around transition repair, structured scene priors and memory, critic-based auditing, and planner-assisted control.
+The current research story is:
 
-## Framework Overview
+1. **CARVE Agentic Harness** supervises frozen VLA execution with deployable
+   monitoring, bounded recovery, memory, retry/escalation, fallback, and traces.
+2. **CARVE Optimize Runtime** calibrates policy-specific compute profiles under
+   action-fidelity, latency, memory, and deadline constraints.
+3. Efficient VLA inference is the current primary research contribution. The
+   Agentic Harness supplies the system workload and closed-loop acceptance
+   boundary instead of growing into another general-purpose Agent framework.
+4. PI0.5 is the main closed-loop backend. OpenVLA-7B is the second, materially
+   different autoregressive backend used to test adapter generality and
+   standard low-bit deployment, not to add another leaderboard campaign.
 
-- **Low-level executor**: `pi0.5 / OpenPI`
-- **High-level planner**: `Qwen3-VL-8B-Instruct`
-- **Planner mode**: `on-demand`
-- **Control target**: `10Hz`
-- **Planner output**: structured JSON
+The current main draft is:
 
-The current agentic stack includes:
+- `paper/CARVE-VLA/root.tex`
+- `paper/CARVE-VLA/root.pdf`
 
-- `failure taxonomy`: `stall / collision / misgrasp / slip`
-- `subgoal + FSM + verifier`
-- `cooldown / cache / max_plans_per_episode`
-- `Transition / Critic / GraphRAG-Memory`
-- an explicit `Router + Expert + Verifier` skeleton for `Agent-level MoE v1`
+The canonical current status entry point is:
 
-## Experimental Results
+- `docs/status/CARVE_VLA_COMPLETED_WORK.md`
 
-All numbers below come from real interactive rollouts in the official `LIBERO` simulator.
+For an AI assistant or a new collaborator preparing a report, start with:
 
-| Setting | Suite | Success Rate | Episodes | Notes |
-|---|---|---:|---:|---|
-| `pi05_libero` baseline | `libero_spatial` | `99.0%` | `198/200` | Strong short-horizon baseline |
-| `pi05_libero` baseline | `libero_object` | `98.0%` | `196/200` |  |
-| `pi05_libero` baseline | `libero_goal` | `98.0%` | `196/200` |  |
-| `pi05_libero` baseline | `libero_10` | `90.0%` | `180/200` | `Task 8 = 55%` |
-| `Full-Agentic-VLA-Refined` | `libero_10` | `92.5%` | `185/200` | `Task 8: 55% -> 75%` |
+- `docs/AI_PROJECT_CONTEXT.md`
 
-In the current `libero_10` study, the most consistent gains come from transition-aware process control. `GraphRAG + Memory` helps on part of the difficult cases, while the current `Critic` behaves more like an auditing component than a fully mature recovery controller.
+Supporting architecture and execution documents:
 
-## Repository Structure
+- `docs/plans/CARVE_VLA_NEXT_STAGE_PLAN.md`
+- `docs/architecture/CARVE_RUNTIME_ARCHITECTURE.md`
 
-- `scripts/run_agentic_vla_libero.py`: main LIBERO rollout entrypoint
-- `openpi/scripts/serve_policy.py`: policy server
-- `openpi/src/openpi/policies/agentic_policy.py`: server-side agentic planner protocol
-- `agentic_vla/`: earlier prototype package and reusable agentic modules
-- `AGENT_LEVEL_MOE_PLAN.md`: current `Router + Expert + Verifier` design notes
-- `EXPERIMENT_LOG.md`: chronological experiment log
-- `RESULTS_EVIDENCE_GUIDE.md`: result directory map and evidence boundary
+`docs/status/EXPERIMENT_AND_PAPER_STATUS_20260612.md` is retained as a
+historical June milestone and is not the current completion record.
 
-## Getting Started
+## Current Runtime Evidence
 
-### 1. Prepare the OpenPI / LIBERO environment
+On one RTX 4090, PI0.5 compiled BF16 reduces fixed-replay P50/P95 from
+`154.34/159.59 ms` to `65.73/67.40 ms`. Static Masked-View Elision (SMVE),
+which removes only adapter-guaranteed padding views, further reaches
+`54.35/56.19 ms` while passing all 45 fixed-noise replay checks.
 
-Please refer to:
+Under a real co-resident Qwen3.5-4B visual workload, ordinary compiled BF16
+misses an 80 ms deadline on `72.8%` of 500 calls. SMVE reduces the miss rate to
+`0.6%` while both profiles retain the same replay fidelity gate. Paired
+synchronous Task 8/9 evaluation records `8/10` for SMVE and `7/10` for ordinary
+compiled BF16; this is treated as non-inferiority evidence, not a success-rate
+improvement claim.
 
-- `openpi/README.md`
-- `openpi/examples/libero/README.md`
+The current Agentic systems gate is the PI0.5 Recovery Challenge in real
+LIBERO MuJoCo. Across three exact restored states, frozen continuation,
+frequent replan, prompt retry, and physical recovery each complete `2/3`.
+However, replan and prompt retry require `452/508` PI0.5 calls versus `113` for
+continuation. Physical recovery verifies both supported stall states and fails
+closed on an unsupported stale-action event. A separate online T6 run completes
+automatic monitoring, 12 bounded recovery actions, verification, replanning,
+and task success. These results support event-triggered compute and explicit
+recovery contracts; they are not reported as benchmark-wide success gains.
 
-### 2. Start the policy server
+The coupled Agentic-Optimize gate restores the same T6/T9 stall states under
+eager BF16, compiled BF16, and compiled BF16 + SMVE. All profiles preserve
+`2/2` task outcomes and verified recoveries. Runtime P95 falls from `166.26 ms`
+to `65.75/54.50 ms`, and 80 ms deadline misses fall from `236/236` to zero for
+both admitted profiles. This is the direct bridge between Agentic recovery and
+the current efficient-inference contribution.
 
-```bash
-PYTHONPATH=/path/to/openpi/src python openpi/scripts/serve_policy.py --env LIBERO --port 8000
-```
+The same CARVE profiling and fidelity boundary now runs a materially different
+OpenVLA-7B autoregressive policy. On ten paired real LIBERO Task 8/9 frames,
+BF16 requires `14.42 GB` peak VRAM and reaches `303.48/310.92 ms` P50/P95.
+BitsAndBytes INT8 and NF4 reduce peak VRAM to `7.76/4.41 GB`, but increase P50
+to `1533.96/748.35 ms` and fail the predeclared exact-action gate. They are
+retained as rejected memory-oriented profiles, not promoted as realtime modes.
+Critical-path profiling attributes `67.2%` of OpenVLA BF16 CUDA time to six
+autoregressive decode calls. A CARVE `torch.compile` language-model profile,
+with CUDA Graphs disabled and both observed prompt-length buckets prewarmed,
+reduces steady-state P50/P95 to `224.25/231.84 ms` with `10/10` exactly matching
+actions. It requires `200.19 s` of profile preparation and still misses the
+100 ms deadline, so it is accepted as a bounded latency optimization rather
+than a realtime solution.
 
-To enable the agentic planner:
+The following are retained results from the earlier Agentic-VLA paper phase,
+not the sole evidence for the current Optimize Runtime contribution. Their raw
+rollout directories were not retained during the earlier cleanup, so they are
+treated as historical context rather than the primary reproducible result:
 
-```bash
-PYTHONPATH=/path/to/openpi/src python openpi/scripts/serve_policy.py \
-  --env LIBERO \
-  --port 8000 \
-  --agentic \
-  --planner-model /path/to/Qwen3-VL-8B-Instruct
-```
+Main LIBERO-10 comparison:
 
-### 3. Run LIBERO evaluation
+- `pi05_libero` baseline: `90.0%` (`180/200`)
+- refined full CARVE-VLA: `92.5%` (`185/200`)
+- dominant weak task: `55.0%` -> `75.0%`
 
-```bash
-python scripts/run_agentic_vla_libero.py \
-  --task-suite libero_10 \
-  --trials 20 \
-  --host 127.0.0.1 \
-  --port 8000 \
-  --transition \
-  --graph-rag \
-  --critic \
-  --agentic-planner
-```
+Earlier deployment-oriented robosuite study:
 
-## Current Focus
+- robosuite Stack raw pi0.5 fixed `1-step`: `0/10`
+- pi0.5 + Agentic retry fixed `1-step`: `10/10`
+- full pi0.5 calls: `43.0/episode` -> `6.0/episode`
 
-This repository is currently centered on:
+Main result files:
 
-- `LIBERO`, especially `libero_10`
-- strong `pi0.5 / pi05_libero` baselines
-- inference-time agentic augmentation for long-horizon execution
-- deployment-aware design under constrained compute budgets
+- `paper/CARVE-VLA/root.tex`
+- `paper/CARVE-VLA/root.pdf`
+- `paper/archive/Agentic-VLA-v1-submission/agentic_vla_paper_v1.pdf`
+- `paper/archive/Agentic-VLA-v1-submission/agentic_vla_paper_v1.tex`
+- `results/carve_pi05_recovery_challenge_20260719/REPORT.md`
+- `docs/reports/CARVE_VLA_MIDTERM_REPORT_20260717.md`
 
-## Notes
+The tracked subset under `results/` is a compact evidence package. It contains
+the reports, machine-readable summaries, figures, traces, and short videos used
+by the current midterm claims; model weights and full rollout caches remain
+local-only.
 
-- The repository keeps both the main evaluation pipeline and a historical prototype package for method development.
-- We do not track local weights, result dumps, or runtime caches by default.
-- For reproducible evaluation, prefer the real rollout pipeline under `scripts/` and `openpi/`.
+## Important Directories
+
+- `docs/`: architecture, experiment plans, research updates, methods, and status logs.
+- `scripts/`: current experiment, sweep, plotting, data collection, and compact-policy scripts.
+- `openpi/`: OpenPI policy stack and local pi0.5 integration.
+- `agentic_vla/runtime/`: model-neutral Agentic and policy contracts, including
+  PI0.5 and OpenVLA adapters.
+- `agentic_vla/optimization/`: model/backend plugins, calibrated profiles,
+  fidelity gates, benchmark reports, and deployment manifests.
+- `quantization/`: lightweight inference and quantization utilities retained for VLA deployment work.
+- `paper/Agentic Policy/`: source papers and survey notes.
+- `paper/Agentic-RAG-VLM/`: previous paper project, intentionally preserved.
+- `paper/CARVE-VLA/`: current 15-page WAICA/LNCS-style manuscript.
+- `paper/archive/`: preserved previous submissions and superseded drafts.
+
+## Cleanup State
+
+The repository root was renamed to `CARVE-VLA` and its active documentation was
+organized under `docs/` on 2026-07-16. No paper, result, checkpoint, or model
+asset was removed during this reorganization.
+
+Retained large items:
+
+- `weights/openpi-assets`
+- `checkpoints/pi05_robosuite_stack_smoke`
+- local `LIBERO/` and `openpi/` checkouts

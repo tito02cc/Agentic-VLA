@@ -1,0 +1,14 @@
+\begin{table}
+\caption{Expanded T8/T9 asynchronous-execution gate (ten episodes).}
+\label{tab:prefetch}
+\centering\footnotesize
+\begin{tabular}{lccccc}
+\toprule
+Execution & Success & Calls & Wall (s) & 80-ms miss & Miss rate \\
+\midrule
+Sync, commit 8 & 7/10 & 417 & 205.79 & 417/3931 & 10.61\% \\
+Async, every chunk & 5/10 & 346 & 198.21 & 48/4287 & 1.12\% \\
+Async, alternating & 5/10 & 315 & 207.58 & 176/4278 & 4.11\% \\
+\bottomrule
+\end{tabular}
+\end{table}
