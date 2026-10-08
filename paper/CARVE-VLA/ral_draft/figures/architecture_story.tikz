@@ -1,0 +1,105 @@
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex,font=\sffamily]
+  % Scene-centric overview: experimental frame and schematic art are explicitly separated.
+  \fill[blue!5,rounded corners=4pt] (0,2.03) rectangle (3.12,6.10);
+  \draw[blue!60,line width=0.65pt,rounded corners=4pt] (0,2.03) rectangle (3.12,6.10);
+  \fill[blue] (0,5.54) rectangle (3.12,6.10);
+  \node[text=white,font=\bfseries\scriptsize] at (1.56,5.81) {TASK EVIDENCE};
+  \node[inner sep=0pt] at (1.56,4.19)
+    {\includegraphics[width=2.46cm]{figures/ep39_demo.png}};
+  \node[text=ink,font=\scriptsize] at (1.56,2.78) {Public initial demonstration};
+  \node[text=blue,font=\tiny] at (1.56,2.47) {instruction + RGB + robot state};
+  \draw[blue!45,->,line width=0.9pt] (3.12,4.04) -- (3.43,4.04);
+
+  \fill[teal!5,rounded corners=4pt] (3.43,2.03) rectangle (11.50,6.10);
+  \draw[teal!60,line width=0.65pt,rounded corners=4pt] (3.43,2.03) rectangle (11.50,6.10);
+  \fill[teal] (3.43,5.54) rectangle (11.50,6.10);
+  \node[text=white,font=\bfseries\scriptsize] at (7.47,5.81)
+    {AGENTIC PROCESS-CONTROL HARNESS};
+
+  \fill[white,rounded corners=3pt] (3.65,3.42) rectangle (7.65,5.36);
+  \node[anchor=west,text=teal,font=\bfseries\scriptsize] at (3.82,5.14)
+    {Task-scoped visual memory};
+  \node[inner sep=0pt] at (5.64,4.32)
+    {\includegraphics[width=3.72cm]{figures/memory_history_illustration.png}};
+  \node[anchor=west,text=ink,font=\tiny] at (3.82,3.60)
+    {source frame $+$ target identity $+$ provenance};
+
+  \fill[white,rounded corners=3pt] (7.84,3.42) rectangle (11.27,5.36);
+  \node[anchor=west,text=teal,font=\bfseries\scriptsize] at (8.02,5.14)
+    {VLM critic / planner};
+  \draw[teal,line width=1.0pt] (8.58,4.31) circle (0.33);
+  \fill[teal!30] (8.58,4.31) circle (0.13);
+  \draw[teal!55,line width=0.85pt] (9.08,4.55) -- (10.90,4.55);
+  \draw[teal!55,line width=0.85pt] (9.08,4.27) -- (10.68,4.27);
+  \draw[teal!55,line width=0.85pt] (9.08,3.99) -- (10.41,3.99);
+  \node[anchor=west,text=ink,font=\tiny] at (8.02,3.60)
+    {semantic check $\rightarrow$ typed intent};
+
+  \fill[white,rounded corners=3pt] (3.65,2.25) rectangle (11.27,3.24);
+  \draw[teal!35,line width=0.55pt] (5.99,2.41) -- (5.99,3.08);
+  \draw[teal!35,line width=0.55pt] (8.66,2.41) -- (8.66,3.08);
+  \node[anchor=west,text=teal,font=\bfseries\tiny] at (3.82,3.00)
+    {HIGH-RATE MONITOR};
+  \draw[teal,line width=0.9pt] (3.83,2.56) -- (4.10,2.57) -- (4.35,2.55)
+    -- (4.57,2.82) -- (4.78,2.57) -- (5.70,2.57);
+  \fill[amber] (4.57,2.82) circle (0.05);
+  \node[anchor=west,text=amber,font=\bfseries\tiny] at (6.17,3.00)
+    {AUTHORITY GATE};
+  \node[anchor=west,text=ink,font=\tiny] at (6.17,2.58)
+    {evidence $+$ budget $+$ allowlist};
+  \node[anchor=west,text=teal,font=\bfseries\tiny] at (8.83,3.00)
+    {REGISTERED TOOLS};
+  \node[anchor=west,text=ink,font=\tiny] at (8.83,2.58)
+    {continue / recover / safe hold};
+  \draw[teal!65,->,line width=0.75pt] (5.30,3.42) -- (5.30,3.26);
+  \draw[teal!65,->,line width=0.75pt] (9.56,3.42) -- (9.56,3.26);
+  \draw[amber!75,->,line width=0.9pt] (11.50,4.04) -- (11.82,4.04);
+
+  \fill[amber!5,rounded corners=4pt] (11.82,2.03) rectangle (16.64,6.10);
+  \draw[amber!70,line width=0.65pt,rounded corners=4pt] (11.82,2.03) rectangle (16.64,6.10);
+  \fill[amber] (11.82,5.54) rectangle (16.64,6.10);
+  \node[text=white,font=\bfseries\scriptsize] at (14.23,5.81)
+    {POLICY + RUNTIME};
+  \node[inner sep=0pt] at (13.19,4.42)
+    {\includegraphics[width=2.33cm]{figures/robot_scene_illustration.png}};
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (14.31,5.09)
+    {Frozen $\pi_\theta$};
+  \node[anchor=west,text=ink,font=\tiny] at (14.31,4.68)
+    {fresh observation};
+  \node[anchor=west,text=blue,font=\tiny] at (14.31,4.34)
+    {$\Downarrow$ action chunk};
+  \node[anchor=west,text=ink,font=\tiny] at (14.31,4.01)
+    {physical execution};
+  \draw[amber!40,line width=0.55pt] (12.06,3.56) -- (16.39,3.56);
+  \node[anchor=west,text=amber,font=\bfseries\scriptsize] at (12.12,3.23)
+    {Optimize Runtime: quality-gated profile};
+  \node[anchor=west,text=ink,font=\tiny] at (12.12,2.83)
+    {replay fidelity $\cdot$ P95/memory $\cdot$ paired success};
+  \node[anchor=west,text=ink,font=\tiny] at (12.12,2.44)
+    {select VLM calls; reject harmful acceleration};
+
+  \fill[pale,rounded corners=4pt] (0,0.00) rectangle (16.64,1.85);
+  \draw[ink!30,line width=0.65pt,rounded corners=4pt] (0,0.00) rectangle (16.64,1.85);
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (0.27,1.57)
+    {TWO-RATE EXECUTION};
+  \node[anchor=east,text=teal,font=\tiny] at (16.38,1.57)
+    {semantic decisions apply to the next chunk, never mid-chunk};
+  \node[anchor=west,text=ink,font=\tiny] at (0.27,1.18)
+    {VLA chunks};
+  \foreach \xa/\xb/\lab in {2.05/5.02/$A_k$,5.48/8.45/$A_{k+1}$,8.91/11.88/$A_{k+2}$,12.34/15.31/$A_{k+3}$} {
+    \fill[blue!12,draw=blue!70,rounded corners=2pt]
+      (\xa,0.95) rectangle (\xb,1.38);
+    \node[text=blue,font=\scriptsize] at ({(\xa+\xb)/2},1.17) {\lab};
+  }
+  \draw[teal!55,line width=0.6pt] (2.05,0.55) -- (15.31,0.55);
+  \node[anchor=west,text=ink,font=\tiny] at (0.27,0.55)
+    {Monitor};
+  \foreach \x in {2.15,2.95,3.75,4.55,5.60,6.40,7.20,8.00,9.00,9.80,10.60,11.40,12.45,13.25,14.05,14.85}
+    \draw[teal!65,line width=0.55pt] (\x,0.47) -- (\x,0.63);
+  \fill[amber] (5.25,0.55) circle (0.11);
+  \draw[amber,->,line width=0.7pt] (5.25,0.66) -- (5.25,0.93);
+  \node[anchor=west,text=amber,font=\tiny] at (5.42,0.27)
+    {event $\Rightarrow$ VLM review at boundary};
+  \node[anchor=east,text=ink,font=\tiny] at (16.38,0.27)
+    {independent safety interlock may stop immediately};
+\end{tikzpicture}

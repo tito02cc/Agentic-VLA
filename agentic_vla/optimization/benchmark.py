@@ -47,6 +47,7 @@ class BenchmarkRunner:
         total_calls = self.config.warmup_calls + self.config.measured_calls
         runtime_latencies: list[float] = []
         model_latencies: list[float] = []
+        reaction_latencies: list[float] = []
         action_counts: list[int] = []
         deadline_misses: list[bool] = []
 
@@ -67,6 +68,13 @@ class BenchmarkRunner:
                 raise RuntimeError("runtime did not produce a trace")
             runtime_latencies.append(trace.runtime_latency_ms)
             model_latencies.append(trace.model_latency_ms)
+            reaction_latencies.append(
+                float(
+                    trace.reaction_latency_ms
+                    if trace.reaction_latency_ms is not None
+                    else trace.queue_age_ms + trace.runtime_latency_ms
+                )
+            )
             action_counts.append(trace.action_count)
             deadline_misses.append(trace.deadline_miss)
 
@@ -76,11 +84,14 @@ class BenchmarkRunner:
             "profile_id": self.prepared.profile.profile_id,
             "warmup_calls": self.config.warmup_calls,
             "backend_metadata": dict(self.prepared.metadata),
+            "reaction_p50_ms": float(np.percentile(reaction_latencies, 50)),
+            "reaction_p95_ms": float(np.percentile(reaction_latencies, 95)),
         }
         if self.config.record_samples:
             metadata["latency_samples"] = {
                 "runtime_ms": runtime_latencies,
                 "model_ms": model_latencies,
+                "reaction_ms": reaction_latencies,
                 "deadline_miss": deadline_misses,
             }
 

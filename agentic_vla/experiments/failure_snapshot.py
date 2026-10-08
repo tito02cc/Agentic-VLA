@@ -51,6 +51,7 @@ class FailureSnapshotWriter:
         observation: Mapping[str, Any],
         cached_actions: Sequence[Any],
         controller: Mapping[str, Any],
+        last_action: Sequence[Any] | None = None,
     ) -> dict[str, str] | None:
         episode_key = (int(task_id), int(episode_id))
         if self._episode_key != episode_key:
@@ -76,11 +77,13 @@ class FailureSnapshotWriter:
             "sim_state": snapshot.state,
             "cached_actions": np.asarray(list(cached_actions), dtype=np.float32),
         }
+        if last_action is not None:
+            arrays["last_action"] = np.asarray(last_action, dtype=np.float32)
         for key, value in observation.items():
             arrays[f"observation_{key}"] = np.asarray(value)
         np.savez_compressed(array_path, **arrays)
         metadata = {
-            "schema_version": 1,
+            "schema_version": 2,
             "task_id": int(task_id),
             "episode_id": int(episode_id),
             "timestep": int(timestep),

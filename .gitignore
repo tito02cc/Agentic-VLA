@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 .pytest_cache/
+.ruff_cache/
 *.py[cod]
 *$py.class
 *.so
@@ -9,6 +10,7 @@ __pycache__/
 .env
 .venv
 .venvs/
+.venv-*/
 env/
 venv/
 ENV/
@@ -19,6 +21,19 @@ venv.bak/
 weights/
 checkpoints/
 models/
+datasets/external/robomimic_official_tool_hang_ph/
+tmp/
+# Local-only or user-owned material; publish selected evidence explicitly.
+artifacts/
+deliverables/
+midterm/
+中期/
+Agentic-RAG-VLM/assets/guanghua_hand_env/
+Agentic-RAG-VLM/benchmarks/dexgraspbench/
+Agentic-RAG-VLM/output/
+Agentic-RAG-VLM/presentation/iros2026/recordings/
+Agentic-RAG-VLM/presentation/iros2026/build/
+Agentic-RAG-VLM/video/
 # Experiment outputs are ignored by default. The small, reviewable evidence
 # package below is tracked so a fresh clone can reproduce the reported tables,
 # figures, and qualitative checks without carrying full rollout caches.
@@ -30,6 +45,20 @@ results/*
 !results/carve_pi05_agentic_optimize_pair_20260719/**
 !results/carve_optimize/
 !results/carve_optimize/**
+!results/robomme_admission_20260828/
+!results/robomme_admission_20260828/**
+!results/robomme_planner_admission_20260828/
+!results/robomme_planner_admission_20260828/**
+!results/robomme_policy_gate_b_20260828/
+!results/robomme_policy_gate_b_20260828/**
+!results/robomme_carve_text_subgoal_pilot_20260828/
+!results/robomme_carve_text_subgoal_pilot_20260828/**
+!results/robomme_oracle_upper_bound_20260828/
+!results/robomme_oracle_upper_bound_20260828/**
+!results/robomme_vlm_groundsg_bf16_queue_isolated_20260828/
+!results/robomme_vlm_groundsg_bf16_queue_isolated_20260828/**
+!results/robomme_vlm_groundsg_nf4_20260828/
+!results/robomme_vlm_groundsg_nf4_20260828/**
 !results/carve_realtime/
 results/carve_realtime/*
 !results/carve_realtime/ASYNC_PREFETCH_STATUS.md
@@ -59,6 +88,11 @@ LIBERO/
 wget-log
 **/memory_store/
 *.sqlite3
+
+# Third-party reference checkouts are kept locally with their own Git history.
+third_party/RPent/
+third_party/robomme_benchmark/
+third_party/robomme_policy_learning/
 
 # Paper artifacts
 *.aux

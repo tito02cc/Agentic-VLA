@@ -132,6 +132,14 @@ class CarveRuntime:
         applied_request = request.with_controls(negotiated.controls)
         requested = dataclasses.asdict(request.controls)
         applied = dataclasses.asdict(negotiated.controls)
+        action_age_value = request.metadata.get("action_age_steps")
+        action_age_steps = (
+            int(action_age_value) if action_age_value is not None else None
+        )
+        task_cycle_value = request.metadata.get("task_cycle_latency_ms")
+        task_cycle_latency_ms = (
+            float(task_cycle_value) if task_cycle_value is not None else None
+        )
 
         try:
             chunk = self.adapter.infer(applied_request)
@@ -159,6 +167,9 @@ class CarveRuntime:
                     ),
                     success=False,
                     error=f"{type(exc).__name__}: {exc}",
+                    reaction_latency_ms=queue_age_ms + runtime_ms,
+                    task_cycle_latency_ms=task_cycle_latency_ms,
+                    action_age_steps=action_age_steps,
                 )
             )
             raise
@@ -171,6 +182,12 @@ class CarveRuntime:
             trace_metadata["controller"] = dict(trace_context)
         if request.agentic is not None:
             trace_metadata["agentic_event"] = dict(request.agentic)
+        stage_values = chunk.metadata.get("stage_latencies_ms", {})
+        stage_latencies_ms = (
+            {str(name): float(value) for name, value in stage_values.items()}
+            if isinstance(stage_values, Mapping)
+            else {}
+        )
         trace = RuntimeTrace(
             request_id=request.request_id,
             adapter_id=self.adapter.adapter_id,
@@ -188,6 +205,10 @@ class CarveRuntime:
             deadline_miss=bool(deadline_ms is not None and runtime_ms > deadline_ms),
             success=True,
             metadata=trace_metadata,
+            reaction_latency_ms=queue_age_ms + runtime_ms,
+            task_cycle_latency_ms=task_cycle_latency_ms,
+            action_age_steps=action_age_steps,
+            stage_latencies_ms=stage_latencies_ms,
         )
         self._record_trace(trace)
         chunk.metadata.setdefault("runtime_trace", trace.to_dict())

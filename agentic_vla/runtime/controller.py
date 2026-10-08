@@ -20,8 +20,8 @@ class ExecutionMode(str, enum.Enum):
 
 @dataclasses.dataclass(frozen=True)
 class JointControllerConfig:
-    fast_inference_steps: int = 2
-    accurate_inference_steps: int = 2
+    fast_inference_steps: int | None = 2
+    accurate_inference_steps: int | None = 2
     low_risk_commit: int = 10
     high_risk_commit: int = 10
     accurate_min_slack_ms: float = 30.0
@@ -29,21 +29,27 @@ class JointControllerConfig:
     planner_after_failures: int = 2
     max_recovery_attempts: int = 2
     stall_recovery_streak: int = 2
+    no_progress_planner_streak: int = 2
     physical_recovery_skill: str = "cartesian_retract_lift_reobserve"
+    release_recovery_skill: str = "release_retract_lift_reobserve"
 
     def __post_init__(self) -> None:
-        positive = (
+        inference_steps = (
             self.fast_inference_steps,
             self.accurate_inference_steps,
-            self.low_risk_commit,
-            self.high_risk_commit,
         )
-        if any(value <= 0 for value in positive):
+        if any(value is not None and value <= 0 for value in inference_steps):
+            raise ValueError("inference step budgets must be positive or disabled")
+        if self.low_risk_commit <= 0 or self.high_risk_commit <= 0:
             raise ValueError("inference and commit budgets must be positive")
         if self.stall_recovery_streak < 2:
             raise ValueError("stall_recovery_streak must be at least 2")
+        if self.no_progress_planner_streak < 2:
+            raise ValueError("no_progress_planner_streak must be at least 2")
         if not self.physical_recovery_skill.strip():
             raise ValueError("physical_recovery_skill must not be empty")
+        if not self.release_recovery_skill.strip():
+            raise ValueError("release_recovery_skill must not be empty")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -79,6 +85,7 @@ class JointRecoveryComputeController:
         repeated_failures: int = 0,
         recovery_attempts: int = 0,
         planner_available: bool = False,
+        reuse_permitted: bool = True,
     ) -> JointDecision:
         if cached_actions < 0 or repeated_failures < 0 or recovery_attempts < 0:
             raise ValueError("controller counters must be non-negative")
@@ -108,6 +115,36 @@ class JointRecoveryComputeController:
                 reason,
             )
         event_streak = int(risk.evidence.get("event_streak", 0))
+        if risk.event == "no_progress" and event_streak >= self.config.no_progress_planner_streak:
+            if planner_available:
+                return self._decision(
+                    ExecutionMode.PLANNER,
+                    risk,
+                    deadline_ms,
+                    self.config.accurate_inference_steps,
+                    self.config.high_risk_commit,
+                    True,
+                    f"semantic progress check after {event_streak} idle windows",
+                )
+            return self._decision(
+                ExecutionMode.ACCURATE_VLA,
+                risk,
+                deadline_ms,
+                self.config.accurate_inference_steps,
+                self.config.high_risk_commit,
+                True,
+                "no progress detected without a semantic planner",
+            )
+        if risk.event == "no_progress":
+            return self._decision(
+                ExecutionMode.ACCURATE_VLA,
+                risk,
+                deadline_ms,
+                self.config.accurate_inference_steps,
+                self.config.low_risk_commit,
+                True,
+                "request a fresh observation-conditioned action chunk before escalation",
+            )
         if risk.event == "stall" and event_streak >= self.config.stall_recovery_streak:
             if recovery_attempts < self.config.max_recovery_attempts:
                 return self._decision(
@@ -149,6 +186,11 @@ class JointRecoveryComputeController:
             risk.event in self._PHYSICAL_FAILURES
             and recovery_attempts < self.config.max_recovery_attempts
         ):
+            recovery_skill = (
+                self.config.release_recovery_skill
+                if risk.event in {"slip", "misgrasp"}
+                else self.config.physical_recovery_skill
+            )
             return self._decision(
                 ExecutionMode.RECOVERY,
                 risk,
@@ -157,7 +199,7 @@ class JointRecoveryComputeController:
                 self.config.high_risk_commit,
                 True,
                 f"physical recovery for {risk.event}",
-                recovery_skill_id=self.config.physical_recovery_skill,
+                recovery_skill_id=recovery_skill,
             )
         if high_risk and slack >= self.config.accurate_min_slack_ms:
             return self._decision(
@@ -169,7 +211,7 @@ class JointRecoveryComputeController:
                 True,
                 "high risk with sufficient compute slack",
             )
-        if risk.bucket == "low" and cached_actions > 0:
+        if risk.bucket == "low" and cached_actions > 0 and reuse_permitted:
             return self._decision(
                 ExecutionMode.REUSE,
                 risk,
@@ -179,6 +221,9 @@ class JointRecoveryComputeController:
                 False,
                 "low risk cached-action fast path",
             )
+        reason = "deadline-aware fast inference"
+        if cached_actions > 0 and not reuse_permitted:
+            reason = "cached actions invalidated; fresh deadline-aware inference"
         return self._decision(
             ExecutionMode.FAST_VLA,
             risk,
@@ -186,7 +231,7 @@ class JointRecoveryComputeController:
             self.config.fast_inference_steps,
             self.config.high_risk_commit if risk.bucket != "low" else self.config.low_risk_commit,
             risk.bucket != "low",
-            "deadline-aware fast inference",
+            reason,
         )
 
     @staticmethod
@@ -194,7 +239,7 @@ class JointRecoveryComputeController:
         mode: ExecutionMode,
         risk: RiskAssessment,
         deadline_ms: float | None,
-        inference_steps: int,
+        inference_steps: int | None,
         max_actions: int,
         request_verification: bool,
         reason: str,

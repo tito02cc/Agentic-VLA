@@ -1,0 +1,439 @@
+{
+  "protocol": "carve.robomme.memory_ab_gate.v1",
+  "scope": "fixed VideoUnmaskSwap ep38-49: A native planner without structured memory; B adds public-demo SAM2 identity memory only",
+  "claim_boundary": "Fixed consecutive episodes with no outcome-based selection; within-task evidence only, not cross-task or end-to-end Optimize generalization.",
+  "pre_registered_episodes": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53
+  ],
+  "valid_episode_range": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49
+  ],
+  "official_episode_count": 50,
+  "out_of_range_preflight_episodes": [
+    50,
+    51,
+    52,
+    53
+  ],
+  "admitted": 12,
+  "rejected": [],
+  "A_success": 5,
+  "B_success": 9,
+  "rescues": 5,
+  "harms": 1,
+  "mcnemar_exact_two_sided_p": 0.21875,
+  "budget_exhausted": {
+    "A": 0,
+    "B": 1
+  },
+  "single_target": {
+    "pairs": 6,
+    "A_success": 3,
+    "B_success": 6,
+    "rescues": 3,
+    "harms": 0
+  },
+  "double_target": {
+    "pairs": 6,
+    "A_success": 2,
+    "B_success": 3,
+    "rescues": 2,
+    "harms": 1
+  },
+  "both_success_pairs": 4,
+  "both_success_cost": {
+    "wall_time_s": {
+      "A": 60.46831259000464,
+      "B": 57.9084466649947
+    },
+    "planner_calls": {
+      "A": 46,
+      "B": 43
+    },
+    "policy_calls": {
+      "A": 46,
+      "B": 43
+    },
+    "steps": {
+      "A": 713,
+      "B": 678
+    }
+  },
+  "stop_decision": "Within-task independent confirmation completed; retain observed harm and limit claim to this task, then test cross-task quality and same-chain cost before a full-system claim.",
+  "rows": [
+    {
+      "episode": 38,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 119,
+        "planner_calls": 8,
+        "policy_calls": 8,
+        "wall_time_s": 12.394783732997894,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep38_A/VideoUnmaskSwap_ep38_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 110,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 11.09869139699731,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep38_B/VideoUnmaskSwap_ep38_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "episode": 39,
+      "instruction": "watch the video carefully, then pick up the container hiding the blue cube, finally pick up another container hiding the red cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 440,
+        "planner_calls": 28,
+        "policy_calls": 28,
+        "wall_time_s": 33.46755665199453,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep39_A/VideoUnmaskSwap_ep39_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 266,
+        "planner_calls": 17,
+        "policy_calls": 17,
+        "wall_time_s": 22.369410970997706,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep39_B/VideoUnmaskSwap_ep39_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "episode": 40,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 129,
+        "planner_calls": 9,
+        "policy_calls": 9,
+        "wall_time_s": 12.203090926996083,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep40_A/VideoUnmaskSwap_ep40_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 111,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 10.060769479001465,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep40_B/VideoUnmaskSwap_ep40_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "episode": 41,
+      "instruction": "watch the video carefully, then pick up the container hiding the blue cube, finally pick up another container hiding the red cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 351,
+        "planner_calls": 22,
+        "policy_calls": 22,
+        "wall_time_s": 26.02075666800374,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep41_A/VideoUnmaskSwap_ep41_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 349,
+        "planner_calls": 22,
+        "policy_calls": 22,
+        "wall_time_s": 26.324635633995058,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep41_B/VideoUnmaskSwap_ep41_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "episode": 42,
+      "instruction": "watch the video carefully, then pick up the container hiding the blue cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 105,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 9.979582954001671,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep42_A/VideoUnmaskSwap_ep42_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 110,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 10.217984775001241,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep42_B/VideoUnmaskSwap_ep42_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "episode": 43,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube, finally pick up another container hiding the blue cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 326,
+        "planner_calls": 21,
+        "policy_calls": 21,
+        "wall_time_s": 26.20150133199786,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep43_A/VideoUnmaskSwap_ep43_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 293,
+        "planner_calls": 19,
+        "policy_calls": 19,
+        "wall_time_s": 23.965794260999246,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep43_B/VideoUnmaskSwap_ep43_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": true
+    },
+    {
+      "episode": 44,
+      "instruction": "watch the video carefully, then pick up the container hiding the red cube, finally pick up another container hiding the green cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 327,
+        "planner_calls": 21,
+        "policy_calls": 21,
+        "wall_time_s": 26.430286978000368,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep44_A/VideoUnmaskSwap_ep44_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "ongoing",
+        "success": false,
+        "budget_exhausted": true,
+        "steps": 1300,
+        "planner_calls": 82,
+        "policy_calls": 82,
+        "wall_time_s": 97.59464966700034,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep44_B/VideoUnmaskSwap_ep44_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "episode": 45,
+      "instruction": "watch the video carefully, then pick up the container hiding the blue cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 128,
+        "planner_calls": 8,
+        "policy_calls": 8,
+        "wall_time_s": 12.264882041003148,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep45_A/VideoUnmaskSwap_ep45_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 108,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 11.305056776996935,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep45_B/VideoUnmaskSwap_ep45_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "episode": 46,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 136,
+        "planner_calls": 9,
+        "policy_calls": 9,
+        "wall_time_s": 13.31432738800504,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep46_A/VideoUnmaskSwap_ep46_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 129,
+        "planner_calls": 9,
+        "policy_calls": 9,
+        "wall_time_s": 13.456697376001102,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep46_B/VideoUnmaskSwap_ep46_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "episode": 47,
+      "instruction": "watch the video carefully, then pick up the container hiding the red cube, finally pick up another container hiding the green cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 148,
+        "planner_calls": 10,
+        "policy_calls": 10,
+        "wall_time_s": 14.830270830003428,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep47_A/VideoUnmaskSwap_ep47_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 1075,
+        "planner_calls": 68,
+        "policy_calls": 68,
+        "wall_time_s": 72.91872782499559,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep47_B/VideoUnmaskSwap_ep47_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "episode": 48,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube",
+      "target_count": 1,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 110,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 10.082463099999586,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep48_A/VideoUnmaskSwap_ep48_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 124,
+        "planner_calls": 8,
+        "policy_calls": 8,
+        "wall_time_s": 11.107399576001626,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep48_B/VideoUnmaskSwap_ep48_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "episode": 49,
+      "instruction": "watch the video carefully, then pick up the container hiding the green cube, finally pick up another container hiding the blue cube",
+      "target_count": 2,
+      "memory_admitted": true,
+      "memory_rejection": null,
+      "A": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 110,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 9.86337816699961,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep49_A/VideoUnmaskSwap_ep49_vlm_groundsg.mp4"
+      },
+      "B": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 151,
+        "planner_calls": 10,
+        "policy_calls": 10,
+        "wall_time_s": 12.888769755001704,
+        "video": "artifacts/robomme/memory_ab_confirm_20260923/rollouts/VideoUnmaskSwap_ep49_B/VideoUnmaskSwap_ep49_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    }
+  ]
+}

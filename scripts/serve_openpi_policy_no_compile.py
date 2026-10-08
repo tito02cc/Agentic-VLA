@@ -23,6 +23,7 @@ from openpi.training import config as _config  # noqa: E402
 from agentic_vla.optimization import (  # noqa: E402
     ContractFallbackPolicy,
     ProfileManifest,
+    RuntimeFallbackPolicy,
     create_default_runtime,
     validate_profile_admission,
 )
@@ -73,17 +74,18 @@ def _warmup_policy(
     calls: int,
     inference_steps: int,
     action_horizon: int,
+    fixed_noise: bool,
 ) -> None:
     payload, noise = _load_warmup_request(snapshot, action_horizon=action_horizon)
     for index in range(calls):
         started = time.perf_counter()
-        policy.infer(
-            {
-                **payload,
-                "runtime_controls": {"inference_steps": inference_steps},
-                "runtime_noise": noise,
-            }
-        )
+        request = {
+            **payload,
+            "runtime_controls": {"inference_steps": inference_steps},
+        }
+        if fixed_noise:
+            request["runtime_noise"] = noise
+        policy.infer(request)
         logging.info(
             "CARVE prewarm call %d/%d completed in %.2f s",
             index + 1,
@@ -122,6 +124,20 @@ def main() -> int:
     parser.add_argument("--profile-manifest", type=pathlib.Path, default=None)
     parser.add_argument("--fallback-profile-manifest", type=pathlib.Path, default=None)
     parser.add_argument(
+        "--runtime-fallback-on-error",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "For a research profile, retry explicitly known compile/runtime errors on the "
+            "unmodified eager policy and annotate the response. This is not profile promotion."
+        ),
+    )
+    parser.add_argument(
+        "--runtime-fallback-profile-id",
+        default="pi05-eager-reference",
+        help="Trace identifier recorded when --runtime-fallback-on-error is used.",
+    )
+    parser.add_argument(
         "--require-promoted-profile",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -130,12 +146,23 @@ def main() -> int:
     parser.add_argument("--pytorch-device", default="cuda:0")
     parser.add_argument("--warmup-snapshot", type=pathlib.Path, default=None)
     parser.add_argument("--warmup-calls", type=int, default=0)
+    parser.add_argument(
+        "--warmup-fixed-noise",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=(
+            "Include deterministic runtime noise during prewarm. Deployment "
+            "services should keep the default so prewarm matches normal clients."
+        ),
+    )
     args = parser.parse_args()
 
     if args.warmup_calls < 0:
         raise ValueError("--warmup-calls must be non-negative")
     if args.warmup_calls and args.warmup_snapshot is None:
         raise ValueError("--warmup-snapshot is required when --warmup-calls is positive")
+    if args.runtime_fallback_on_error and args.profile_manifest is None:
+        raise ValueError("--runtime-fallback-on-error requires --profile-manifest")
 
     logging.basicConfig(level=logging.INFO, force=True)
     logging.info("Loading policy config=%s dir=%s", args.policy_config, args.policy_dir)
@@ -229,6 +256,16 @@ def main() -> int:
             )
         elif args.fallback_profile_manifest is not None:
             raise ValueError("primary profile does not declare a fallback profile")
+        if args.runtime_fallback_on_error:
+            served_policy = RuntimeFallbackPolicy(
+                served_policy,
+                base_policy,
+                fallback_profile_id=args.runtime_fallback_profile_id,
+                trigger_markers=(
+                    "maximum recursion depth exceeded",
+                    "Error in function TrampolineAutogradImpl::apply",
+                ),
+            )
         deployment_metadata = {
             "model_id": prepared.model_id,
             "adapter_id": prepared.adapter.adapter_id,
@@ -243,6 +280,7 @@ def main() -> int:
                 if args.fallback_profile_manifest is not None
                 else None
             ),
+            "runtime_fallback_on_error": args.runtime_fallback_on_error,
         }
         profile_steps = prepared.profile.inference_steps
         profile_horizon = prepared.profile.action_horizon
@@ -267,6 +305,7 @@ def main() -> int:
             calls=args.warmup_calls,
             inference_steps=profile_steps,
             action_horizon=profile_horizon,
+            fixed_noise=args.warmup_fixed_noise,
         )
         if fallback_policy_for_warmup is not None:
             fallback_warmup_policy = RuntimeControllablePolicy(
@@ -280,6 +319,7 @@ def main() -> int:
                 calls=args.warmup_calls,
                 inference_steps=profile_steps,
                 action_horizon=profile_horizon,
+                fixed_noise=args.warmup_fixed_noise,
             )
 
     hostname = socket.gethostname()

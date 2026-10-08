@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import dataclasses
 import enum
+import time
 import uuid
 from collections import deque
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 import numpy as np
@@ -47,6 +48,10 @@ class RecoveryPlan:
     action_spec: ActionSpec
     phases: tuple[RecoveryPhase, ...]
     max_actions: int
+    preconditions: tuple[str, ...] = ()
+    timeout_s: float = 5.0
+    verification_rule: str = "reobserve_monitor"
+    safe_hold_on_failure: bool = True
 
     def __post_init__(self) -> None:
         if not self.skill_id.strip():
@@ -57,6 +62,12 @@ class RecoveryPlan:
             raise ValueError("recovery plan must contain at least one phase")
         if self.max_actions <= 0:
             raise ValueError("recovery max_actions must be positive")
+        if self.timeout_s <= 0:
+            raise ValueError("recovery timeout_s must be positive")
+        if not self.verification_rule.strip():
+            raise ValueError("recovery verification_rule must not be empty")
+        if any(not str(item).strip() for item in self.preconditions):
+            raise ValueError("recovery preconditions must not contain empty values")
         if self.action_count > self.max_actions:
             raise ValueError(
                 f"recovery plan has {self.action_count} actions, exceeding {self.max_actions}"
@@ -155,6 +166,117 @@ class RecoveryMemory:
         if not records:
             return None
         return sum(record.status == RecoveryStatus.SUCCEEDED for record in records) / len(records)
+
+
+@dataclasses.dataclass(frozen=True)
+class FailureEpisodeRecord:
+    """Typed semantic memory used as planner evidence, never as an action source."""
+
+    context_fingerprint: str
+    episode_id: str | int
+    task: str
+    subgoal: str
+    policy_id: str
+    deployment_profile_id: str
+    failure_type: str
+    monitor_evidence: Mapping[str, Any]
+    action_age_steps: int
+    intervention: str
+    retry_budget_consumed: int
+    recovery_budget_consumed: int
+    verification_result: str
+    terminal_outcome: str
+    confidence: float
+    created_at_s: float = dataclasses.field(default_factory=time.time)
+    expires_at_s: float | None = None
+    metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+    record_id: str = dataclasses.field(default_factory=lambda: uuid.uuid4().hex)
+
+    def __post_init__(self) -> None:
+        required = (
+            "context_fingerprint",
+            "task",
+            "subgoal",
+            "policy_id",
+            "deployment_profile_id",
+            "failure_type",
+            "intervention",
+            "verification_result",
+            "terminal_outcome",
+            "record_id",
+        )
+        for name in required:
+            if not str(getattr(self, name)).strip():
+                raise ValueError(f"{name} must not be empty")
+        if self.action_age_steps < 0:
+            raise ValueError("action_age_steps must be non-negative")
+        if min(self.retry_budget_consumed, self.recovery_budget_consumed) < 0:
+            raise ValueError("consumed budgets must be non-negative")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be in [0, 1]")
+        if self.created_at_s < 0:
+            raise ValueError("created_at_s must be non-negative")
+        if self.expires_at_s is not None and self.expires_at_s <= self.created_at_s:
+            raise ValueError("expires_at_s must be later than created_at_s")
+
+    def is_expired(self, *, now_s: float | None = None) -> bool:
+        now = time.time() if now_s is None else float(now_s)
+        return self.expires_at_s is not None and now >= self.expires_at_s
+
+    def to_dict(self) -> dict[str, Any]:
+        return dataclasses.asdict(self)
+
+
+class FailureMemory:
+    """Bounded, expiring retrieval store for semantic failure evidence."""
+
+    def __init__(self, max_records: int = 256) -> None:
+        if max_records <= 0:
+            raise ValueError("max_records must be positive")
+        self._records: deque[FailureEpisodeRecord] = deque(maxlen=max_records)
+
+    def record(self, record: FailureEpisodeRecord) -> None:
+        if not isinstance(record, FailureEpisodeRecord):
+            raise TypeError("failure memory accepts only FailureEpisodeRecord")
+        self._records.append(record)
+
+    def retrieve(
+        self,
+        *,
+        context_fingerprint: str | None = None,
+        failure_type: str | None = None,
+        deployment_profile_id: str | None = None,
+        limit: int = 8,
+        now_s: float | None = None,
+    ) -> tuple[FailureEpisodeRecord, ...]:
+        """Return newest matching non-expired evidence without choosing an action."""
+
+        if limit <= 0:
+            raise ValueError("limit must be positive")
+        now = time.time() if now_s is None else float(now_s)
+        matches = (
+            record
+            for record in reversed(self._records)
+            if not record.is_expired(now_s=now)
+            and (
+                context_fingerprint is None
+                or record.context_fingerprint == context_fingerprint
+            )
+            and (failure_type is None or record.failure_type == failure_type)
+            and (
+                deployment_profile_id is None
+                or record.deployment_profile_id == deployment_profile_id
+            )
+        )
+        selected: list[FailureEpisodeRecord] = []
+        for record in matches:
+            selected.append(record)
+            if len(selected) >= limit:
+                break
+        return tuple(selected)
+
+    def __len__(self) -> int:
+        return len(self._records)
 
 
 class StatefulRecoveryExecutor:
@@ -274,6 +396,60 @@ class StatefulRecoveryExecutor:
         return self._plan, self._context
 
 
+RecoveryPlanFactory = Callable[[ActionSpec, Sequence[float]], RecoveryPlan]
+
+
+class RecoverySkillRegistry:
+    """Typed registry that keeps planner-selected skills inside action contracts."""
+
+    def __init__(
+        self,
+        factories: Mapping[str, RecoveryPlanFactory] | None = None,
+    ) -> None:
+        self._factories: dict[str, RecoveryPlanFactory] = {}
+        for skill_id, factory in (factories or {}).items():
+            self.register(skill_id, factory)
+
+    @classmethod
+    def with_default_skills(cls) -> "RecoverySkillRegistry":
+        return cls(
+            {
+                "cartesian_retract_lift_reobserve": build_cartesian_retreat_plan,
+                "release_retract_lift_reobserve": build_release_retreat_plan,
+            }
+        )
+
+    @property
+    def skill_ids(self) -> tuple[str, ...]:
+        return tuple(sorted(self._factories))
+
+    def register(self, skill_id: str, factory: RecoveryPlanFactory) -> None:
+        normalized = skill_id.strip()
+        if not normalized:
+            raise ValueError("recovery registry skill_id must not be empty")
+        if normalized in self._factories:
+            raise ValueError(f"duplicate recovery skill: {normalized}")
+        if not callable(factory):
+            raise TypeError("recovery skill factory must be callable")
+        self._factories[normalized] = factory
+
+    def build(
+        self,
+        skill_id: str,
+        action_spec: ActionSpec,
+        last_action: Sequence[float],
+    ) -> RecoveryPlan:
+        normalized = skill_id.strip()
+        try:
+            factory = self._factories[normalized]
+        except KeyError as exc:
+            raise ValueError(f"unregistered recovery skill: {normalized}") from exc
+        plan = factory(action_spec, last_action)
+        if plan.skill_id != normalized:
+            raise ValueError("recovery factory returned a mismatched skill_id")
+        return plan
+
+
 def build_cartesian_retreat_plan(
     action_spec: ActionSpec,
     last_action: Sequence[float],
@@ -337,4 +513,83 @@ def build_cartesian_retreat_plan(
         action_spec=action_spec,
         phases=phases,
         max_actions=sum(step_counts),
+        preconditions=(
+            "valid_delta_cartesian_action",
+            "controller_accepts_stationary_hold",
+        ),
+        timeout_s=max(1.0, sum(step_counts) / action_spec.control_frequency_hz + 1.0),
+        verification_rule="reobserve_and_confirm_progress",
+        safe_hold_on_failure=True,
+    )
+
+
+def build_release_retreat_plan(
+    action_spec: ActionSpec,
+    last_action: Sequence[float],
+    *,
+    release_steps: int = 3,
+    retreat_steps: int = 4,
+    lift_steps: int = 3,
+    settle_steps: int = 2,
+    retreat_scale: float = 0.5,
+    lift_delta: float = 0.15,
+) -> RecoveryPlan:
+    """Release a suspected wrong grasp, retreat, lift, and reobserve."""
+
+    if action_spec.action_dim != 7 or "delta_cartesian" not in action_spec.representation:
+        raise ValueError("release retreat requires a 7-D delta_cartesian action contract")
+    if "+1=open" not in action_spec.gripper_convention.replace(" ", ""):
+        raise ValueError("release retreat requires a +1=open gripper convention")
+    step_counts = (release_steps, retreat_steps, lift_steps, settle_steps)
+    if any(value <= 0 for value in step_counts):
+        raise ValueError("recovery phase step counts must be positive")
+    if not 0.0 < retreat_scale <= 1.0:
+        raise ValueError("retreat_scale must be in (0, 1]")
+    if lift_delta <= 0.0:
+        raise ValueError("lift_delta must be positive")
+
+    previous = np.asarray(last_action, dtype=np.float32).reshape(-1)
+    if previous.size != action_spec.action_dim:
+        raise ValueError(
+            f"last_action has dimension {previous.size}, expected {action_spec.action_dim}"
+        )
+    if not np.all(np.isfinite(previous)):
+        raise ValueError("last_action contains a non-finite value")
+    if action_spec.minimum is not None:
+        previous = np.maximum(previous, float(action_spec.minimum))
+    if action_spec.maximum is not None:
+        previous = np.minimum(previous, float(action_spec.maximum))
+
+    opened = np.asarray([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], dtype=np.float32)
+    retreat = opened.copy()
+    retreat[:3] = -previous[:3] * float(retreat_scale)
+    lift = opened.copy()
+    lift[2] = float(lift_delta)
+
+    def repeated(action: np.ndarray, count: int) -> tuple[tuple[float, ...], ...]:
+        return tuple(tuple(float(value) for value in action) for _ in range(count))
+
+    phases = (
+        RecoveryPhase("release", repeated(opened, release_steps)),
+        RecoveryPhase("retreat_open", repeated(retreat, retreat_steps)),
+        RecoveryPhase("lift_open", repeated(lift, lift_steps)),
+        RecoveryPhase(
+            "settle_reobserve",
+            repeated(opened, settle_steps),
+            request_verification=True,
+        ),
+    )
+    return RecoveryPlan(
+        skill_id="release_retract_lift_reobserve",
+        trigger_events=frozenset({"stall", "slip", "misgrasp", "contact"}),
+        action_spec=action_spec,
+        phases=phases,
+        max_actions=sum(step_counts),
+        preconditions=(
+            "valid_delta_cartesian_action",
+            "gripper_can_release",
+        ),
+        timeout_s=max(1.0, sum(step_counts) / action_spec.control_frequency_hz + 1.0),
+        verification_rule="reobserve_after_release_and_confirm_progress",
+        safe_hold_on_failure=True,
     )

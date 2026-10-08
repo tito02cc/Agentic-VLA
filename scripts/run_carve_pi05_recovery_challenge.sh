@@ -12,6 +12,7 @@ SNAPSHOT_DIR="${SNAPSHOT_DIR:-${PROJECT_ROOT}/results/carve_t689_paired_5states_
 WARMUP_SNAPSHOT="${WARMUP_SNAPSHOT:-${SNAPSHOT_DIR}/task06_episode001_step0013.npz}"
 OUTPUT_DIR="${OUTPUT_DIR:-${PROJECT_ROOT}/results/carve_pi05_recovery_challenge_20260719}"
 PORT="${PORT:-18094}"
+NOISE_SEED="${NOISE_SEED:-7}"
 
 mkdir -p "${OUTPUT_DIR}"
 server_pid=""
@@ -76,6 +77,7 @@ env "${common_env[@]}" "${LIBERO_PYTHON}" \
   --recovery-chunks 2 \
   --fixed-inference-steps 2 \
   --deadline-ms 80 \
+  --noise-seed "${NOISE_SEED}" \
   --save-videos \
   --output "${OUTPUT_DIR}/paired_branches.json"
 

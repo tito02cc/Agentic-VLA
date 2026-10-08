@@ -1,0 +1,33 @@
+\begin{tikzpicture}[x=1cm,y=1cm,font=\scriptsize]
+  \node[anchor=west,text=warn,font=\bfseries\scriptsize] at (2.51,3.13)
+    {lost $\leftarrow$};
+  \node[anchor=west,text=teal,font=\bfseries\scriptsize] at (4.16,3.13)
+    {$\rightarrow$ rescued};
+  \node[anchor=east,text=ink,font=\bfseries\scriptsize] at (8.30,3.13)
+    {pairs};
+  \draw[ink!45,line width=0.65pt] (4.10,0.37) -- (4.10,2.91);
+  \draw[ink!25,line width=0.5pt] (0.05,1.49) -- (8.30,1.49);
+
+  \node[anchor=west,text=ink] at (0.10,2.56) {Swap + memory};
+  \fill[warn!85] (3.64,2.42) rectangle (4.10,2.69);
+  \fill[teal!85] (4.10,2.42) rectangle (6.40,2.69);
+  \node[anchor=east,text=warn] at (3.55,2.56) {1};
+  \node[anchor=west,text=teal] at (6.49,2.56) {5};
+  \node[anchor=east,text=ink] at (8.30,2.56) {$n=12$};
+
+  \node[anchor=west,text=ink] at (0.10,1.92) {Unmask + memory};
+  \fill[warn!85] (2.72,1.78) rectangle (4.10,2.05);
+  \fill[teal!85] (4.10,1.78) rectangle (4.56,2.05);
+  \node[anchor=east,text=warn] at (2.63,1.92) {3};
+  \node[anchor=west,text=teal] at (4.65,1.92) {1};
+  \node[anchor=east,text=ink] at (8.30,1.92) {$n=16$};
+
+  \node[anchor=west,text=ink] at (0.10,1.10) {RouteStick + harness};
+  \fill[teal!85] (4.10,0.96) rectangle (4.56,1.23);
+  \node[anchor=west,text=teal] at (4.65,1.10) {1};
+  \node[anchor=east,text=ink] at (8.30,1.10) {$n=16$};
+
+  \node[anchor=west,text=ink] at (0.10,0.48) {PickHighlight + harness};
+  \node[anchor=west,text=ink] at (4.26,0.48) {0 discordant};
+  \node[anchor=east,text=ink] at (8.30,0.48) {$n=16$};
+\end{tikzpicture}

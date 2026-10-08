@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "protocol_id": "carve-rq5-lingbot-robotwin-c2r-20260828",
+  "frozen_at": "2026-08-28",
+  "policy": {
+    "model_id": "robbyant/lingbot-vla-4b-posttrain-robotwin",
+    "revision": "fb71a2c9749ccfedbb7290c2c3f0e5e7c7305c9e",
+    "precision": "bf16",
+    "frozen": true,
+    "fine_tuning_allowed": false,
+    "action_layout": "qpos14",
+    "action_horizon": 50,
+    "qwen_processor_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "qwen_processor_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+    "qwen_full_weights_required": false
+  },
+  "sources": {
+    "lingbot_vla_revision": "4eb34b7693a0565c67433f8fac9c59a2e67eb60b",
+    "robotwin_revision": "30954692d06ba7e89f7a6b76064f4062c488fa81",
+    "xpolicylab_revision": "c37109c500be67d0dea6b36bf7337bbd26e763cd",
+    "rpent_revision": "2c1f87d80861a40451efe8e9bf3d64e7c3d3f464",
+    "rpent_seed_manifest": "third_party/RPent/robots/robotwin/eval/demo_randomized.json",
+    "rpent_seed_manifest_sha256": "c7c6ee4847d8b39838af281be6de3517d039c76451bb78bb454f52f81470b306"
+  },
+  "benchmark": {
+    "name": "RoboTwin 2.0 Clean-to-Randomized",
+    "embodiment": "aloha-agilex",
+    "action_type": "joint",
+    "clean_config": "demo_clean",
+    "randomized_config": "demo_randomized",
+    "clean_bootstrap_seed": 100000,
+    "tasks": {
+      "open_microwave": [100000, 100001, 100002, 100003, 100004],
+      "click_bell": [100000, 100001, 100002, 100003, 100004],
+      "stack_blocks_three": [100000, 100001, 100002, 100003, 100004],
+      "place_shoe": [100001, 100002, 100003, 100004, 100005],
+      "put_object_cabinet": [100032, 100049, 100060, 100115, 100173]
+    }
+  },
+  "methods": [
+    "direct_lingbot_vla",
+    "carve_agentic_harness",
+    "carve_agentic_harness_optimize"
+  ],
+  "optimize_profiles": {
+    "behavioral_reference": {
+      "profile_id": "lingbot-eager-bf16-d10-c50",
+      "server_use_compile": false,
+      "server_num_denoising_steps": 10,
+      "server_use_length": 50,
+      "behavioral_equivalence": true
+    },
+    "equivalent_candidate": {
+      "profile_id": "lingbot-compile-bf16-d10-c50",
+      "server_use_compile": true,
+      "server_num_denoising_steps": 10,
+      "server_use_length": 50,
+      "behavioral_equivalence": true
+    },
+    "approximate_candidate": {
+      "profile_id": "lingbot-compile-bf16-d5-c50",
+      "server_use_compile": true,
+      "server_num_denoising_steps": 5,
+      "server_use_length": 50,
+      "behavioral_equivalence": false,
+      "requires_action_fidelity_gate": true
+    },
+    "runtime_commit_horizons": [5, 10, 25, 50]
+  },
+  "agent_visibility": {
+    "rgb": true,
+    "proprioception": true,
+    "task_language": true,
+    "reward": false,
+    "evaluator_success": false,
+    "object_pose": false,
+    "simulator_state": false
+  },
+  "artifact_policy": {
+    "record_video": true,
+    "record_runtime_trace": true,
+    "record_primitive_trace": true,
+    "minimum_free_disk_gib": 15
+  }
+}

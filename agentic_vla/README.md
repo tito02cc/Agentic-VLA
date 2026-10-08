@@ -1,16 +1,33 @@
-# Agentic-VLA Prototype Package
+# CARVE Runtime Package
 
-This folder contains the historical prototype package for the Agentic-VLA workflow.
+This package contains the model-independent boundary shared by CARVE Agentic
+Harness and CARVE Optimize Runtime.
 
-Important:
+Current runtime modules include:
 
-- This package is kept for method prototyping and code reuse.
-- The real paper-facing LIBERO evaluation entrypoint is `scripts/run_agentic_vla_libero.py` from the repository root.
-- Results reported in project logs and the paper should come from the root-level `scripts/` pipeline, not from legacy mock or demo flows in this subpackage.
+- typed VLM Planner decisions and an asynchronous single-flight lifecycle;
+- an episode-scoped Agentic state machine with `SAFE_HOLD`;
+- deployable execution-risk monitoring and joint recovery/compute routing;
+- bounded physical-recovery skills and typed expiring failure memory;
+- replaceable VLA adapters for PI0.5 and OpenVLA;
+- admitted deployment profiles, fidelity gates, fallback policies, and
+  model/reaction/task-cycle traces.
+- one `CarveAgentSession` that enforces retry/recovery budgets, forwards
+  admitted inference controls, performs typed primitive verification, gates
+  failure-memory writes, and persists a resumable run workspace.
 
-# Agentic RAG-VLM for Robotic Grasp Planning
+Use `build_profile_admitted_tool_bindings` in `agentic_vla/assembly.py` to bind
+deployment-specific observation, action execution, memory, skill, verification
+and safe-hold handlers around the admitted VLA. The canonical real-model
+integration smoke is `scripts/smoke_carve_canonical_models.py`; it is wiring
+evidence and deliberately does not claim simulator success.
 
-This repository contains the core implementation of an agentic, retrieval-augmented multimodal grasp planner built on VLM reasoning.
+## Preserved Agentic RAG-VLM Modules
+
+The same package also retains the earlier Agentic RAG-VLM implementation for
+robotic grasp planning. Its `agent/`, `core/`, `knowledge_base/`, `config/`,
+and `utils/` modules remain available and are not part of the CARVE runtime
+conformance boundary.
 
 ## Highlights
 

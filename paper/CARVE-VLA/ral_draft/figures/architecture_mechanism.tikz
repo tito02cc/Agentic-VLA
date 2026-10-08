@@ -1,0 +1,110 @@
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex,font=\sffamily]
+  \fill[blue!4] (0,3.57) rectangle (16.8,5.95);
+  \fill[teal!4] (0,1.27) rectangle (16.8,3.36);
+  \draw[ink!30,line width=0.5pt] (0,3.57) -- (16.8,3.57);
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (0.16,5.73)
+    {A. FROZEN ACTION LOOP};
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (0.16,3.14)
+    {B. EVIDENCE-GATED SUPERVISOR};
+
+  \draw[blue!65,line width=0.8pt,fill=white] (0.25,3.83) rectangle (3.55,5.28);
+  \node[inner sep=0pt] at (1.06,4.55)
+    {\includegraphics[width=1.24cm]{figures/ep39_demo.png}};
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (1.78,4.81)
+    {Observation $o_k$};
+  \node[anchor=west,text=ink,font=\scriptsize] at (1.78,4.40)
+    {RGB + state};
+  \node[anchor=west,text=blue,font=\tiny] at (1.78,4.03)
+    {recorded example};
+
+  \draw[blue!65,line width=0.8pt,fill=white] (5.05,3.83) rectangle (8.38,5.28);
+  \node[text=blue,font=\bfseries\small] at (6.72,4.74)
+    {Frozen VLA $\pi_\theta$};
+  \node[text=ink,font=\scriptsize] at (6.72,4.27)
+    {fresh observation + subgoal};
+  \node[text=amber,font=\tiny] at (6.72,3.99)
+    {quality-admitted inference profile};
+
+  \draw[blue!65,line width=0.8pt,fill=white] (9.17,3.83) rectangle (11.47,5.28);
+  \node[text=blue,font=\bfseries\scriptsize] at (10.32,4.76)
+    {Action chunk $A_k$};
+  \node[text=ink,font=\scriptsize] at (10.32,4.30)
+    {$a_{k,1},\ldots,a_{k,H}$};
+
+  \draw[blue!65,line width=0.8pt,fill=white] (12.24,3.83) rectangle (16.55,5.28);
+  \node[text=blue,font=\bfseries\scriptsize] at (14.40,4.78)
+    {Robot / simulator};
+  \node[text=ink,font=\scriptsize] at (14.40,4.35)
+    {execute chunk; observe outcome};
+  \node[text=ink,font=\tiny] at (14.40,4.01)
+    {no semantic mid-chunk override};
+
+  \draw[blue,->,line width=0.85pt] (3.58,4.56) -- (5.02,4.56);
+  \draw[blue,->,line width=0.85pt] (8.41,4.56) -- (9.14,4.56);
+  \draw[blue,->,line width=0.85pt] (11.50,4.56) -- (12.21,4.56);
+  \draw[blue!75,->,line width=0.7pt] (14.40,5.30) -- (14.40,5.51)
+    -- (1.90,5.51) -- (1.90,5.30);
+  \node[fill=blue!4,inner sep=2pt,text=blue,font=\tiny] at (10.96,5.51)
+    {next observation};
+
+  \draw[teal!70,line width=0.8pt,fill=white] (0.25,2.20) rectangle (5.43,2.91);
+  \node[anchor=west,text=teal,font=\bfseries\scriptsize] at (0.43,2.64)
+    {Task memory};
+  \node[anchor=west,text=ink,font=\scriptsize] at (2.10,2.64)
+    {source frame $\cdot$ identity $\cdot$ provenance};
+  \node[anchor=west,text=ink,font=\tiny] at (0.43,2.32)
+    {historical evidence; re-ground target in the current frame};
+
+  \draw[teal!70,line width=0.8pt,fill=white] (0.25,1.43) rectangle (5.43,2.12);
+  \node[anchor=west,text=teal,font=\bfseries\scriptsize] at (0.43,1.86)
+    {Execution monitor};
+  \node[anchor=west,text=ink,font=\scriptsize] at (2.70,1.86)
+    {risk + boundary receipt};
+  \node[anchor=west,text=ink,font=\tiny] at (0.43,1.54)
+    {process signals are not task-success certificates};
+
+  \draw[teal!70,line width=0.8pt,fill=white] (6.04,1.43) rectangle (10.28,2.91);
+  \node[text=teal,font=\bfseries\scriptsize] at (8.16,2.62)
+    {Event-triggered VLM critic / planner};
+  \node[text=ink,font=\scriptsize] at (8.16,2.17)
+    {check scene and stage};
+  \node[text=ink,font=\scriptsize] at (8.16,1.82)
+    {propose a legal next subgoal};
+
+  \draw[amber!85,line width=0.85pt,fill=white] (10.88,1.43) rectangle (16.55,2.91);
+  \node[text=amber,font=\bfseries\scriptsize] at (13.72,2.62)
+    {Boundary authority gate};
+  \node[text=ink,font=\scriptsize] at (13.72,2.17)
+    {freshness $\cdot$ allowlist $\cdot$ recovery budget};
+  \node[text=ink,font=\scriptsize] at (13.72,1.82)
+    {admit next subgoal or retain baseline};
+
+  \draw[teal,->,line width=0.75pt] (5.46,2.54) -- (6.01,2.54);
+  \draw[teal,->,line width=0.75pt] (5.46,1.78) -- (6.01,1.78);
+  \draw[teal,->,line width=0.75pt] (10.31,2.20) -- (10.85,2.20);
+  \draw[teal!70,->,line width=0.7pt] (2.92,3.80) -- (2.92,2.94);
+  \draw[amber,->,line width=0.8pt] (13.63,2.94) -- (13.63,3.47)
+    -- (6.72,3.47) -- (6.72,3.80);
+  \node[fill=teal!4,inner sep=2pt,text=amber,font=\tiny] at (10.13,3.47)
+    {only the next chunk};
+
+  \draw[ink!30,line width=0.6pt] (0,0.0) rectangle (16.8,1.08);
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (0.25,0.82)
+    {C. TWO-RATE TIMELINE};
+  \node[anchor=east,text=ink,font=\tiny] at (16.51,0.83)
+    {profile admission: replay $\rightarrow$ call cost $\rightarrow$ paired quality};
+  \foreach \xa/\xb/\lab in {3.20/6.25/$A_k$,6.63/9.68/$A_{k+1}$,10.06/13.11/$A_{k+2}$} {
+    \fill[blue!12,draw=blue!70] (\xa,0.38) rectangle (\xb,0.68);
+    \node[text=blue,font=\scriptsize] at ({(\xa+\xb)/2},0.53) {\lab};
+  }
+  \node[anchor=west,text=teal,font=\tiny] at (0.25,0.24)
+    {monitor ticks};
+  \draw[teal!60,line width=0.6pt] (3.20,0.17) -- (13.11,0.17);
+  \foreach \x in {3.50,4.15,4.80,5.45,6.10,6.83,7.48,8.13,8.78,9.43,10.26,10.91,11.56,12.21,12.86}
+    \draw[teal!65,line width=0.55pt] (\x,0.10) -- (\x,0.24);
+  \fill[amber] (6.44,0.53) circle (0.09);
+  \node[anchor=west,text=amber,font=\tiny] at (13.42,0.52)
+    {semantic change only};
+  \node[anchor=west,text=amber,font=\tiny] at (13.42,0.23)
+    {at a boundary};
+\end{tikzpicture}

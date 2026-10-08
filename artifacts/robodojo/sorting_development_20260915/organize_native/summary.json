@@ -1,0 +1,25 @@
+{
+  "completed": true,
+  "agent_enabled": false,
+  "official_result_path": "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/Pi_05/arx_x5/0_official_pi05_59999_native/2026-09-15_10-28-49_pi05_native/_result.json",
+  "official_result": {
+    "success_rate": 0.0,
+    "eval_time": 1,
+    "score": 75.0,
+    "details": {
+      "0": {
+        "layout_id": 0,
+        "success": false,
+        "score": 0.75,
+        "policy_reset_receipt": null
+      }
+    }
+  },
+  "videos": [
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/Pi_05/arx_x5/0_official_pi05_59999_native/2026-09-15_10-28-49_pi05_native/episode_0000000_cam_head_fail.mp4",
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/Pi_05/arx_x5/0_official_pi05_59999_native/2026-09-15_10-28-49_pi05_native/episode_0000000_cam_left_wrist_fail.mp4",
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/Pi_05/arx_x5/0_official_pi05_59999_native/2026-09-15_10-28-49_pi05_native/episode_0000000_cam_right_wrist_fail.mp4"
+  ],
+  "wall_seconds": 519.6597555959888,
+  "source_drift": []
+}

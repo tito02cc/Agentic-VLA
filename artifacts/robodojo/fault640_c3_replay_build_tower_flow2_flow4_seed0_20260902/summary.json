@@ -1,0 +1,78 @@
+{
+  "schema_version": "carve.robodojo.controlled-fault.v2",
+  "condition": "C3",
+  "benchmark": "RoboDojo",
+  "task": "build_tower",
+  "layout_id": 0,
+  "seed": 0,
+  "policy": "StarVLA PI-v3",
+  "controlled_fault": {
+    "enabled": true,
+    "type": "stale_action_hold",
+    "injected_at_step": 640,
+    "first_no_progress_event_step": 674
+  },
+  "runtime": {
+    "trace_available": true,
+    "vla_calls": 45,
+    "model_latency_p50_ms": 225.08977499091998,
+    "model_latency_p95_ms": 292.57194000820164,
+    "model_latency_max_ms": 796.8944329913938,
+    "first_call_latency_ms": 796.8944329913938,
+    "steady_state_model_latency_p50_ms": 224.7798869939288,
+    "steady_state_model_latency_p95_ms": 256.0180120053701,
+    "steady_state_model_latency_max_ms": 300.2122879988747,
+    "total_model_latency_ms": 10854.031304988894,
+    "request_level_action_seeded": true,
+    "first_action_seed": 0,
+    "last_action_seed": 739,
+    "compute_phase_calls": {
+      "nominal_fast_path": 43,
+      "recovery_boost": 2
+    },
+    "observed_inference_steps": [
+      2,
+      4
+    ],
+    "observed_execute_horizons": [
+      16
+    ],
+    "optimization_profile_ids": [
+      "starvla-flow2-h16"
+    ],
+    "observed_inference_step_parameters": [
+      "num_inference_steps"
+    ],
+    "inference_step_control_verified": true
+  },
+  "agentic": {
+    "semantic_checks": 0,
+    "interventions": 2,
+    "low_cost_replans": 1,
+    "semantic_planner_calls": 1,
+    "accepted_semantic_interventions": 1,
+    "planner_control_actions": [
+      "planner_vla_replan"
+    ],
+    "monitor_events": 3,
+    "first_no_progress_event_step": 674,
+    "task_plan_installs": 0,
+    "task_plan_checks": 0,
+    "task_plan_check_statuses": [],
+    "task_plan_actions": [],
+    "all_recorded_actions": [
+      "fresh_vla_replan"
+    ],
+    "task_plan_verification_modes": [],
+    "task_plan_verifier_sources": [],
+    "task_plan_sources": [],
+    "vla_instruction_capabilities": []
+  },
+  "official_result": {
+    "success": true,
+    "success_rate": 1.0,
+    "score": 1.0,
+    "video_frames": 754
+  },
+  "claim_boundary": "One controlled-fault episode. It is causal mechanism evidence only; aggregate recovery claims require paired repetitions."
+}

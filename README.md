@@ -1,140 +1,59 @@
-# CARVE-VLA
+# Agentic-VLA
 
-This repository contains **CARVE-VLA: a Compute-Adaptive Agentic Runtime for reliable long-horizon VLA execution**.
+Agentic-VLA is a research system for **boundary-gated agent supervision of action policies** and **quality-aware inference optimization**. The current paper calls the method **BIND-VLA**. `CARVE-VLA` remains in historical file paths and code identifiers so old runs and citations stay traceable; it is not a second current method. The project does not train a new VLA foundation model.
 
-The current research story is:
+The repository also includes the earlier [Agentic RAG-VLM implementation](Agentic-RAG-VLM/README.md) and [paper source](paper/Agentic-RAG-VLM/). It is related background work, **not** a second benchmark arm of BIND-VLA; do not combine its grasping results with the current VLA results.
 
-1. **CARVE Agentic Harness** supervises frozen VLA execution with deployable
-   monitoring, bounded recovery, memory, retry/escalation, fallback, and traces.
-2. **CARVE Optimize Runtime** calibrates policy-specific compute profiles under
-   action-fidelity, latency, memory, and deadline constraints.
-3. Efficient VLA inference is the current primary research contribution. The
-   Agentic Harness supplies the system workload and closed-loop acceptance
-   boundary instead of growing into another general-purpose Agent framework.
-4. PI0.5 is the main closed-loop backend. OpenVLA-7B is the second, materially
-   different autoregressive backend used to test adapter generality and
-   standard low-bit deployment, not to add another leaderboard campaign.
+The system separates three responsibilities:
 
-The current main draft is:
+1. A frozen action policy (currently PI0.5-family checkpoints in the main experiments) proposes action chunks from fresh observations.
+2. A high-frequency execution-risk Monitor records signals; a lower-frequency VLM Planner/Critic proposes semantic changes. The Harness checks freshness, allowed skills, task scope and budgets **at an action-chunk boundary** before changing the next subgoal. An execution receipt does not by itself prove task success.
+3. Optimize Runtime admits model/backend profiles only after contract, action-replay, resource and task-quality checks. Model-call latency and complete robot-task wall time are reported separately.
 
-- `paper/CARVE-VLA/root.tex`
-- `paper/CARVE-VLA/root.pdf`
+The software contracts allow other action policies to be adapted, but **cross-policy performance is not established** by the current evidence. The paper and experiments keep the RoboMME/JAX, LIBERO/PyTorch and RoboDojo checkpoints separate.
 
-The canonical current status entry point is:
+## Start Here on Another Computer
 
-- `docs/status/CARVE_VLA_COMPLETED_WORK.md`
+```bash
+git clone https://github.com/tito02cc/Agentic-VLA.git
+cd Agentic-VLA
+```
 
-For an AI assistant or a new collaborator preparing a report, start with:
+| Need | Entry point |
+| --- | --- |
+| Full method, protocol, results and limitations | [BIND-VLA technical report](paper/CARVE-VLA/ral_draft/TECHNICAL_REPORT.md) |
+| Editable paper and current PDF | [LaTeX](paper/CARVE-VLA/ral_draft/main.tex), [PDF](paper/CARVE-VLA/ral_draft/main.pdf) |
+| Figure/chart prompts and source rules | [Figure and table brief](paper/CARVE-VLA/ral_draft/FIGURE_AND_TABLE_BRIEF.md), [provenance](paper/CARVE-VLA/ral_draft/FIGURE_PROVENANCE.md) |
+| Model weights, paths and upstream software | [Model and environment setup](MODEL_AND_ENVIRONMENT_SETUP.md) |
+| Videos and what each actually shows | [Video evidence index](paper/CARVE-VLA/ral_draft/VIDEO_EVIDENCE_INDEX.md), [RoboDojo shortlist](deliverables/BIND_VLA_VIDEO_SHORTLIST_20260924/README.md), [paired and cross-benchmark video guide](deliverables/BIND_VLA_PAPER_HANDOFF_20260924/videos/VIDEO_GUIDE.md) |
+| Current research route | [Execution plan](docs/plans/ROBODOJO_AGENT_MEMORY_EXECUTION_PLAN.md) |
+| Historical work | [Agentic RAG-VLM](paper/Agentic-RAG-VLM/), [archive](paper/archive/) |
+| Agentic RAG-VLM code and its own reproduction limits | [Earlier project README](Agentic-RAG-VLM/README.md), [reproduction notes](Agentic-RAG-VLM/docs/REPRODUCTION.md) |
 
-- `docs/AI_PROJECT_CONTEXT.md`
+The repository includes both projects' code, documentation and paper sources, plus key aggregate evidence and selected short videos. It **does not include model weights, the school-provided Guanghua robot meshes, full simulator assets, Python environments, personal midterm files, all per-step rollouts or every video listed by the source-machine catalog**. See the explicit [public upload scope](docs/handoff/PUBLIC_REPOSITORY_SCOPE_20261008.md). No model checkpoint or existing paper was removed from this local workspace during publication. The previous root README is preserved at [docs/archive/README_20260922.md](docs/archive/README_20260922.md).
 
-Supporting architecture and execution documents:
+## Current Evidence, With Scope
 
-- `docs/plans/CARVE_VLA_NEXT_STAGE_PLAN.md`
-- `docs/architecture/CARVE_RUNTIME_ARCHITECTURE.md`
+| Experiment | Observation | Boundary |
+| --- | --- | --- |
+| RoboMME eight-task development study | Raw/Harness/selective variants `23/80`, `36/80`, `42/80` | Selective condition combines development versions; not a frozen confirmatory result |
+| Fixed RoboMME identity-memory pair | `5/12 -> 9/12`, 5 rescues and 1 harm | One task family; exact paired `p=0.21875` |
+| Cross-task memory transfer | `15/16 -> 13/16` | Always-on memory can hurt |
+| Frozen Raw/Harness stress check | `3/32 -> 4/32` | Limited improvement; `p=1.0` |
+| Local LIBERO/LIBERO-PRO study | `180/400 -> 183/400`; VLA calls `-8.4%`, total wall `+16.5%` | Ten initial states per task, not the official 50-state leaderboard |
+| Independent PyTorch PI0.5 model calls | P95 `282.43 -> 54.67 ms` across 7-step eager to 2-step compiled+SMVE | Recorded inputs; **not** RoboMME/JAX or whole-robot-loop speed |
+| RoboDojo controlled-fault tower | Historical PI-v3 C1/C3 `0/3 -> 3/3` | Injected fault, replayed Planner decision and profile change; not natural-task PI0.5 gain |
 
-`docs/status/EXPERIMENT_AND_PAPER_STATUS_20260612.md` is retained as a
-historical June milestone and is not the current completion record.
+These numbers should not be combined into a claim that the *same frozen system* is both more successful and faster end-to-end. The technical report states exactly which conditions are exploratory, paired, rejected or independently timed. A RoboDojo `organize_table` video marked 100 points was invalidated by an early-return audit and is excluded from the representative set.
 
-## Current Runtime Evidence
+## Code Map
 
-On one RTX 4090, PI0.5 compiled BF16 reduces fixed-replay P50/P95 from
-`154.34/159.59 ms` to `65.73/67.40 ms`. Static Masked-View Elision (SMVE),
-which removes only adapter-guaranteed padding views, further reaches
-`54.35/56.19 ms` while passing all 45 fixed-noise replay checks.
+- `agentic_vla/runtime/`: policy adapters, Monitor, Harness, session lifecycle and traces.
+- `agentic_vla/toolchain/`: typed tool intents, task plans, scoped memory and recovery verification.
+- `agentic_vla/optimization/`: profile contracts, fidelity/admission, backend options and fallback.
+- `agentic_vla/benchmarks/`: benchmark-facing observation/action adapters and evaluator isolation.
+- `scripts/`: experiment runners, audits, plotting and model/service launchers.
+- `tests/`: CPU and integration regression tests. Tests do not substitute for full simulator evaluation.
+- `integration_patches/robodojo/`: local RoboDojo/XPolicyLab source changes needed by the historical evaluation environment; apply only to the documented pinned upstream commits.
 
-Under a real co-resident Qwen3.5-4B visual workload, ordinary compiled BF16
-misses an 80 ms deadline on `72.8%` of 500 calls. SMVE reduces the miss rate to
-`0.6%` while both profiles retain the same replay fidelity gate. Paired
-synchronous Task 8/9 evaluation records `8/10` for SMVE and `7/10` for ordinary
-compiled BF16; this is treated as non-inferiority evidence, not a success-rate
-improvement claim.
-
-The current Agentic systems gate is the PI0.5 Recovery Challenge in real
-LIBERO MuJoCo. Across three exact restored states, frozen continuation,
-frequent replan, prompt retry, and physical recovery each complete `2/3`.
-However, replan and prompt retry require `452/508` PI0.5 calls versus `113` for
-continuation. Physical recovery verifies both supported stall states and fails
-closed on an unsupported stale-action event. A separate online T6 run completes
-automatic monitoring, 12 bounded recovery actions, verification, replanning,
-and task success. These results support event-triggered compute and explicit
-recovery contracts; they are not reported as benchmark-wide success gains.
-
-The coupled Agentic-Optimize gate restores the same T6/T9 stall states under
-eager BF16, compiled BF16, and compiled BF16 + SMVE. All profiles preserve
-`2/2` task outcomes and verified recoveries. Runtime P95 falls from `166.26 ms`
-to `65.75/54.50 ms`, and 80 ms deadline misses fall from `236/236` to zero for
-both admitted profiles. This is the direct bridge between Agentic recovery and
-the current efficient-inference contribution.
-
-The same CARVE profiling and fidelity boundary now runs a materially different
-OpenVLA-7B autoregressive policy. On ten paired real LIBERO Task 8/9 frames,
-BF16 requires `14.42 GB` peak VRAM and reaches `303.48/310.92 ms` P50/P95.
-BitsAndBytes INT8 and NF4 reduce peak VRAM to `7.76/4.41 GB`, but increase P50
-to `1533.96/748.35 ms` and fail the predeclared exact-action gate. They are
-retained as rejected memory-oriented profiles, not promoted as realtime modes.
-Critical-path profiling attributes `67.2%` of OpenVLA BF16 CUDA time to six
-autoregressive decode calls. A CARVE `torch.compile` language-model profile,
-with CUDA Graphs disabled and both observed prompt-length buckets prewarmed,
-reduces steady-state P50/P95 to `224.25/231.84 ms` with `10/10` exactly matching
-actions. It requires `200.19 s` of profile preparation and still misses the
-100 ms deadline, so it is accepted as a bounded latency optimization rather
-than a realtime solution.
-
-The following are retained results from the earlier Agentic-VLA paper phase,
-not the sole evidence for the current Optimize Runtime contribution. Their raw
-rollout directories were not retained during the earlier cleanup, so they are
-treated as historical context rather than the primary reproducible result:
-
-Main LIBERO-10 comparison:
-
-- `pi05_libero` baseline: `90.0%` (`180/200`)
-- refined full CARVE-VLA: `92.5%` (`185/200`)
-- dominant weak task: `55.0%` -> `75.0%`
-
-Earlier deployment-oriented robosuite study:
-
-- robosuite Stack raw pi0.5 fixed `1-step`: `0/10`
-- pi0.5 + Agentic retry fixed `1-step`: `10/10`
-- full pi0.5 calls: `43.0/episode` -> `6.0/episode`
-
-Main result files:
-
-- `paper/CARVE-VLA/root.tex`
-- `paper/CARVE-VLA/root.pdf`
-- `paper/archive/Agentic-VLA-v1-submission/agentic_vla_paper_v1.pdf`
-- `paper/archive/Agentic-VLA-v1-submission/agentic_vla_paper_v1.tex`
-- `results/carve_pi05_recovery_challenge_20260719/REPORT.md`
-- `docs/reports/CARVE_VLA_MIDTERM_REPORT_20260717.md`
-
-The tracked subset under `results/` is a compact evidence package. It contains
-the reports, machine-readable summaries, figures, traces, and short videos used
-by the current midterm claims; model weights and full rollout caches remain
-local-only.
-
-## Important Directories
-
-- `docs/`: architecture, experiment plans, research updates, methods, and status logs.
-- `scripts/`: current experiment, sweep, plotting, data collection, and compact-policy scripts.
-- `openpi/`: OpenPI policy stack and local pi0.5 integration.
-- `agentic_vla/runtime/`: model-neutral Agentic and policy contracts, including
-  PI0.5 and OpenVLA adapters.
-- `agentic_vla/optimization/`: model/backend plugins, calibrated profiles,
-  fidelity gates, benchmark reports, and deployment manifests.
-- `quantization/`: lightweight inference and quantization utilities retained for VLA deployment work.
-- `paper/Agentic Policy/`: source papers and survey notes.
-- `paper/Agentic-RAG-VLM/`: previous paper project, intentionally preserved.
-- `paper/CARVE-VLA/`: current 15-page WAICA/LNCS-style manuscript.
-- `paper/archive/`: preserved previous submissions and superseded drafts.
-
-## Cleanup State
-
-The repository root was renamed to `CARVE-VLA` and its active documentation was
-organized under `docs/` on 2026-07-16. No paper, result, checkpoint, or model
-asset was removed during this reorganization.
-
-Retained large items:
-
-- `weights/openpi-assets`
-- `checkpoints/pi05_robosuite_stack_smoke`
-- local `LIBERO/` and `openpi/` checkouts
+For paper writing alone, the technical report, manuscript, figures, evidence JSON and videos are sufficient. To rerun simulations, follow [MODEL_AND_ENVIRONMENT_SETUP.md](MODEL_AND_ENVIRONMENT_SETUP.md) and check checkpoint revisions, normalizers, camera/action semantics and simulator versions before running any benchmark. The local directory may still be named `CARVE-VLA`; renaming that directory is not required and would invalidate historical absolute paths.

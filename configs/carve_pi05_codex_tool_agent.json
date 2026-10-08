@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "run_id": "carve-pi05-codex-tool-agent-smoke",
+  "planner": {
+    "mode": "external_coding_agent",
+    "planner_id": "codex-tool-agent",
+    "provider": null,
+    "model": "codex",
+    "endpoint": "",
+    "api_key_env": "",
+    "timeout_s": 120.0,
+    "max_tokens": 192,
+    "jpeg_quality": 85,
+    "max_calls_per_episode": 8,
+    "max_grounding_repairs": 1,
+    "minimum_intervention_confidence": 0.55,
+    "prompt_schema_version": "carve.tool-agent.v1"
+  },
+  "harness": {
+    "task_start_policy": "event_only",
+    "primitive_boundary_policy": "event_only",
+    "allowed_tools": [
+      "observe",
+      "retrieve_memory",
+      "vla_act",
+      "run_skill",
+      "verify",
+      "safe_hold",
+      "finish"
+    ],
+    "retry_budget": 2,
+    "recovery_budget": 2,
+    "memory_retrieval_limit": 8,
+    "planner_cooldown_steps": 50,
+    "safe_hold_timeout_s": 10.0,
+    "safe_hold_heartbeat_hz": 10.0
+  },
+  "vla": {
+    "policy_id": "pi05-libero-pytorch",
+    "adapter_id": "pi05",
+    "model_id": "pi05",
+    "checkpoint_id": "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243",
+    "deployment_profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+    "endpoint": "ws://127.0.0.1:18081",
+    "profile_manifest_path": "results/carve_optimize/deployment/pi05_smve_promoted.json"
+  },
+  "optimize": {
+    "enabled": true,
+    "enforce_profile_admission": true,
+    "allow_reference_fallback": true,
+    "deadline_ms": 80.0
+  },
+  "benchmark": {
+    "environment_id": "libero-pro",
+    "suite_id": "qualification",
+    "task_id": "framework-integration-smoke",
+    "seed": 7,
+    "max_steps": 600,
+    "record_video": true
+  },
+  "artifacts": {
+    "results_root": "results/carve_runs",
+    "persist_frames": false
+  }
+}

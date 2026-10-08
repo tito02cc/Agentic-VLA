@@ -1,0 +1,16 @@
+\begin{table}
+\caption{Standalone PI0.5 Optimize Runtime ablation on 45 paired observations.}
+\label{tab:efficiency_full}
+\centering\footnotesize
+\begin{tabular}{llcccc}
+\toprule
+ID & Profile & P95 & Miss@80 ms & VRAM & Fidelity \\
+\midrule
+V0 & Eager BF16, 7 steps & 282.43 ms & 100\% & 7.12 GiB & reference \\
+V1 & Eager BF16, 2 steps & 151.35 ms & 100\% & 7.12 GiB & reference \\
+V2 & Compile BF16, 2 steps & 66.06 ms & 0\% & 6.98 GiB & 45/45 \\
+V3 & Compile BF16 + SMVE, 2 steps & 54.67 ms & 0\% & 6.98 GiB & 45/45 \\
+V4 & Late-language INT8, 2 steps & 994.74 ms & 100\% & 6.36 GiB & 45/45 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,14 @@
+\begin{table}
+\caption{Qwen3.5-4B Planner precision ablation on 30 paired temporal observations.}
+\label{tab:planner_quant}
+\centering\small
+\begin{tabular}{llcccc}
+\toprule
+ID & Precision & VRAM & P95 & Agreement & Decision \\
+\midrule
+Q0 & BF16 & 8.46 GiB & 1.90 s & 100\% & latency default \\
+Q1 & INT8 & 4.84 GiB & 6.50 s & 100\% & kernel rejected \\
+Q2 & NF4 & 3.08 GiB & 2.91 s & 100\% & memory tier \\
+\bottomrule
+\end{tabular}
+\end{table}

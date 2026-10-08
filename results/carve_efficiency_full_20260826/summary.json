@@ -1,0 +1,308 @@
+{
+  "schema_version": "carve-efficiency-full-study-v1",
+  "date": "2026-08-26",
+  "hardware": "NVIDIA GeForce RTX 4090 24GB",
+  "vla_protocol": {
+    "checkpoint": "pi05_libero_pytorch",
+    "paired_recorded_observations": 45,
+    "fixed_noise": true,
+    "action_horizon": 10,
+    "deadline_ms": 80.0
+  },
+  "planner_protocol": {
+    "model": "Qwen3.5-4B",
+    "paired_temporal_observations": 30,
+    "semantic_protocol": "code_v5",
+    "profiles": [
+      "BF16",
+      "INT8",
+      "NF4"
+    ]
+  },
+  "vla_rows": [
+    {
+      "profile_id": "V0",
+      "label": "Eager BF16, 7 steps",
+      "runtime_p50_ms": 277.61396899586543,
+      "runtime_p95_ms": 282.4302706052549,
+      "runtime_p99_ms": 284.1623263375368,
+      "deadline_miss_rate_80ms": 1.0,
+      "peak_vram_gib": 7.119950294494629,
+      "fidelity_passed": true,
+      "fidelity_samples": 0,
+      "decision": "behavior_reference",
+      "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_eager_bf16_7step_h10.json",
+      "p95_change_vs_v0_percent": 0.0,
+      "vram_change_vs_v0_percent": 0.0
+    },
+    {
+      "profile_id": "V1",
+      "label": "Eager BF16, 2 steps",
+      "runtime_p50_ms": 147.12867900379933,
+      "runtime_p95_ms": 151.3521423912607,
+      "runtime_p99_ms": 155.82660872139968,
+      "deadline_miss_rate_80ms": 1.0,
+      "peak_vram_gib": 7.119950294494629,
+      "fidelity_passed": true,
+      "fidelity_samples": 0,
+      "decision": "reject_deadline",
+      "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_eager_bf16_2step_h10.json",
+      "p95_change_vs_v0_percent": -46.41079298373032,
+      "vram_change_vs_v0_percent": 0.0
+    },
+    {
+      "profile_id": "V2",
+      "label": "Compile BF16, 2 steps",
+      "runtime_p50_ms": 63.768344989512116,
+      "runtime_p95_ms": 66.05965138878673,
+      "runtime_p99_ms": 66.6464300325606,
+      "deadline_miss_rate_80ms": 0.0,
+      "peak_vram_gib": 6.982977867126465,
+      "fidelity_passed": true,
+      "fidelity_samples": 45,
+      "decision": "retain_fallback",
+      "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_torch_compile_bf16_2step_h10.json",
+      "p95_change_vs_v0_percent": -76.6102793276304,
+      "vram_change_vs_v0_percent": -1.923783477450336
+    },
+    {
+      "profile_id": "V3",
+      "label": "Compile BF16 + SMVE, 2 steps",
+      "runtime_p50_ms": 52.20068001653999,
+      "runtime_p95_ms": 54.671654012054205,
+      "runtime_p99_ms": 54.88770303898491,
+      "deadline_miss_rate_80ms": 0.0,
+      "peak_vram_gib": 6.982977867126465,
+      "fidelity_passed": true,
+      "fidelity_samples": 45,
+      "decision": "promote_realtime",
+      "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_smve_bf16_2step_h10.json",
+      "p95_change_vs_v0_percent": -80.64242409466537,
+      "vram_change_vs_v0_percent": -1.923783477450336
+    },
+    {
+      "profile_id": "V4",
+      "label": "Late-language INT8, 2 steps",
+      "runtime_p50_ms": 954.8011549923103,
+      "runtime_p95_ms": 994.7432449960615,
+      "runtime_p99_ms": 1008.2376199541613,
+      "deadline_miss_rate_80ms": 1.0,
+      "peak_vram_gib": 6.3602495193481445,
+      "fidelity_passed": true,
+      "fidelity_samples": 45,
+      "decision": "reject_current_backend",
+      "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_late_int8_2step_h10.json",
+      "p95_change_vs_v0_percent": 252.20843816220642,
+      "vram_change_vs_v0_percent": -10.670029195764318
+    }
+  ],
+  "planner_rows": [
+    {
+      "profile_id": "Q0",
+      "label": "Qwen3.5-4B BF16",
+      "allocated_vram_gib": 8.455068111419678,
+      "peak_allocated_vram_gib": 8.455068588256836,
+      "load_seconds": 9.759892225265503,
+      "latency_mean_ms": 1653.6014905335226,
+      "latency_p95_ms": 1896.5507079119561,
+      "protocol_valid_rate": 1.0,
+      "no_op_false_positive_rate": 0.0,
+      "severe_intervention_recall": 1.0,
+      "semantic_gate_passed": true,
+      "exact_semantic_decision_agreement": 1.0,
+      "intervention_agreement": 1.0,
+      "decision": "promote_latency",
+      "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_bf16_receipt.json",
+      "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_bf16_semantic_gate.json",
+      "vram_change_vs_p0_percent": 0.0,
+      "p95_change_vs_p0_percent": 0.0
+    },
+    {
+      "profile_id": "Q1",
+      "label": "Qwen3.5-4B INT8",
+      "allocated_vram_gib": 4.839301586151123,
+      "peak_allocated_vram_gib": 4.884202003479004,
+      "load_seconds": 30.178561449050903,
+      "latency_mean_ms": 5424.6740391293615,
+      "latency_p95_ms": 6504.446872253901,
+      "protocol_valid_rate": 1.0,
+      "no_op_false_positive_rate": 0.0,
+      "severe_intervention_recall": 1.0,
+      "semantic_gate_passed": true,
+      "exact_semantic_decision_agreement": 1.0,
+      "intervention_agreement": 1.0,
+      "decision": "reject_current_kernel",
+      "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_int8_receipt.json",
+      "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_int8_semantic_gate.json",
+      "vram_change_vs_p0_percent": -42.764487259245,
+      "p95_change_vs_p0_percent": 242.96192794207423
+    },
+    {
+      "profile_id": "Q2",
+      "label": "Qwen3.5-4B NF4",
+      "allocated_vram_gib": 3.0753183364868164,
+      "peak_allocated_vram_gib": 3.0961456298828125,
+      "load_seconds": 10.348504066467285,
+      "latency_mean_ms": 2370.9928451338783,
+      "latency_p95_ms": 2909.7868683515117,
+      "protocol_valid_rate": 1.0,
+      "no_op_false_positive_rate": 0.0,
+      "severe_intervention_recall": 1.0,
+      "semantic_gate_passed": true,
+      "exact_semantic_decision_agreement": 1.0,
+      "intervention_agreement": 1.0,
+      "decision": "retain_memory_tier",
+      "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_nf4_receipt.json",
+      "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_nf4_semantic_gate.json",
+      "vram_change_vs_p0_percent": -63.62751552133334,
+      "p95_change_vs_p0_percent": 53.42520799536634
+    }
+  ],
+  "version_sensitivity": {
+    "current_torch": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_late_int8_2step_h10.json",
+    "current_int8_p95_ms": 994.7432449960615,
+    "compatible_stack_source": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_int8_vlm_late_fidelity45_20260825.json",
+    "compatible_stack": {
+      "cuda": "12.6",
+      "torch": "2.7.1+cu126",
+      "torchao": "0.15.0"
+    },
+    "compatible_int8_p95_ms": 71.6133942019951
+  },
+  "closed_loop_quantization_gate": {
+    "schema_version": "carve-pi05-quantized-closed-loop-v1",
+    "protocol": {
+      "snapshots": [
+        "task06_episode001_step0013",
+        "task09_episode001_step0013"
+      ],
+      "branch": "physical_recovery",
+      "branch_horizon": 440,
+      "fixed_noise_seed": 7,
+      "inference_steps": 2,
+      "action_horizon": 10,
+      "deadline_ms": 80.0
+    },
+    "arms": [
+      {
+        "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+        "closed_loop": {
+          "successes": 2,
+          "trials": 2,
+          "passed": true,
+          "rows": [
+            {
+              "snapshot": "task06_episode001_step0013",
+              "success": true,
+              "executed_steps": 249,
+              "vla_calls": 119,
+              "deadline_misses": 1,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t6_videos/task06_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t6.json"
+            },
+            {
+              "snapshot": "task09_episode001_step0013",
+              "success": true,
+              "executed_steps": 272,
+              "vla_calls": 130,
+              "deadline_misses": 0,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t9_videos/task09_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t9.json"
+            }
+          ]
+        },
+        "runtime": {
+          "calls": 249,
+          "runtime_p50_ms": 51.19351399480365,
+          "runtime_p95_ms": 53.32415679877158,
+          "runtime_p99_ms": 56.10133140289691,
+          "deadline_misses": 1
+        },
+        "decision": "retain_realtime_default"
+      },
+      {
+        "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_late",
+        "closed_loop": {
+          "successes": 2,
+          "trials": 2,
+          "passed": true,
+          "rows": [
+            {
+              "snapshot": "task06_episode001_step0013",
+              "success": true,
+              "executed_steps": 248,
+              "vla_calls": 118,
+              "deadline_misses": 1,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t6_videos/task06_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t6.json"
+            },
+            {
+              "snapshot": "task09_episode001_step0013",
+              "success": true,
+              "executed_steps": 303,
+              "vla_calls": 146,
+              "deadline_misses": 1,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t9_videos/task09_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t9.json"
+            }
+          ]
+        },
+        "runtime": {
+          "calls": 264,
+          "runtime_p50_ms": 66.22567999875173,
+          "runtime_p95_ms": 69.15477985021425,
+          "runtime_p99_ms": 73.16667364444585,
+          "deadline_misses": 2
+        },
+        "decision": "admit_as_low_memory_tier"
+      },
+      {
+        "profile_id": "pi05-torchao_int8_masked_views-bf16-2step-h10-vlm_late",
+        "closed_loop": {
+          "successes": 1,
+          "trials": 2,
+          "passed": false,
+          "rows": [
+            {
+              "snapshot": "task06_episode001_step0013",
+              "success": true,
+              "executed_steps": 251,
+              "vla_calls": 120,
+              "deadline_misses": 1,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69_videos/task06_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69.json"
+            },
+            {
+              "snapshot": "task09_episode001_step0013",
+              "success": false,
+              "executed_steps": 440,
+              "vla_calls": 214,
+              "deadline_misses": 0,
+              "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69_videos/task09_episode001_step0013_physical_recovery.mp4",
+              "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69.json"
+            }
+          ]
+        },
+        "runtime": {
+          "calls": 334,
+          "runtime_p50_ms": 54.46322450006846,
+          "runtime_p95_ms": 56.74392325017834,
+          "runtime_p99_ms": 61.92590382488564,
+          "deadline_misses": 1
+        },
+        "decision": "reject_closed_loop_regression"
+      }
+    ],
+    "default_profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+    "low_memory_profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_late",
+    "rejected_composition_profile_id": "pi05-torchao_int8_masked_views-bf16-2step-h10-vlm_late",
+    "conclusion": "Late-language INT8 preserves both matched recovery outcomes and is admitted only as a low-memory tier. SMVE remains the realtime default. The composed INT8+SMVE profile fails T9 and is rejected."
+  },
+  "recommended_profiles": {
+    "vla_realtime": "V3",
+    "vla_fallback": "V2",
+    "vla_low_memory": "late-language INT8 only on the validated compatible stack",
+    "planner_latency": "Q0",
+    "planner_low_memory": "Q2"
+  }
+}

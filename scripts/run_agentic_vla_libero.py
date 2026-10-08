@@ -64,12 +64,32 @@ def _resolve_openpi_root() -> pathlib.Path:
 OPENPI_ROOT = _resolve_openpi_root()
 OPENPI_SRC = OPENPI_ROOT / "src"
 OPENPI_CLIENT_SRC = OPENPI_ROOT / "packages" / "openpi-client" / "src"
-LIBERO_SRC = OPENPI_ROOT / "third_party" / "libero"
-if not (LIBERO_SRC / "libero").exists():
-    LIBERO_SRC = PROJECT_ROOT / "LIBERO"
+
+
+def _resolve_libero_root() -> pathlib.Path:
+    candidates = []
+    if env_root := os.environ.get("AGENTIC_VLA_LIBERO_ROOT"):
+        candidates.append(pathlib.Path(env_root).expanduser())
+    candidates.extend((OPENPI_ROOT / "third_party" / "libero", PROJECT_ROOT / "LIBERO"))
+    for candidate in candidates:
+        if (candidate / "libero").exists():
+            return candidate.resolve()
+    raise RuntimeError(
+        "Unable to locate a LIBERO-compatible checkout. Set AGENTIC_VLA_LIBERO_ROOT "
+        "to the original LIBERO, LIBERO-Plus, or LIBERO-Pro repository root."
+    )
+
+
+LIBERO_SRC = _resolve_libero_root()
 
 for extra_path in (PROJECT_ROOT, OPENPI_SRC, OPENPI_CLIENT_SRC, LIBERO_SRC):
     sys.path.insert(0, str(extra_path))
+
+from agentic_vla.benchmarks.libero_pro import (
+    LIBERO_PRO_SUITES,
+    build_libero_pro_haa_index,
+    validate_libero_pro_root,
+)
 
 os.environ.setdefault("MUJOCO_GL", "egl")
 os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
@@ -128,6 +148,21 @@ _ALLOWED_EXPERTS = {
     RECOVERY_EXPERT,
     REGRASP_EXPERT,
 }
+
+
+def _retain_joint_when_planner_deferred(
+    routed_transition: Any,
+    planner_transition: Any,
+) -> Any:
+    """Keep an executable decision when an optional planner call is suppressed."""
+
+    if (
+        getattr(planner_transition, "ticket", None) is None
+        and getattr(planner_transition, "joint", None) is None
+    ):
+        return routed_transition
+    return planner_transition
+
 
 # ===== Graph RAG + Memory Constants (A3) =====
 SCENE_PRIORS = {
@@ -344,6 +379,8 @@ class EpisodeInstrumentation:
     control_steps: int = 0
     fast_path_steps: int = 0
     control_latency_ms_values: list[float] = dataclasses.field(default_factory=list)
+    observation_to_action_ms_values: list[float] = dataclasses.field(default_factory=list)
+    task_cycle_ms_values: list[float] = dataclasses.field(default_factory=list)
     vla_control_latency_ms_values: list[float] = dataclasses.field(default_factory=list)
     cached_control_latency_ms_values: list[float] = dataclasses.field(default_factory=list)
     control_stage_ms_values: dict[str, list[float]] = dataclasses.field(default_factory=dict)
@@ -376,6 +413,9 @@ class EpisodeInstrumentation:
     semantic_latency_ms_values: list[float] = dataclasses.field(default_factory=list)
     semantic_schedule_events: list[dict[str, Any]] = dataclasses.field(default_factory=list)
     semantic_observation_events: list[dict[str, Any]] = dataclasses.field(default_factory=list)
+    high_level_agent_events: list[dict[str, Any]] = dataclasses.field(default_factory=list)
+    high_level_agent_submissions: list[dict[str, Any]] = dataclasses.field(default_factory=list)
+    high_level_agent_timeouts: int = 0
 
     def mark_control_start(self) -> None:
         if self.control_start_s is None:
@@ -471,6 +511,19 @@ class EpisodeInstrumentation:
             self.fast_path_steps += 1
         if self.control_deadline_ms > 0 and elapsed_ms > self.control_deadline_ms:
             self.deadline_misses += 1
+
+    def record_reaction_timing(
+        self,
+        *,
+        observation_to_action_s: float,
+        task_cycle_s: float,
+    ) -> None:
+        if observation_to_action_s < 0 or task_cycle_s < 0:
+            raise ValueError("reaction timing values must be non-negative")
+        self.observation_to_action_ms_values.append(
+            float(observation_to_action_s * 1000.0)
+        )
+        self.task_cycle_ms_values.append(float(task_cycle_s * 1000.0))
 
     def mark_recovery_triggered(self) -> None:
         self.recoveries_triggered += 1
@@ -588,6 +641,96 @@ class EpisodeInstrumentation:
             }
         )
 
+    def record_high_level_agent_submission(
+        self,
+        ticket: Any,
+        *,
+        timestep: int,
+        trigger: str,
+    ) -> None:
+        """Record an asynchronous planner submission separately from completion."""
+        self.planner_calls += 1
+        scene_graph = dict(ticket.context.scene_graph)
+        entities = scene_graph.get("entities", ())
+        relations = scene_graph.get("relations", ())
+        self.high_level_agent_submissions.append(
+            {
+                "ticket_id": str(ticket.ticket_id),
+                "timestep": int(timestep),
+                "trigger": str(trigger),
+                "context_timestep": int(ticket.context.timestep),
+                "affordance_retrieval_ids": [
+                    str(record.get("experience_id"))
+                    for record in ticket.context.affordance_retrievals
+                    if record.get("experience_id")
+                ],
+                "scene_graph_entities": len(entities),
+                "scene_graph_relations": len(relations),
+                "failure_memory_records": len(ticket.context.memory_records),
+            }
+        )
+
+    def record_high_level_agent_timeout(
+        self,
+        ticket: Any,
+        *,
+        timestep: int,
+        trigger: str,
+        boundary_timeout_s: float,
+    ) -> None:
+        self.high_level_agent_timeouts += 1
+        self.high_level_agent_events.append(
+            {
+                "ticket_id": str(ticket.ticket_id),
+                "timestep": int(timestep),
+                "submitted_timestep": int(ticket.context.timestep),
+                "trigger": str(trigger),
+                "accepted": False,
+                "elapsed_ms": None,
+                "error": "planner boundary timeout",
+                "awaited_at_safe_boundary": True,
+                "boundary_timeout_s": float(boundary_timeout_s),
+                "decision_applied": False,
+                "decision": None,
+            }
+        )
+
+    def record_high_level_agent_result(
+        self,
+        result: Any,
+        *,
+        timestep: int,
+        trigger: str,
+        ticket: Any | None = None,
+        awaited_at_safe_boundary: bool = False,
+        decision_applied: bool = False,
+        stale: bool = False,
+    ) -> None:
+        if ticket is None:
+            # Compatibility path for recorded-frame smoke only. Online CARVE
+            # evaluation records a submission before the asynchronous result.
+            self.planner_calls += 1
+        self.planner_ms += float(result.elapsed_ms)
+        if ticket is None:
+            self.blocking_reasoning_ms += float(result.elapsed_ms)
+        self.high_level_agent_events.append(
+            {
+                "ticket_id": str(ticket.ticket_id) if ticket is not None else None,
+                "timestep": int(timestep),
+                "submitted_timestep": (
+                    int(ticket.context.timestep) if ticket is not None else int(timestep)
+                ),
+                "trigger": str(trigger),
+                "accepted": bool(result.accepted),
+                "elapsed_ms": float(result.elapsed_ms),
+                "error": result.error,
+                "awaited_at_safe_boundary": bool(awaited_at_safe_boundary),
+                "decision_applied": bool(decision_applied),
+                "stale": bool(stale),
+                "decision": result.decision.to_dict(),
+            }
+        )
+
     def finish(self, *, success: bool, episode_steps: int, peak_gpu_mem_gb: float | None) -> dict[str, Any]:
         finished_s = time.perf_counter()
         ttfa_ms = None
@@ -629,6 +772,15 @@ class EpisodeInstrumentation:
             "skipped_vla_calls": int(self.skipped_vla_calls),
             "lightweight_fallback_count": int(self.lightweight_fallback_count),
             "planner_calls": int(self.planner_calls),
+            "high_level_agent": {
+                "calls": int(self.planner_calls),
+                "submissions": list(self.high_level_agent_submissions),
+                "timeouts": int(self.high_level_agent_timeouts),
+                "accepted": sum(
+                    bool(event.get("accepted")) for event in self.high_level_agent_events
+                ),
+                "events": list(self.high_level_agent_events),
+            },
             "verifier_calls": int(self.verifier_calls),
             "memory_retrievals": int(self.memory_retrievals),
             "transition_triggers": int(self.transition_triggers),
@@ -671,6 +823,18 @@ class EpisodeInstrumentation:
                 ),
                 "control_latency_ms_p95": _safe_percentile(
                     self.control_latency_ms_values, 95
+                ),
+                "observation_to_action_ms_p50": _safe_percentile(
+                    self.observation_to_action_ms_values, 50
+                ),
+                "observation_to_action_ms_p95": _safe_percentile(
+                    self.observation_to_action_ms_values, 95
+                ),
+                "task_cycle_ms_p50": _safe_percentile(
+                    self.task_cycle_ms_values, 50
+                ),
+                "task_cycle_ms_p95": _safe_percentile(
+                    self.task_cycle_ms_values, 95
                 ),
                 "vla_control_steps": len(self.vla_control_latency_ms_values),
                 "vla_control_latency_ms_p50": _safe_percentile(
@@ -816,6 +980,10 @@ def _parse_semantic_label(content: Any) -> tuple[str, str] | None:
     failures = {"NONE", "MISGRASP", "DROP", "MISALIGN", "COLLISION", "STALL", "OTHER"}
     for line in str(content or "").replace("`", "").splitlines():
         normalized_line = line.strip().upper().rstrip(".")
+        if normalized_line == "DECISION: KEEP":
+            return "NOMINAL", "NONE"
+        if normalized_line == "DECISION: REFRESH":
+            return "REPLAN", "OTHER"
         if normalized_line in code_map:
             return code_map[normalized_line]
         parts = [part.strip().upper() for part in line.split("|")]
@@ -837,11 +1005,80 @@ def _semantic_image_data_url(image: Any) -> str:
     ).decode("ascii")
 
 
+def _semantic_change_map(reference_image: Any, current_image: Any) -> np.ndarray:
+    reference = np.asarray(reference_image, dtype=np.int16)
+    current = np.asarray(current_image, dtype=np.int16)
+    if reference.shape != current.shape:
+        raise ValueError("semantic change-map images must have identical shapes")
+    return np.clip(np.abs(current - reference) * 8, 0, 255).astype(np.uint8)
+
+
+def _semantic_change_overlay(reference_image: Any, current_image: Any) -> np.ndarray:
+    reference = np.asarray(reference_image, dtype=np.int16)
+    current = np.asarray(current_image, dtype=np.uint8)
+    if reference.shape != current.shape or current.ndim != 3 or current.shape[-1] != 3:
+        raise ValueError("semantic change-overlay images must have identical RGB shapes")
+    magnitude = np.max(np.abs(current.astype(np.int16) - reference), axis=-1)
+    mask = magnitude > 8
+    padded = np.pad(mask, 2)
+    dilated = np.zeros_like(mask)
+    for y_offset in range(5):
+        for x_offset in range(5):
+            dilated |= padded[
+                y_offset : y_offset + mask.shape[0],
+                x_offset : x_offset + mask.shape[1],
+            ]
+    overlay = current.copy()
+    red = np.asarray([255, 0, 0], dtype=np.float32)
+    overlay[dilated] = (
+        0.25 * overlay[dilated].astype(np.float32) + 0.75 * red
+    ).astype(np.uint8)
+    return overlay
+
+
 def _build_semantic_vlm_payload(request: Mapping[str, Any]) -> dict[str, Any]:
     task = str(request.get("task", "robot manipulation task"))
     event = str(request.get("event", "visual execution anomaly detected"))
     protocol = str(request.get("semantic_protocol", "label_v1"))
-    if protocol == "code_v2":
+    if protocol == "code_v5":
+        prompt = (
+            "Compare BEFORE and CURRENT object by object. CHANGE OVERLAY is the CURRENT "
+            "scene with locally changed pixels highlighted red; if there is no change "
+            "it remains an ordinary current scene. Use red only to locate change, then "
+            "verify its semantic meaning in BEFORE and CURRENT. First write one short "
+            "evidence line of at most 12 words. "
+            "The action plan was computed from BEFORE. Any material change to a task "
+            "object, target, containment, or robot-object relation requires refresh. "
+            "Then write a final line exactly DECISION: REFRESH or DECISION: KEEP. "
+            "Output exactly two lines."
+        )
+    elif protocol == "code_v4":
+        prompt = (
+            "Compare BEFORE and CURRENT object by object. First write one short "
+            "evidence line of at most 12 words naming the concrete visual change, "
+            "or say no change. The action plan was computed from BEFORE. Any material "
+            "change to a task object, target, containment, or robot-object relation "
+            "requires refresh even if the task remains achievable. Then write a final "
+            "line exactly DECISION: REFRESH or DECISION: KEEP. Output exactly two lines."
+        )
+    elif protocol == "code_v3":
+        prompt = (
+            "You are a semantic plan-validity observer for a robot manipulation "
+            "policy. The BEFORE frame is the visual reference used to compute the "
+            "current action plan. "
+            f"Task: {task}. Runtime signal: {event}; this signal may be a false alarm. "
+            "Compare BEFORE with CURRENT and decide whether that existing plan may "
+            "continue without a fresh observation and replan. A visible displacement "
+            "of a task-relevant movable object, target receptacle, or robot-object "
+            "relationship invalidates the old plan even when the overall task remains "
+            "achievable; choose A in that case. Ignore only rendering jitter and "
+            "visually negligible changes. Reply with exactly one character: N=no "
+            "task-relevant change and old plan remains valid, A=pose or scene change "
+            "requiring replan, G=misgrasp, D=dropped object, C=collision requiring "
+            "stop, S=stall requiring recovery, O=other plan-invalidating change. No "
+            "explanation."
+        )
+    elif protocol == "code_v2":
         prompt = (
             "You are a semantic safety observer for a robot manipulation policy. "
             f"Task: {task}. Runtime signal: {event}; this signal may be a false alarm. "
@@ -875,19 +1112,57 @@ def _build_semantic_vlm_payload(request: Mapping[str, Any]) -> dict[str, Any]:
                 },
             ]
         )
-    content.extend(
-        [
-            {"type": "text", "text": f"Current frame. {prompt}"},
-            {
-                "type": "image_url",
-                "image_url": {"url": _semantic_image_data_url(request["image"])},
-            },
-        ]
-    )
+    if protocol in {"code_v3", "code_v4", "code_v5"}:
+        current_image = request["image"]
+        content.extend(
+            [
+                {"type": "text", "text": "Current frame:"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": _semantic_image_data_url(current_image)},
+                },
+            ]
+        )
+        if protocol == "code_v5":
+            if reference_image is None:
+                raise ValueError("code_v5 requires a reference image")
+            content.extend(
+                [
+                    {"type": "text", "text": "Change overlay:"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": _semantic_image_data_url(
+                                _semantic_change_overlay(reference_image, current_image)
+                            )
+                        },
+                    },
+                ]
+            )
+        content.append({"type": "text", "text": prompt})
+    else:
+        content.extend(
+            [
+                {"type": "text", "text": f"Current frame. {prompt}"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": _semantic_image_data_url(request["image"])},
+                },
+            ]
+        )
     return {
         "model": str(request["model"]),
         "messages": [{"role": "user", "content": content}],
-        "max_tokens": int(request.get("max_tokens", 4 if protocol == "code_v2" else 12)),
+        "max_tokens": int(
+            request.get(
+                "max_tokens",
+                48
+                if protocol in {"code_v4", "code_v5"}
+                else 4
+                if protocol in {"code_v2", "code_v3"}
+                else 12,
+            )
+        ),
         "temperature": 0,
     }
 
@@ -1942,7 +2217,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--task-suite",
         default="libero_spatial",
-        choices=["libero_spatial", "libero_object", "libero_goal", "libero_10", "libero_90"],
+        choices=[
+            "libero_spatial",
+            "libero_object",
+            "libero_goal",
+            "libero_10",
+            "libero_90",
+            "libero_10_swap",
+            "libero_10_object",
+            "libero_10_task",
+        ],
         help="LIBERO task suite name.",
     )
     parser.add_argument("--task-id", type=int, default=None, help="Single task id to run.")
@@ -1982,6 +2266,21 @@ def _parse_args() -> argparse.Namespace:
         help="Max absolute xy object displacement in meters for --perturbation mid_episode_nudge.",
     )
     parser.add_argument("--video-dir", default=str(PROJECT_ROOT / "results" / "videos"), help="Video output directory.")
+    parser.add_argument(
+        "--video-render-size",
+        type=int,
+        default=0,
+        help=(
+            "Optional square display-render resolution. Values greater than zero "
+            "record an independent MuJoCo render while leaving policy observations "
+            "at their configured resolution; zero records the policy camera frame."
+        ),
+    )
+    parser.add_argument(
+        "--video-camera",
+        default="agentview",
+        help="MuJoCo camera used when --video-render-size is greater than zero.",
+    )
     parser.add_argument(
         "--results-json",
         default=str(PROJECT_ROOT / "results" / "libero_eval_results.json"),
@@ -2025,8 +2324,62 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--carve-semantic-max-tokens", type=int, default=12)
     parser.add_argument(
         "--carve-semantic-protocol",
-        choices=("label_v1", "code_v2"),
+        choices=("label_v1", "code_v2", "code_v3", "code_v4", "code_v5"),
         default="label_v1",
+    )
+    parser.add_argument(
+        "--carve-high-level-agent",
+        action="store_true",
+        help=(
+            "Enable the guarded external multimodal planner at explicit Agentic "
+            "boundaries."
+        ),
+    )
+    parser.add_argument(
+        "--carve-canonical-harness",
+        action="store_true",
+        help=(
+            "Route guarded planner lifecycle and safe-boundary state transitions "
+            "through AsyncAgenticHarnessController. Requires --carve-high-level-agent."
+        ),
+    )
+    parser.add_argument(
+        "--carve-agentic-knowledge",
+        action="store_true",
+        help=(
+            "Inject deployable semantic scene graphs and the fixed HAA-RAG "
+            "experience index into canonical high-level planner calls."
+        ),
+    )
+    parser.add_argument(
+        "--carve-semantic-before-recovery",
+        action="store_true",
+        help=(
+            "At a confirmed recovery boundary, let the canonical VLM planner "
+            "select a registered skill or grounded VLA replan before execution."
+        ),
+    )
+    parser.add_argument(
+        "--carve-high-level-task-start-policy",
+        choices=("event_only", "startup_shadow", "startup_wait"),
+        default="event_only",
+        help=(
+            "Task-start VLM semantics: event_only makes no startup call; "
+            "startup_shadow records but never applies it; startup_wait holds "
+            "before motion and applies the complete guarded decision."
+        ),
+    )
+    parser.add_argument("--carve-high-level-max-calls", type=int, default=3)
+    parser.add_argument("--carve-high-level-min-confidence", type=float, default=0.55)
+    parser.add_argument("--carve-high-level-max-tokens", type=int, default=128)
+    parser.add_argument(
+        "--carve-high-level-boundary-timeout-sec",
+        type=float,
+        default=10.0,
+        help=(
+            "Maximum time to await a VLM result after execution has entered a "
+            "safe planner boundary; expiry fails closed rather than blocking VLA control."
+        ),
     )
     parser.add_argument(
         "--carve-physical-recovery",
@@ -2041,6 +2394,14 @@ def _parse_args() -> argparse.Namespace:
         type=float,
         default=1e-4,
         help="Minimum EEF response required before replanning after physical recovery.",
+    )
+    parser.add_argument(
+        "--carve-max-recovery-attempts",
+        type=int,
+        default=2,
+        help=(
+            "Bounded physical-recovery budget before planner escalation or safe stop."
+        ),
     )
     parser.add_argument(
         "--carve-async-prefetch",
@@ -2123,6 +2484,15 @@ def _parse_args() -> argparse.Namespace:
         type=int,
         default=10,
         help="Maximum action horizon committed by the CARVE joint controller.",
+    )
+    parser.add_argument(
+        "--carve-monitor-warmup-steps",
+        type=int,
+        default=60,
+        help=(
+            "Control steps collected before the deployable monitor may emit a stall; "
+            "prevents startup transients from triggering recovery."
+        ),
     )
 
     # Ablation flags
@@ -2395,6 +2765,34 @@ def _require_runtime():
     return benchmark, get_libero_path, OffScreenRenderEnv, SegmentationRenderEnv, image_tools, websocket_client_policy
 
 
+def _configure_isolated_libero_paths(root: pathlib.Path) -> pathlib.Path:
+    """Point this process at one checkout without changing ~/.libero."""
+
+    package_root = root / "libero" / "libero"
+    if not package_root.is_dir():
+        raise FileNotFoundError(f"LIBERO package data root not found: {package_root}")
+    config_root = pathlib.Path(
+        os.environ.get(
+            "AGENTIC_VLA_LIBERO_CONFIG_PATH",
+            PROJECT_ROOT / "results" / "_runtime" / f"libero_config_{root.name}",
+        )
+    ).expanduser()
+    config_root.mkdir(parents=True, exist_ok=True)
+    config = {
+        "assets": str(package_root / "assets"),
+        "bddl_files": str(package_root / "bddl_files"),
+        "benchmark_root": str(package_root),
+        "datasets": str(root / "libero" / "datasets"),
+        "init_states": str(package_root / "init_files"),
+    }
+    (config_root / "config.yaml").write_text(
+        json.dumps(config, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    os.environ["LIBERO_CONFIG_PATH"] = str(config_root)
+    return config_root
+
+
 def _max_steps_for_suite(task_suite_name: str) -> int:
     if task_suite_name == "libero_spatial":
         return 220
@@ -2402,7 +2800,7 @@ def _max_steps_for_suite(task_suite_name: str) -> int:
         return 280
     if task_suite_name == "libero_goal":
         return 300
-    if task_suite_name == "libero_10":
+    if task_suite_name.startswith("libero_10"):
         return 520
     if task_suite_name == "libero_90":
         return 400
@@ -2467,6 +2865,13 @@ def _build_results_payload(
             "carve_runtime": getattr(args, "carve_runtime", False),
             "carve_joint_controller": getattr(args, "carve_joint_controller", False),
             "carve_physical_recovery": getattr(args, "carve_physical_recovery", False),
+            "carve_high_level_agent": getattr(args, "carve_high_level_agent", False),
+            "carve_high_level_max_calls": getattr(
+                args, "carve_high_level_max_calls", None
+            ),
+            "carve_high_level_min_confidence": getattr(
+                args, "carve_high_level_min_confidence", None
+            ),
             "carve_async_prefetch": getattr(args, "carve_async_prefetch", False),
             "carve_prefetch_lead_actions": getattr(
                 args, "carve_prefetch_lead_actions", None
@@ -3652,6 +4057,9 @@ def _ba_aac_commit_steps(
 
 
 def evaluate_real_libero(args: argparse.Namespace) -> dict:
+    _configure_isolated_libero_paths(LIBERO_SRC)
+    if args.task_suite in LIBERO_PRO_SUITES:
+        validate_libero_pro_root(LIBERO_SRC, args.task_suite)
     benchmark, get_libero_path, offscreen_render_env, segmentation_render_env, image_tools, websocket_client_policy = _require_runtime()
 
     np.random.seed(args.seed)
@@ -3661,6 +4069,10 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
     carve_physical_enabled = bool(getattr(args, "carve_physical_recovery", False))
     carve_async_prefetch_enabled = bool(getattr(args, "carve_async_prefetch", False))
     carve_semantic_shadow_enabled = bool(getattr(args, "carve_semantic_shadow", False))
+    carve_high_level_enabled = bool(getattr(args, "carve_high_level_agent", False))
+    carve_canonical_harness_enabled = bool(
+        getattr(args, "carve_canonical_harness", False)
+    )
     if carve_joint_enabled and not args.carve_runtime:
         raise ValueError("--carve-joint-controller requires --carve-runtime")
     if carve_physical_enabled and not carve_joint_enabled:
@@ -3669,6 +4081,27 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
         raise ValueError("--carve-async-prefetch requires --carve-joint-controller")
     if carve_semantic_shadow_enabled and not carve_joint_enabled:
         raise ValueError("--carve-semantic-shadow requires --carve-joint-controller")
+    if carve_high_level_enabled and not carve_joint_enabled:
+        raise ValueError("--carve-high-level-agent requires --carve-joint-controller")
+    if carve_canonical_harness_enabled and not carve_high_level_enabled:
+        raise ValueError(
+            "--carve-canonical-harness requires --carve-high-level-agent"
+        )
+    if bool(args.carve_agentic_knowledge) and not carve_canonical_harness_enabled:
+        raise ValueError(
+            "--carve-agentic-knowledge requires --carve-canonical-harness"
+        )
+    if bool(args.carve_semantic_before_recovery) and not (
+        carve_canonical_harness_enabled and carve_physical_enabled
+    ):
+        raise ValueError(
+            "--carve-semantic-before-recovery requires the canonical harness "
+            "and physical recovery"
+        )
+    if carve_high_level_enabled and bool(getattr(args, "agentic_planner", False)):
+        raise ValueError(
+            "use either --carve-high-level-agent or the legacy --agentic-planner, not both"
+        )
     if carve_semantic_shadow_enabled and str(args.perturbation) == "clean":
         logger.warning(
             "CARVE semantic shadow is event-triggered; clean episodes may issue no VLM calls"
@@ -3682,6 +4115,14 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
         raise ValueError("CARVE semantic slack and timeout values must be positive")
     if int(args.carve_semantic_max_tokens) <= 0:
         raise ValueError("--carve-semantic-max-tokens must be positive")
+    if int(args.carve_high_level_max_calls) <= 0:
+        raise ValueError("--carve-high-level-max-calls must be positive")
+    if int(args.carve_high_level_max_tokens) <= 0:
+        raise ValueError("--carve-high-level-max-tokens must be positive")
+    if float(args.carve_high_level_boundary_timeout_sec) <= 0:
+        raise ValueError("--carve-high-level-boundary-timeout-sec must be positive")
+    if not 0.0 <= float(args.carve_high_level_min_confidence) <= 1.0:
+        raise ValueError("--carve-high-level-min-confidence must be in [0, 1]")
     if (
         carve_async_prefetch_enabled
         and not 2 <= int(args.carve_prefetch_lead_actions) < int(args.carve_commit_steps)
@@ -3707,6 +4148,10 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
         raise ValueError("--carve-prefetch-prefix-gripper-min must be in [0, 1]")
     if float(args.carve_physical_minimum_state_response) <= 0:
         raise ValueError("--carve-physical-minimum-state-response must be positive")
+    if int(args.carve_max_recovery_attempts) <= 0:
+        raise ValueError("--carve-max-recovery-attempts must be positive")
+    if int(args.carve_monitor_warmup_steps) < 0:
+        raise ValueError("--carve-monitor-warmup-steps must be non-negative")
     if int(args.carve_fixed_inference_steps) < 0:
         raise ValueError("--carve-fixed-inference-steps must be non-negative")
     if int(args.carve_fixed_inference_steps) > 0 and not args.carve_runtime:
@@ -3724,36 +4169,81 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
     if carve_joint_enabled:
         from agentic_vla.experiments import FailureSnapshotWriter
         from agentic_vla.runtime import (
+            AgentIntent,
+            AgenticKnowledgeProvider,
             ActionPrefixThresholds,
             ActionPrefixVerifier,
             ActionSpec,
+            AsyncAgenticHarnessController,
+            AsyncGuardedHighLevelAgent,
             AsyncInferencePrefetcher,
             AsyncSemanticObserver,
             DeadlineAwareSemanticScheduler,
             ExecutionMode,
             ExecutionRiskMonitor,
+            FailureMemory,
+            GuardedHighLevelAgent,
+            HighLevelAgentConfig,
+            HighLevelAgentContext,
             JointControllerConfig,
             JointRecoveryComputeController,
+            MonitorConfig,
+            OpenAICompatibleVisionPlanner,
+            PausedExecutionSafeHoldAdapter,
             PrefetchContext,
             PrefetchDutyCycle,
             RecoveryContext,
             RecoveryMemory,
+            RecoverySkillRegistry,
             StatefulRecoveryExecutor,
             SemanticObservationContext,
             SemanticScheduleConfig,
-            build_cartesian_retreat_plan,
+            TaskStartPolicy,
+            compose_grounded_vla_instruction,
         )
 
-        carve_monitor = ExecutionRiskMonitor()
+        carve_monitor = ExecutionRiskMonitor(
+            MonitorConfig(warmup_steps=int(args.carve_monitor_warmup_steps))
+        )
+        carve_recovery_skills = RecoverySkillRegistry.with_default_skills()
         carve_controller = JointRecoveryComputeController(
             JointControllerConfig(
                 fast_inference_steps=int(args.carve_fast_inference_steps),
                 accurate_inference_steps=int(args.carve_accurate_inference_steps),
                 low_risk_commit=int(args.carve_commit_steps),
                 high_risk_commit=int(args.carve_commit_steps),
+                max_recovery_attempts=int(args.carve_max_recovery_attempts),
             )
         )
+        carve_high_level_planner = (
+            OpenAICompatibleVisionPlanner(
+                    endpoint=str(args.carve_semantic_endpoint),
+                    model=str(args.carve_semantic_model),
+                    timeout_s=float(args.carve_semantic_timeout_sec),
+                    max_tokens=int(args.carve_high_level_max_tokens),
+            )
+            if carve_high_level_enabled
+            else None
+        )
+        carve_high_level_config = HighLevelAgentConfig(
+            max_calls_per_episode=int(args.carve_high_level_max_calls),
+            minimum_intervention_confidence=float(
+                args.carve_high_level_min_confidence
+            ),
+        )
+        carve_knowledge_provider = (
+            AgenticKnowledgeProvider(build_libero_pro_haa_index())
+            if bool(args.carve_agentic_knowledge)
+            else None
+        )
+        # The single-flight executor is episode scoped. A stale request from one
+        # episode must never consume the next episode's planner budget.
+        carve_high_level_agent = None
+        carve_async_high_level_agent = None
         carve_recovery_memory = RecoveryMemory(max_records=256)
+        # Physical recovery outcomes and semantic planner evidence have distinct
+        # schemas and retrieval policies; they must not share one store.
+        carve_failure_memory = FailureMemory(max_records=256)
         carve_recovery_action_spec = ActionSpec(
             action_dim=7,
             representation="normalized_delta_cartesian_pose",
@@ -3801,9 +4291,15 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
         carve_controller = None
         carve_snapshot_writer = None
         carve_recovery_memory = None
+        carve_failure_memory = None
+        carve_knowledge_provider = None
         carve_recovery_action_spec = None
         carve_prefix_verifier = None
         carve_semantic_scheduler_config = None
+        carve_high_level_agent = None
+        carve_high_level_planner = None
+        carve_high_level_config = None
+        carve_async_high_level_agent = None
 
     # Initialize agents based on ablation flags
     ba_harness_enabled = _is_ba_harness(args)
@@ -4058,6 +4554,7 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
             current_subgoal = "execute"
             subgoal_success_window = 0
             ba_recovery_count = 0
+            carve_failure_streak = 0
             ba_recovery_cooldown_steps = 0
             ba_transition_lockout_steps = 0
             mid_episode_nudge_applied = False
@@ -4080,6 +4577,7 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
             carve_recovery_phase_records = []
             carve_physical_active = False
             carve_post_recovery_event = None
+            carve_skip_post_recovery_semantic = False
             carve_abort_episode = False
             carve_prefetcher = (
                 AsyncInferencePrefetcher(
@@ -4102,6 +4600,58 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                 DeadlineAwareSemanticScheduler(carve_semantic_scheduler_config)
                 if carve_semantic_shadow_enabled
                 else None
+            )
+            carve_high_level_agent = (
+                GuardedHighLevelAgent(
+                    carve_high_level_planner,
+                    carve_high_level_config,
+                )
+                if carve_high_level_planner is not None
+                else None
+            )
+            carve_async_high_level_agent = (
+                AsyncGuardedHighLevelAgent(carve_high_level_agent)
+                if carve_high_level_agent is not None
+                else None
+            )
+            carve_high_level_task_start_policy = str(
+                args.carve_high_level_task_start_policy
+            )
+            carve_canonical_harness = None
+            carve_canonical_started = False
+            if carve_canonical_harness_enabled:
+                assert carve_high_level_planner is not None
+                assert carve_high_level_config is not None
+
+                def _canonical_planner_factory(_episode_id: str):
+                    return AsyncGuardedHighLevelAgent(
+                        GuardedHighLevelAgent(
+                            carve_high_level_planner,
+                            carve_high_level_config,
+                        )
+                    )
+
+                carve_canonical_harness = AsyncAgenticHarnessController(
+                    carve_controller,
+                    planner_factory=_canonical_planner_factory,
+                    task_start_policy=TaskStartPolicy(
+                        carve_high_level_task_start_policy
+                    ),
+                    safe_hold_adapter=PausedExecutionSafeHoldAdapter(),
+                    failure_memory=carve_failure_memory,
+                    knowledge_provider=carve_knowledge_provider,
+                    planner_cooldown_steps=int(args.planner_cooldown_steps),
+                    safe_hold_timeout_s=float(
+                        args.carve_high_level_boundary_timeout_sec
+                    ),
+                )
+                # The canonical harness owns the planner lifecycle. Keeping the
+                # legacy per-episode agent live would permit duplicate requests.
+                carve_async_high_level_agent = None
+            carve_high_level_start_pending = bool(
+                carve_high_level_enabled
+                and not carve_canonical_harness_enabled
+                and carve_high_level_task_start_policy != "event_only"
             )
             carve_pending_semantic_event = None
             carve_semantic_reference_frame = None
@@ -4154,6 +4704,10 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                 episode_trace.mark_control_start()
                 loop_step_start_s = time.perf_counter()
                 step_had_blocking_reasoning = False
+                # VLM planning is allowed to wait only after execution reaches a
+                # safe boundary. Keep that wait out of the VLA control-latency
+                # metric and expose it as its own stage in the episode trace.
+                planner_boundary_wait_s = 0.0
                 step_vla_calls_before = episode_trace.vla_calls
                 if planner_cooldown_steps > 0:
                     planner_cooldown_steps -= 1
@@ -4230,20 +4784,41 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                             carve_physical_active = False
                             carve_recovery_command = None
                             if recovery_outcome.request_replan:
-                                carve_post_recovery_event = {
-                                    "event": recovery_outcome.trigger_event,
-                                    "action": "replan_after_physical_recovery",
-                                    "reason": recovery_outcome.status.value,
-                                    "skill_id": recovery_outcome.skill_id,
-                                    "recovery_session_id": recovery_outcome.session_id,
-                                }
+                                carve_failure_streak = 0
+                                if carve_canonical_harness is not None:
+                                    carve_canonical_harness.clear_failures()
+                                if carve_skip_post_recovery_semantic:
+                                    carve_post_recovery_event = None
+                                    carve_skip_post_recovery_semantic = False
+                                else:
+                                    carve_post_recovery_event = {
+                                        "event": recovery_outcome.trigger_event,
+                                        "action": "replan_after_physical_recovery",
+                                        "reason": recovery_outcome.status.value,
+                                        "skill_id": recovery_outcome.skill_id,
+                                        "recovery_session_id": recovery_outcome.session_id,
+                                    }
                                 current_prompt = effective_prompt
                                 current_subgoal = "execute"
                                 carve_monitor.reset()
                                 failure_taxonomy.reset()
                             else:
                                 carve_pending_decision = None
-                                carve_abort_episode = True
+                                carve_failure_streak += 1
+                                if carve_canonical_harness is not None:
+                                    carve_canonical_harness.record_failure()
+                                if carve_high_level_enabled:
+                                    action_plan.clear()
+                                    action_age_plan.clear()
+                                    carve_monitor.reset()
+                                    failure_taxonomy.reset()
+                                    logger.warning(
+                                        "[CARVE] Recovery verification failed; "
+                                        "recording failure streak %d for guarded escalation",
+                                        carve_failure_streak,
+                                    )
+                                else:
+                                    carve_abort_episode = True
                     if carve_physical_active:
                         carve_recovery_command = carve_recovery_executor.next_command()
                         carve_recovery_phase_start = np.asarray(
@@ -4330,7 +4905,19 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                 wrist_img_p = image_tools.convert_to_uint8(
                     image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
                 )
-                replay_images.append(base_img)
+                if args.video_render_size > 0:
+                    raw_video_frame = np.asarray(
+                        env.sim.render(
+                            camera_name=str(args.video_camera),
+                            height=int(args.video_render_size),
+                            width=int(args.video_render_size),
+                        ),
+                        dtype=np.uint8,
+                    )
+                    video_frame = np.ascontiguousarray(raw_video_frame[::-1])
+                else:
+                    video_frame = base_img
+                replay_images.append(video_frame)
                 episode_trace.add_control_stage(
                     "image_preprocess",
                     time.perf_counter() - image_stage_start_s,
@@ -4424,15 +5011,513 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                             components=direct_components,
                             evidence=direct_evidence,
                         )
-                    carve_decision = carve_controller.decide(
-                        carve_risk,
-                        deadline_ms=float(args.control_deadline_ms),
-                        deadline_slack_ms=deadline_slack_ms,
-                        cached_actions=len(action_plan),
-                        repeated_failures=int(ba_recovery_count),
-                        recovery_attempts=int(ba_recovery_count),
-                        planner_available=bool(args.agentic_planner),
+                    episode_key = f"task{task_id}:trial{episode_idx}"
+                    recovery_outcomes = tuple(
+                        outcome
+                        for outcome in carve_recovery_memory.recent()
+                        if str(outcome.episode_id) == f"{task_id}:{episode_idx}"
                     )
+                    remaining_recoveries = max(
+                        0,
+                        int(carve_controller.config.max_recovery_attempts)
+                        - int(ba_recovery_count),
+                    )
+                    available_high_level_skills = (
+                        carve_recovery_skills.skill_ids
+                        if carve_physical_enabled and remaining_recoveries > 0
+                        else ()
+                    )
+
+                    def build_agent_context(trigger: str, *, task_start: bool = False):
+                        return HighLevelAgentContext(
+                            task_instruction=task_description,
+                            trigger=trigger,
+                            episode_id=episode_key,
+                            timestep=control_timestep,
+                            frames={
+                                "agentview": np.asarray(base_img_p, dtype=np.uint8).copy(),
+                                "wrist": np.asarray(wrist_img_p, dtype=np.uint8).copy(),
+                            },
+                            robot_state=tuple(float(value) for value in proprio),
+                            risk=carve_risk.to_dict(),
+                            current_subgoal=current_subgoal,
+                            failure_history=tuple(
+                                str(outcome.trigger_event) for outcome in recovery_outcomes[-5:]
+                            ),
+                            memory=tuple(
+                                (
+                                    f"skill={outcome.skill_id};event={outcome.trigger_event};"
+                                    f"status={outcome.status.value};attempt={outcome.attempt}"
+                                )
+                                for outcome in recovery_outcomes[-5:]
+                            ),
+                            available_skills=(
+                                () if task_start else available_high_level_skills
+                            ),
+                            remaining_retries=max(
+                                0,
+                                int(args.carve_high_level_max_calls)
+                                - int(
+                                    carve_canonical_harness.counters.planner_calls
+                                    if carve_canonical_harness is not None
+                                    else carve_high_level_agent.calls_in_episode
+                                ),
+                            ),
+                            remaining_recoveries=(
+                                0 if task_start else remaining_recoveries
+                            ),
+                            deadline_slack_ms=deadline_slack_ms,
+                        )
+
+                    completed_start = None
+                    startup_waited = False
+                    if carve_high_level_start_pending:
+                        assert carve_async_high_level_agent is not None
+                        start_ticket = carve_async_high_level_agent.submit(
+                            build_agent_context("task_start", task_start=True)
+                        )
+                        episode_trace.record_high_level_agent_submission(
+                            start_ticket,
+                            timestep=control_timestep,
+                            trigger="task_start",
+                        )
+                        carve_high_level_start_pending = False
+                        if carve_high_level_task_start_policy == "startup_wait":
+                            wait_started_s = time.perf_counter()
+                            completed_start = carve_async_high_level_agent.take(
+                                wait=True,
+                                timeout_s=float(
+                                    args.carve_high_level_boundary_timeout_sec
+                                ),
+                            )
+                            planner_boundary_wait_s += (
+                                time.perf_counter() - wait_started_s
+                            )
+                            startup_waited = True
+                            if completed_start is None:
+                                episode_trace.record_high_level_agent_timeout(
+                                    start_ticket,
+                                    timestep=control_timestep,
+                                    trigger="task_start",
+                                    boundary_timeout_s=float(
+                                        args.carve_high_level_boundary_timeout_sec
+                                    ),
+                                )
+                                carve_abort_episode = True
+
+                    if (
+                        completed_start is None
+                        and not startup_waited
+                        and carve_async_high_level_agent is not None
+                    ):
+                        completed_start = carve_async_high_level_agent.take(wait=False)
+                    if completed_start is not None:
+                        start_result = completed_start.result
+                        start_decision = start_result.decision
+                        apply_start = bool(
+                            carve_high_level_task_start_policy == "startup_wait"
+                            and completed_start.ticket.context.trigger == "task_start"
+                            and start_result.accepted
+                            and start_decision.intent
+                            in {AgentIntent.CONTINUE, AgentIntent.VLA_ACT}
+                        )
+                        episode_trace.record_high_level_agent_result(
+                            start_result,
+                            timestep=control_timestep,
+                            trigger=completed_start.ticket.context.trigger,
+                            ticket=completed_start.ticket,
+                            awaited_at_safe_boundary=startup_waited,
+                            decision_applied=apply_start,
+                            stale=completed_start.ticket.context.trigger != "task_start",
+                        )
+                        if (
+                            carve_high_level_task_start_policy == "startup_wait"
+                            and not apply_start
+                        ):
+                            carve_abort_episode = True
+                        elif (
+                            apply_start
+                            and start_decision.intent == AgentIntent.VLA_ACT
+                        ):
+                            current_prompt = compose_grounded_vla_instruction(
+                                task_description,
+                                subgoal=start_decision.subgoal,
+                                planner_instruction=str(start_decision.vla_instruction),
+                            )
+                            current_subgoal = start_decision.subgoal or "execute"
+                            action_plan.clear()
+                            action_age_plan.clear()
+                            logger.info(
+                                "[CARVE Agent] startup-wait subgoal=%s prompt=%s",
+                                current_subgoal,
+                                current_prompt,
+                            )
+
+                    if carve_abort_episode:
+                        carve_decision = None
+                    elif carve_canonical_harness is not None:
+                        planner_trigger = (
+                            "post_recovery_verification"
+                            if carve_post_recovery_event is not None
+                            else carve_risk.event or "repeated_failure"
+                        )
+                        if not carve_canonical_started:
+                            task_start_context = build_agent_context(
+                                "task_start",
+                                task_start=True,
+                            )
+                            task_start_transition = carve_canonical_harness.start_episode(
+                                episode_key,
+                                task_start_context=(
+                                    None
+                                    if carve_high_level_task_start_policy == "event_only"
+                                    else task_start_context
+                                ),
+                            )
+                            carve_canonical_started = True
+                            if task_start_transition.ticket is not None:
+                                episode_trace.record_high_level_agent_submission(
+                                    task_start_transition.ticket,
+                                    timestep=control_timestep,
+                                    trigger="task_start",
+                                )
+                            if task_start_transition.ticket is not None and (
+                                carve_high_level_task_start_policy == "startup_wait"
+                            ):
+                                wait_started_s = time.perf_counter()
+                                completed_start = carve_canonical_harness.await_planner(
+                                    timeout_s=float(
+                                        args.carve_high_level_boundary_timeout_sec
+                                    )
+                                )
+                                planner_boundary_wait_s += (
+                                    time.perf_counter() - wait_started_s
+                                )
+                                if completed_start.timed_out:
+                                    episode_trace.record_high_level_agent_timeout(
+                                        task_start_transition.ticket,
+                                        timestep=control_timestep,
+                                        trigger="task_start",
+                                        boundary_timeout_s=float(
+                                            args.carve_high_level_boundary_timeout_sec
+                                        ),
+                                    )
+                                    carve_abort_episode = True
+                                elif completed_start.planner is not None:
+                                    start_result = completed_start.planner.result
+                                    start_decision = start_result.decision
+                                    episode_trace.record_high_level_agent_result(
+                                        start_result,
+                                        timestep=control_timestep,
+                                        trigger="task_start",
+                                        ticket=completed_start.planner.ticket,
+                                        awaited_at_safe_boundary=True,
+                                        decision_applied=completed_start.decision_applied,
+                                        stale=completed_start.stale,
+                                    )
+                                    if completed_start.state.value in {"safe_hold", "stop"}:
+                                        carve_abort_episode = True
+                                    elif start_decision.intent == AgentIntent.VLA_ACT:
+                                        current_prompt = compose_grounded_vla_instruction(
+                                            task_description,
+                                            subgoal=start_decision.subgoal,
+                                            planner_instruction=str(
+                                                start_decision.vla_instruction
+                                            ),
+                                        )
+                                        current_subgoal = start_decision.subgoal or "execute"
+
+                        if not carve_abort_episode:
+                            completed_shadow = carve_canonical_harness.poll_planner()
+                            if completed_shadow is not None and completed_shadow.planner is not None:
+                                episode_trace.record_high_level_agent_result(
+                                    completed_shadow.planner.result,
+                                    timestep=control_timestep,
+                                    trigger=completed_shadow.planner.ticket.context.trigger,
+                                    ticket=completed_shadow.planner.ticket,
+                                    awaited_at_safe_boundary=False,
+                                    decision_applied=completed_shadow.decision_applied,
+                                    stale=completed_shadow.stale,
+                                )
+
+                        if not carve_abort_episode:
+                            if carve_post_recovery_event is not None:
+                                fallback_transition = carve_canonical_harness.route(
+                                    carve_risk,
+                                    context=build_agent_context(planner_trigger),
+                                    deadline_ms=float(args.control_deadline_ms),
+                                    deadline_slack_ms=deadline_slack_ms,
+                                    cached_actions=len(action_plan),
+                                )
+                                requested_transition = (
+                                    carve_canonical_harness.request_planner(
+                                        build_agent_context(planner_trigger),
+                                        purpose="post_recovery_verification",
+                                        reason=(
+                                            "semantic verification after bounded "
+                                            "physical recovery"
+                                        ),
+                                    )
+                                )
+                                harness_transition = _retain_joint_when_planner_deferred(
+                                    fallback_transition,
+                                    requested_transition,
+                                )
+                            else:
+                                harness_transition = carve_canonical_harness.route(
+                                    carve_risk,
+                                    context=build_agent_context(planner_trigger),
+                                    deadline_ms=float(args.control_deadline_ms),
+                                    deadline_slack_ms=deadline_slack_ms,
+                                    cached_actions=len(action_plan),
+                                )
+                                if (
+                                    bool(args.carve_semantic_before_recovery)
+                                    and harness_transition.joint is not None
+                                    and harness_transition.joint.mode
+                                    == ExecutionMode.RECOVERY
+                                ):
+                                    planner_trigger = "pre_recovery_skill_selection"
+                                    requested_transition = (
+                                        carve_canonical_harness.request_planner(
+                                            build_agent_context(planner_trigger),
+                                            purpose="pre_recovery_skill_selection",
+                                            reason=(
+                                                "select a bounded recovery skill "
+                                                "at a safe boundary"
+                                            ),
+                                        )
+                                    )
+                                    harness_transition = _retain_joint_when_planner_deferred(
+                                        harness_transition,
+                                        requested_transition,
+                                    )
+                            carve_decision = harness_transition.joint
+                            if harness_transition.ticket is not None:
+                                action_plan.clear()
+                                action_age_plan.clear()
+                                light_reuse_buffer.clear()
+                                light_reuse_suffix_counted = False
+                                episode_trace.record_high_level_agent_submission(
+                                    harness_transition.ticket,
+                                    timestep=control_timestep,
+                                    trigger=planner_trigger,
+                                )
+                                wait_started_s = time.perf_counter()
+                                completed_plan = carve_canonical_harness.await_planner(
+                                    timeout_s=float(
+                                        args.carve_high_level_boundary_timeout_sec
+                                    )
+                                )
+                                planner_boundary_wait_s += (
+                                    time.perf_counter() - wait_started_s
+                                )
+                                if completed_plan.timed_out:
+                                    episode_trace.record_high_level_agent_timeout(
+                                        harness_transition.ticket,
+                                        timestep=control_timestep,
+                                        trigger=planner_trigger,
+                                        boundary_timeout_s=float(
+                                            args.carve_high_level_boundary_timeout_sec
+                                        ),
+                                    )
+                                    carve_abort_episode = True
+                                elif completed_plan.planner is not None:
+                                    high_level_result = completed_plan.planner.result
+                                    high_level_decision = high_level_result.decision
+                                    episode_trace.record_high_level_agent_result(
+                                        high_level_result,
+                                        timestep=control_timestep,
+                                        trigger=planner_trigger,
+                                        ticket=completed_plan.planner.ticket,
+                                        awaited_at_safe_boundary=True,
+                                        decision_applied=completed_plan.decision_applied,
+                                        stale=completed_plan.stale,
+                                    )
+                                    carve_decision = completed_plan.joint
+                                    if completed_plan.state.value in {"safe_hold", "stop"}:
+                                        carve_abort_episode = True
+                                    elif high_level_decision.intent == AgentIntent.VLA_ACT:
+                                        current_prompt = compose_grounded_vla_instruction(
+                                            task_description,
+                                            subgoal=high_level_decision.subgoal,
+                                            planner_instruction=str(
+                                                high_level_decision.vla_instruction
+                                            ),
+                                        )
+                                        current_subgoal = high_level_decision.subgoal or "execute"
+                                    elif (
+                                        planner_trigger
+                                        == "pre_recovery_skill_selection"
+                                        and high_level_decision.intent
+                                        == AgentIntent.RUN_SKILL
+                                    ):
+                                        carve_skip_post_recovery_semantic = True
+                    elif carve_high_level_enabled:
+                        assert carve_async_high_level_agent is not None
+                        carve_decision = carve_controller.decide(
+                            carve_risk,
+                            deadline_ms=float(args.control_deadline_ms),
+                            deadline_slack_ms=deadline_slack_ms,
+                            cached_actions=len(action_plan),
+                            repeated_failures=int(carve_failure_streak),
+                            recovery_attempts=int(ba_recovery_count),
+                            planner_available=True,
+                        )
+                        if carve_decision.mode == ExecutionMode.PLANNER:
+                            action_plan.clear()
+                            action_age_plan.clear()
+                            light_reuse_buffer.clear()
+                            light_reuse_suffix_counted = False
+                            planner_trigger = carve_risk.event or "repeated_failure"
+
+                            # A task-start request may still be running. It was
+                            # created for an older state, so collect it for audit
+                            # but never apply it at this failure boundary.
+                            if carve_async_high_level_agent.pending:
+                                pending_ticket = carve_async_high_level_agent.ticket
+                                wait_started_s = time.perf_counter()
+                                stale_result = carve_async_high_level_agent.take(
+                                    wait=True,
+                                    timeout_s=float(args.carve_high_level_boundary_timeout_sec),
+                                )
+                                planner_boundary_wait_s += time.perf_counter() - wait_started_s
+                                if stale_result is None:
+                                    assert pending_ticket is not None
+                                    episode_trace.record_high_level_agent_timeout(
+                                        pending_ticket,
+                                        timestep=control_timestep,
+                                        trigger=planner_trigger,
+                                        boundary_timeout_s=float(
+                                            args.carve_high_level_boundary_timeout_sec
+                                        ),
+                                    )
+                                    carve_abort_episode = True
+                                    carve_decision = dataclasses.replace(
+                                        carve_decision,
+                                        mode=ExecutionMode.SAFE_STOP,
+                                        reason="planner boundary timeout while stale request was pending",
+                                    )
+                                else:
+                                    episode_trace.record_high_level_agent_result(
+                                        stale_result.result,
+                                        timestep=control_timestep,
+                                        trigger=stale_result.ticket.context.trigger,
+                                        ticket=stale_result.ticket,
+                                        awaited_at_safe_boundary=True,
+                                        stale=True,
+                                    )
+
+                            if not carve_abort_episode:
+                                planner_ticket = carve_async_high_level_agent.submit(
+                                    build_agent_context(planner_trigger)
+                                )
+                                episode_trace.record_high_level_agent_submission(
+                                    planner_ticket,
+                                    timestep=control_timestep,
+                                    trigger=planner_trigger,
+                                )
+                                wait_started_s = time.perf_counter()
+                                completed_plan = carve_async_high_level_agent.take(
+                                    wait=True,
+                                    timeout_s=float(args.carve_high_level_boundary_timeout_sec),
+                                )
+                                planner_boundary_wait_s += time.perf_counter() - wait_started_s
+                                if completed_plan is None:
+                                    episode_trace.record_high_level_agent_timeout(
+                                        planner_ticket,
+                                        timestep=control_timestep,
+                                        trigger=planner_trigger,
+                                        boundary_timeout_s=float(
+                                            args.carve_high_level_boundary_timeout_sec
+                                        ),
+                                    )
+                                    carve_abort_episode = True
+                                    carve_decision = dataclasses.replace(
+                                        carve_decision,
+                                        mode=ExecutionMode.SAFE_STOP,
+                                        reason="planner boundary timeout",
+                                    )
+                                else:
+                                    high_level_result = completed_plan.result
+                                    high_level_decision = high_level_result.decision
+                                    accepted = bool(
+                                        high_level_result.accepted
+                                        and high_level_decision.intent != AgentIntent.SAFE_STOP
+                                    )
+                                    episode_trace.record_high_level_agent_result(
+                                        high_level_result,
+                                        timestep=control_timestep,
+                                        trigger=planner_trigger,
+                                        ticket=completed_plan.ticket,
+                                        awaited_at_safe_boundary=True,
+                                        decision_applied=accepted,
+                                    )
+                                    if not accepted:
+                                        carve_abort_episode = True
+                                        carve_decision = dataclasses.replace(
+                                            carve_decision,
+                                            mode=ExecutionMode.SAFE_STOP,
+                                            reason=high_level_result.error
+                                            or high_level_decision.rationale,
+                                        )
+                                    elif high_level_decision.intent == AgentIntent.RUN_SKILL:
+                                        carve_decision = dataclasses.replace(
+                                            carve_decision,
+                                            mode=ExecutionMode.RECOVERY,
+                                            reason=high_level_decision.rationale,
+                                            recovery_skill_id=high_level_decision.skill_id,
+                                        )
+                                    else:
+                                        if high_level_decision.intent == AgentIntent.VLA_ACT:
+                                            current_prompt = compose_grounded_vla_instruction(
+                                                task_description,
+                                                subgoal=high_level_decision.subgoal,
+                                                planner_instruction=str(
+                                                    high_level_decision.vla_instruction
+                                                ),
+                                            )
+                                            current_subgoal = (
+                                                high_level_decision.subgoal or "execute"
+                                            )
+                                        carve_decision = dataclasses.replace(
+                                            carve_decision,
+                                            mode=ExecutionMode.ACCURATE_VLA,
+                                            reason=high_level_decision.rationale,
+                                        )
+                                    logger.info(
+                                        "[CARVE Agent] async trigger=%s accepted=%s intent=%s subgoal=%s",
+                                        planner_trigger,
+                                        high_level_result.accepted,
+                                        high_level_decision.intent.value,
+                                        high_level_decision.subgoal,
+                                    )
+                    else:
+                        carve_decision = carve_controller.decide(
+                            carve_risk,
+                            deadline_ms=float(args.control_deadline_ms),
+                            deadline_slack_ms=deadline_slack_ms,
+                            cached_actions=len(action_plan),
+                            repeated_failures=int(carve_failure_streak),
+                            recovery_attempts=int(ba_recovery_count),
+                            planner_available=bool(args.agentic_planner),
+                        )
+                    if carve_abort_episode:
+                        if planner_boundary_wait_s > 0.0:
+                            episode_trace.add_control_stage(
+                                "planner_safe_boundary_wait",
+                                planner_boundary_wait_s,
+                            )
+                        episode_trace.add_control_stage(
+                            "joint_controller",
+                            max(
+                                0.0,
+                                time.perf_counter()
+                                - controller_stage_start_s
+                                - planner_boundary_wait_s,
+                            ),
+                        )
+                        break
                     if (
                         carve_prefetcher is not None
                         and carve_prefetcher.pending
@@ -4461,9 +5546,16 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                             action_age_plan.clear()
                             light_reuse_buffer.clear()
                             light_reuse_suffix_counted = False
+                    # Do not turn a normal cached-action refresh (for example,
+                    # low-risk ``stale_action``) into a recovery benchmark.
+                    # Saved states must be actionable failure boundaries or
+                    # genuinely high-risk observations.
                     if (
                         carve_snapshot_writer is not None
-                        and (carve_risk.event is not None or carve_risk.bucket == "high")
+                        and (
+                            carve_risk.event in BA_HIGH_RISK_EVENTS
+                            or carve_risk.bucket == "high"
+                        )
                     ):
                         saved_snapshot = carve_snapshot_writer.write(
                             env,
@@ -4479,6 +5571,7 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                             },
                             cached_actions=list(action_plan),
                             controller=carve_decision.to_dict(),
+                            last_action=carve_last_action,
                         )
                         if saved_snapshot is not None:
                             logger.info(
@@ -4492,6 +5585,8 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                         and ba_recovery_cooldown_steps <= 0
                     ):
                         ba_recovery_count += 1
+                        if carve_canonical_harness is not None:
+                            carve_canonical_harness.record_recovery_attempt()
                         ba_recovery_cooldown_steps = int(args.ba_recovery_cooldown_steps)
                         action_plan.clear()
                         action_age_plan.clear()
@@ -4501,7 +5596,12 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                         episode_trace.mark_recovery_started()
                         if carve_physical_enabled:
                             try:
-                                recovery_plan = build_cartesian_retreat_plan(
+                                recovery_skill_id = (
+                                    carve_decision.recovery_skill_id
+                                    or carve_controller.config.physical_recovery_skill
+                                )
+                                recovery_plan = carve_recovery_skills.build(
+                                    recovery_skill_id,
                                     carve_recovery_action_spec,
                                     carve_last_action,
                                 )
@@ -4557,9 +5657,19 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                         action_plan.append(np.zeros(7, dtype=np.float32))
                         action_age_plan.append(0)
                 if carve_joint_enabled:
+                    if planner_boundary_wait_s > 0.0:
+                        episode_trace.add_control_stage(
+                            "planner_safe_boundary_wait",
+                            planner_boundary_wait_s,
+                        )
                     episode_trace.add_control_stage(
                         "joint_controller",
-                        time.perf_counter() - controller_stage_start_s,
+                        max(
+                            0.0,
+                            time.perf_counter()
+                            - controller_stage_start_s
+                            - planner_boundary_wait_s,
+                        ),
                     )
                 if carve_abort_episode:
                     break
@@ -5547,7 +6657,21 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                 carve_last_action_age = int(action_chunk_age)
                 episode_steps += 1
                 expert_state.steps_in_expert += 1
-                carve_last_control_ms = (time.perf_counter() - loop_step_start_s) * 1000.0
+                carve_last_control_ms = max(
+                    0.0,
+                    (time.perf_counter() - loop_step_start_s - planner_boundary_wait_s)
+                    * 1000.0,
+                )
+                episode_trace.record_reaction_timing(
+                    observation_to_action_s=max(
+                        0.0,
+                        env_step_start_s - loop_step_start_s,
+                    ),
+                    task_cycle_s=max(
+                        0.0,
+                        time.perf_counter() - loop_step_start_s,
+                    ),
+                )
                 episode_trace.record_control_step(
                     carve_last_control_ms / 1000.0,
                     fast_path=not step_had_blocking_reasoning,
@@ -5576,6 +6700,39 @@ def evaluate_real_libero(args: argparse.Namespace) -> dict:
                             collected_timestep=max(0, episode_steps - args.num_steps_wait),
                         )
                 carve_semantic_observer.close()
+
+            if carve_async_high_level_agent is not None:
+                # The planner is advisory at task start. Do not delay episode
+                # accounting merely to wait for an obsolete result; retain one
+                # completed result when available and otherwise cancel queued work.
+                final_plan = carve_async_high_level_agent.take(wait=False)
+                if final_plan is not None:
+                    episode_trace.record_high_level_agent_result(
+                        final_plan.result,
+                        timestep=max(0, episode_steps - args.num_steps_wait),
+                        trigger=final_plan.ticket.context.trigger,
+                        ticket=final_plan.ticket,
+                        stale=True,
+                    )
+                carve_async_high_level_agent.close(wait=False)
+
+            if carve_canonical_harness is not None:
+                # The canonical controller owns the planner worker and any
+                # safe-hold state. Record a ready late result as stale evidence
+                # before closing the episode-scoped generation.
+                final_transition = carve_canonical_harness.poll_planner()
+                if (
+                    final_transition is not None
+                    and final_transition.planner is not None
+                ):
+                    episode_trace.record_high_level_agent_result(
+                        final_transition.planner.result,
+                        timestep=max(0, episode_steps - args.num_steps_wait),
+                        trigger=final_transition.planner.ticket.context.trigger,
+                        ticket=final_transition.planner.ticket,
+                        stale=True,
+                    )
+                carve_canonical_harness.close_episode(reason="episode_end")
 
             total_episodes += 1
             episode_lengths.append(episode_steps)

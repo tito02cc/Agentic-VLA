@@ -16,6 +16,11 @@ import numpy as np
 
 from agentic_vla.runtime import (
     ActionSpec,
+    AgentIntent,
+    GuardedHighLevelAgent,
+    HighLevelAgentConfig,
+    HighLevelAgentContext,
+    OpenAICompatibleVisionPlanner,
     RecoveryContext,
     RecoveryMemory,
     StatefulRecoveryExecutor,
@@ -32,7 +37,13 @@ from scripts.run_agentic_vla_libero import (
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
 BRANCHES = ("continue", "fast", "accurate", "recovery")
-SUPPORTED_BRANCHES = (*BRANCHES, "physical_recovery")
+SUPPORTED_BRANCHES = (
+    *BRANCHES,
+    "task_contract",
+    "physical_recovery",
+    "vlm_physical_recovery",
+    "vlm_replan",
+)
 
 
 def _state_digest(state: Any) -> str:
@@ -57,13 +68,18 @@ def _execute_physical_recovery(
     env,
     observation,
     cached_actions: np.ndarray,
+    last_action: np.ndarray | None,
     snapshot_id: str,
     trigger: str,
     minimum_state_response: float,
     remaining_horizon: int,
 ) -> tuple[Any, bool, int, list[np.ndarray], dict[str, Any]]:
-    if cached_actions.ndim != 2 or cached_actions.shape[1] != 7 or not len(cached_actions):
-        raise ValueError("physical recovery requires a cached 7-D action")
+    if cached_actions.ndim == 2 and cached_actions.shape[1] == 7 and len(cached_actions):
+        recovery_reference_action = cached_actions[0]
+    elif last_action is not None and np.asarray(last_action).shape == (7,):
+        recovery_reference_action = np.asarray(last_action, dtype=np.float32)
+    else:
+        raise ValueError("physical recovery requires a cached or last executed 7-D action")
     action_spec = ActionSpec(
         action_dim=7,
         representation="normalized_delta_cartesian_pose",
@@ -73,7 +89,7 @@ def _execute_physical_recovery(
         minimum=-1.0,
         maximum=1.0,
     )
-    plan = build_cartesian_retreat_plan(action_spec, cached_actions[0])
+    plan = build_cartesian_retreat_plan(action_spec, recovery_reference_action)
     if plan.action_count > remaining_horizon:
         raise ValueError("branch horizon is shorter than the physical recovery plan")
     executor = StatefulRecoveryExecutor(RecoveryMemory(max_records=4))
@@ -155,10 +171,13 @@ def _run_branch(
     image_tools,
     sim_state: np.ndarray,
     cached_actions: np.ndarray,
+    last_action: np.ndarray | None,
     task_id: int,
     snapshot_id: str,
     trigger: str,
     instruction: str,
+    execution_instruction: str,
+    use_cached_prefix: bool,
     recovery_prompt: str,
     branch: str,
     horizon: int,
@@ -169,6 +188,7 @@ def _run_branch(
     fixed_inference_steps: int,
     deadline_ms: float,
     noise_seed: int,
+    high_level_agent: GuardedHighLevelAgent | None,
     video_path: pathlib.Path | None,
 ) -> dict[str, Any]:
     env.reset()
@@ -176,7 +196,7 @@ def _run_branch(
     if hasattr(client, "runtime"):
         client.runtime.reset(f"{snapshot_id}:{branch}")
     action_plan: collections.deque = collections.deque()
-    if branch == "continue" and cached_actions.ndim == 2:
+    if branch == "continue" and use_cached_prefix and cached_actions.ndim == 2:
         action_plan.extend(cached_actions.tolist())
     frames = []
     vla_calls = 0
@@ -187,19 +207,22 @@ def _run_branch(
     optimization_profile = None
     physical_recovery = None
     physical_recovery_error = None
+    high_level_result = None
     done = bool(env.check_success())
     environment_terminated = False
     started = time.perf_counter()
     executed_steps = 0
     noise_rng = np.random.default_rng(int(noise_seed))
 
-    if branch == "physical_recovery" and not done:
+    uses_physical_recovery = branch in {"physical_recovery", "vlm_physical_recovery"}
+    if uses_physical_recovery and not done:
         try:
             observation, done, recovery_steps, recovery_frames, physical_recovery = (
                 _execute_physical_recovery(
                     env=env,
                     observation=observation,
                     cached_actions=cached_actions,
+                    last_action=last_action,
                     snapshot_id=snapshot_id,
                     trigger=trigger,
                     minimum_state_response=physical_minimum_state_response,
@@ -210,6 +233,112 @@ def _run_branch(
             frames.extend(recovery_frames)
         except ValueError as error:
             physical_recovery_error = str(error)
+
+    if (
+        branch == "vlm_physical_recovery"
+        and physical_recovery is not None
+        and physical_recovery_error is None
+        and physical_recovery["outcome"].get("request_replan", False)
+    ):
+        if high_level_agent is None:
+            raise ValueError("vlm_physical_recovery requires a high-level planner")
+        base, _, wrist = _prepare_images(observation, image_tools, resize_size)
+        proprio = np.concatenate(
+            (
+                np.asarray(observation["robot0_eef_pos"], dtype=np.float32).reshape(-1),
+                np.asarray(observation["robot0_eef_quat"], dtype=np.float32).reshape(-1),
+                np.asarray(observation["robot0_gripper_qpos"], dtype=np.float32).reshape(-1),
+            )
+        )
+        high_level_result = high_level_agent.decide(
+            HighLevelAgentContext(
+                task_instruction=str(instruction),
+                trigger="replan_after_physical_recovery",
+                episode_id=f"branch:{snapshot_id}:{branch}",
+                timestep=int(executed_steps),
+                frames={"agentview": base, "wrist": wrist},
+                robot_state=tuple(float(value) for value in proprio),
+                risk={
+                    "event": trigger,
+                    "bucket": "high",
+                    "score": 0.85,
+                    "components": {"physical_recovery": 1.0},
+                    "evidence": {
+                        "recovery_verified": True,
+                        "task_success": False,
+                        "replan_required": True,
+                    },
+                },
+                current_subgoal="task incomplete; choose next VLA subgoal",
+                failure_history=(str(trigger),),
+                memory=(
+                    f"skill={physical_recovery['skill_id']};"
+                    f"status={physical_recovery['outcome']['status']};"
+                    "task_success=false;replan_required=true",
+                ),
+                available_skills=(),
+                remaining_retries=1,
+                remaining_recoveries=0,
+                deadline_slack_ms=float(deadline_ms),
+            )
+        )
+        if (
+            high_level_result.accepted
+            and high_level_result.decision.intent is AgentIntent.VLA_ACT
+        ):
+            recovery_prompt = str(high_level_result.decision.vla_instruction)
+        elif (
+            not high_level_result.accepted
+            or high_level_result.decision.intent is AgentIntent.SAFE_STOP
+        ):
+            done = False
+            physical_recovery_error = "guarded VLM rejected post-recovery replan"
+
+    if branch == "vlm_replan" and not done:
+        if high_level_agent is None:
+            raise ValueError("vlm_replan requires a high-level planner")
+        base, _, wrist = _prepare_images(observation, image_tools, resize_size)
+        proprio = np.concatenate(
+            (
+                np.asarray(observation["robot0_eef_pos"], dtype=np.float32).reshape(-1),
+                np.asarray(observation["robot0_eef_quat"], dtype=np.float32).reshape(-1),
+                np.asarray(observation["robot0_gripper_qpos"], dtype=np.float32).reshape(-1),
+            )
+        )
+        high_level_result = high_level_agent.decide(
+            HighLevelAgentContext(
+                task_instruction=str(instruction),
+                trigger=str(trigger),
+                episode_id=f"branch:{snapshot_id}:{branch}",
+                timestep=0,
+                frames={"agentview": base, "wrist": wrist},
+                robot_state=tuple(float(value) for value in proprio),
+                risk={
+                    "event": trigger,
+                    "bucket": "high",
+                    "score": 0.85,
+                    "components": {"restored_failure": 1.0},
+                    "evidence": {"task_success": False, "replan_required": True},
+                },
+                current_subgoal="task incomplete; choose next VLA subgoal",
+                failure_history=(str(trigger),),
+                memory=("restored failure state;task_success=false;replan_required=true",),
+                available_skills=(),
+                remaining_retries=1,
+                remaining_recoveries=0,
+                deadline_slack_ms=float(deadline_ms),
+            )
+        )
+        if (
+            high_level_result.accepted
+            and high_level_result.decision.intent is AgentIntent.VLA_ACT
+        ):
+            recovery_prompt = str(high_level_result.decision.vla_instruction)
+        elif (
+            not high_level_result.accepted
+            or high_level_result.decision.intent is AgentIntent.SAFE_STOP
+        ):
+            physical_recovery_error = "guarded VLM rejected restored-state replan"
 
     physical_allows_replan = bool(
         physical_recovery_error is None
@@ -225,7 +354,23 @@ def _run_branch(
         frames.append(base)
         if not action_plan:
             use_recovery_prompt = branch == "recovery" and vla_calls < recovery_chunks
-            prompt = recovery_prompt if use_recovery_prompt else instruction
+            use_vlm_recovery_prompt = (
+                branch in {"vlm_physical_recovery", "vlm_replan"}
+                and vla_calls == 0
+                and high_level_result is not None
+                and high_level_result.accepted
+                and high_level_result.decision.intent is AgentIntent.VLA_ACT
+            )
+            default_execution_prompt = (
+                instruction
+                if branch in {"task_contract", "vlm_physical_recovery", "vlm_replan"}
+                else execution_instruction
+            )
+            prompt = (
+                recovery_prompt
+                if use_recovery_prompt or use_vlm_recovery_prompt
+                else default_execution_prompt
+            )
             agentic_request = None
             if use_recovery_prompt:
                 agentic_request = {
@@ -233,21 +378,43 @@ def _run_branch(
                     "action": "retry",
                     "reason": "paired_failure_state_branch",
                 }
-            elif branch == "physical_recovery" and vla_calls == 0:
+            elif uses_physical_recovery and vla_calls == 0:
                 agentic_request = {
                     "event": trigger,
                     "action": "replan_after_physical_recovery",
                     "reason": physical_recovery["outcome"]["status"],
                     "skill_id": physical_recovery["skill_id"],
                 }
+            elif branch == "vlm_replan" and vla_calls == 0:
+                agentic_request = {
+                    "event": trigger,
+                    "action": "planner_replan",
+                    "reason": "guarded_vlm_replan",
+                }
             requested_steps = (
                 fixed_inference_steps
                 if fixed_inference_steps > 0
-                else 2 if branch in {"accurate", "recovery", "physical_recovery"} else 1
+                else 2
+                if branch
+                in {
+                    "accurate",
+                    "recovery",
+                    "physical_recovery",
+                    "vlm_physical_recovery",
+                    "vlm_replan",
+                }
+                else 1
             )
             commit = (
                 2
-                if branch in {"accurate", "recovery", "physical_recovery"}
+                if branch
+                in {
+                    "accurate",
+                    "recovery",
+                    "physical_recovery",
+                    "vlm_physical_recovery",
+                    "vlm_replan",
+                }
                 else replan_steps
             )
             payload = _build_policy_payload(
@@ -319,10 +486,33 @@ def _run_branch(
         "optimization_profile": optimization_profile,
         "physical_recovery": physical_recovery,
         "physical_recovery_error": physical_recovery_error,
+        "high_level_planner": (
+            None
+            if high_level_result is None
+            else {
+                "accepted": bool(high_level_result.accepted),
+                "elapsed_ms": float(high_level_result.elapsed_ms),
+                "error": high_level_result.error,
+                "decision": high_level_result.decision.to_dict(),
+            }
+        ),
         "safe_stop": physical_recovery_error is not None,
-        "used_cached_prefix": bool(branch == "continue" and cached_actions.size > 0),
+        "used_cached_prefix": bool(
+            branch == "continue" and use_cached_prefix and cached_actions.size > 0
+        ),
         "video_path": str(video_path) if video_path is not None and frames else None,
         "final_state_digest": _state_digest(final_state),
+        "execution_instruction": execution_instruction,
+        "effective_initial_instruction": (
+            instruction
+            if branch in {"task_contract", "vlm_physical_recovery", "vlm_replan"}
+            else execution_instruction
+        ),
+        "controlled_fault": (
+            "semantic_stale_stage_v1"
+            if branch != "task_contract" and execution_instruction != instruction
+            else None
+        ),
     }
 
 
@@ -344,7 +534,7 @@ def parse_args() -> argparse.Namespace:
         default=",".join(BRANCHES),
         help=(
             "Comma-separated subset of continue,fast,accurate,recovery,"
-            "physical_recovery."
+            "task_contract,physical_recovery,vlm_physical_recovery,vlm_replan."
         ),
     )
     parser.add_argument("--branch-horizon", type=int, default=80)
@@ -359,7 +549,34 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--deadline-ms", type=float, default=80.0)
     parser.add_argument("--resize-size", type=int, default=224)
+    parser.add_argument(
+        "--noise-seed",
+        type=int,
+        default=7,
+        help=(
+            "Experiment-level seed mixed with each restored-state identifier to "
+            "produce deterministic but independently repeatable VLA noise."
+        ),
+    )
     parser.add_argument("--save-videos", action="store_true")
+    parser.add_argument("--vlm-endpoint", default=None)
+    parser.add_argument("--vlm-model", default=None)
+    parser.add_argument("--vlm-timeout-sec", type=float, default=20.0)
+    parser.add_argument("--vlm-max-tokens", type=int, default=128)
+    parser.add_argument(
+        "--execution-instruction-map",
+        type=pathlib.Path,
+        default=None,
+        help=(
+            "Optional JSON object mapping task IDs to a controlled stale low-level "
+            "instruction. VLM branches retain the correct task contract and may repair it."
+        ),
+    )
+    parser.add_argument(
+        "--disable-cached-prefix",
+        action="store_true",
+        help="Start controlled semantic-fault branches from a fresh VLA query.",
+    )
     return parser.parse_args()
 
 
@@ -374,6 +591,24 @@ def main() -> None:
     unknown_branches = sorted(set(selected_branches) - set(SUPPORTED_BRANCHES))
     if not selected_branches or unknown_branches:
         raise ValueError(f"invalid --branches selection: {unknown_branches or selected_branches}")
+    use_vlm_branch = bool(
+        {"vlm_physical_recovery", "vlm_replan"} & set(selected_branches)
+    )
+    if use_vlm_branch and (not args.vlm_endpoint or not args.vlm_model):
+        raise ValueError(
+            "--vlm-endpoint and --vlm-model are required by vlm_physical_recovery"
+        )
+    if args.vlm_timeout_sec <= 0 or args.vlm_max_tokens <= 0:
+        raise ValueError("VLM timeout and max tokens must be positive")
+    execution_instruction_map: dict[str, str] = {}
+    if args.execution_instruction_map is not None:
+        value = json.loads(args.execution_instruction_map.read_text(encoding="utf-8"))
+        if not isinstance(value, dict) or not all(
+            isinstance(key, str) and isinstance(item, str) and item.strip()
+            for key, item in value.items()
+        ):
+            raise ValueError("execution-instruction-map must be a JSON string map")
+        execution_instruction_map = {key: item.strip() for key, item in value.items()}
     if args.snapshot_names:
         metadata_paths = [snapshot_dir / f"{pathlib.Path(name).stem}.json" for name in args.snapshot_names]
         missing = [str(path) for path in metadata_paths if not path.is_file()]
@@ -393,13 +628,26 @@ def main() -> None:
         carve_runtime=True,
         carve_trace_jsonl=str(trace_path),
     )
+    high_level_agent = (
+        GuardedHighLevelAgent(
+            OpenAICompatibleVisionPlanner(
+                endpoint=str(args.vlm_endpoint),
+                model=str(args.vlm_model),
+                timeout_s=float(args.vlm_timeout_sec),
+                max_tokens=int(args.vlm_max_tokens),
+            ),
+            HighLevelAgentConfig(max_calls_per_episode=1),
+        )
+        if use_vlm_branch
+        else None
+    )
     records = []
     for metadata_path in metadata_paths:
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
         arrays = np.load(metadata_path.with_name(metadata["array_file"]))
         task_id = int(metadata["task_id"])
         task = suite.get_task(task_id)
-        env = _make_env(task, get_libero_path, offscreen_env, seed=7)
+        env = _make_env(task, get_libero_path, offscreen_env, seed=int(args.noise_seed))
         try:
             env.reset()
             recovery_prompt = _build_recovery_prompt(metadata["instruction"], {})
@@ -419,10 +667,19 @@ def main() -> None:
                         image_tools=image_tools,
                         sim_state=np.asarray(arrays["sim_state"], dtype=np.float64),
                         cached_actions=np.asarray(arrays["cached_actions"], dtype=np.float32),
+                        last_action=(
+                            np.asarray(arrays["last_action"], dtype=np.float32)
+                            if "last_action" in arrays
+                            else None
+                        ),
                         task_id=task_id,
                         snapshot_id=metadata_path.stem,
                         trigger=str(metadata["trigger"]),
                         instruction=metadata["instruction"],
+                        execution_instruction=execution_instruction_map.get(
+                            str(task_id), metadata["instruction"]
+                        ),
+                        use_cached_prefix=not args.disable_cached_prefix,
                         recovery_prompt=recovery_prompt,
                         branch=branch,
                         horizon=int(args.branch_horizon),
@@ -435,10 +692,13 @@ def main() -> None:
                         fixed_inference_steps=int(args.fixed_inference_steps),
                         deadline_ms=float(args.deadline_ms),
                         noise_seed=int.from_bytes(
-                            hashlib.sha256(metadata_path.stem.encode("utf-8")).digest()[:8],
+                            hashlib.sha256(
+                                f"{args.noise_seed}:{metadata_path.stem}".encode("utf-8")
+                        ).digest()[:8],
                             byteorder="little",
                             signed=False,
                         ),
+                        high_level_agent=high_level_agent,
                         video_path=video_path,
                     )
                 )
@@ -463,6 +723,7 @@ def main() -> None:
                         "branch_horizon": int(args.branch_horizon),
                         "fixed_inference_steps": int(args.fixed_inference_steps),
                         "deadline_ms": float(args.deadline_ms),
+                        "noise_seed": int(args.noise_seed),
                         "policy_call_trace": str(trace_path),
                         "records": records,
                     },

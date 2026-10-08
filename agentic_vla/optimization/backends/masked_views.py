@@ -187,6 +187,7 @@ class MaskedViewElisionBackend(BackendPlugin):
         "mode",
         "fullgraph",
         "dynamic",
+        "cudagraphs",
     }
 
     def __init__(
@@ -241,6 +242,16 @@ class MaskedViewElisionBackend(BackendPlugin):
         if dynamic_value is not None:
             compile_options["dynamic"] = dynamic_value
 
+        cudagraphs = profile.options.get("cudagraphs")
+        if cudagraphs is not None and not isinstance(cudagraphs, bool):
+            raise TypeError("masked-view cudagraphs option must be a boolean or null")
+        if cudagraphs is not None:
+            import torch._inductor.config as inductor_config
+
+            inductor_config.triton.cudagraphs = cudagraphs
+            if not cudagraphs and hasattr(inductor_config.triton, "cudagraph_trees"):
+                inductor_config.triton.cudagraph_trees = False
+
         validate_deployment_precision(adapter, profile)
         model.validate_profile(adapter, profile)
         policy = getattr(adapter, "policy", None)
@@ -275,6 +286,7 @@ class MaskedViewElisionBackend(BackendPlugin):
                 ),
                 "mask_contract": "all_batch_entries_false",
                 "compile_options": compile_options,
+                "cudagraphs": cudagraphs,
                 "source_adapter_unchanged": True,
             },
         )

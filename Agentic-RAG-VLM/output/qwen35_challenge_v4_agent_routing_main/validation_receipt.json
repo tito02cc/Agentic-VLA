@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "artifact_dir": "/home/admin1/ct/CARVE-VLA/Agentic-RAG-VLM/output/qwen35_challenge_v4_agent_routing_main",
+  "expected_runs": 100,
+  "csv_rows": 100,
+  "run_directories": 100,
+  "public_events_checked": 260,
+  "private_only_keys_checked": [
+    "constraint_satisfied",
+    "correct",
+    "duplicate_red_action",
+    "expected_public_constraint",
+    "expected_synergies",
+    "hazard_expected",
+    "mechanism_metrics",
+    "memory_preserved",
+    "metrics",
+    "perturbation_receipt",
+    "public_measured_shift_m",
+    "red_fragile_distance_m",
+    "replan_valid",
+    "result_row",
+    "role"
+  ],
+  "errors": []
+}

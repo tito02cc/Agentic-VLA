@@ -210,6 +210,22 @@ class RuntimeTrace:
     success: bool
     error: str | None = None
     metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+    reaction_latency_ms: float | None = None
+    task_cycle_latency_ms: float | None = None
+    action_age_steps: int | None = None
+    stage_latencies_ms: Mapping[str, float] = dataclasses.field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        optional_latencies = (
+            self.reaction_latency_ms,
+            self.task_cycle_latency_ms,
+        )
+        if any(value is not None and value < 0 for value in optional_latencies):
+            raise ValueError("optional runtime latencies must be non-negative")
+        if self.action_age_steps is not None and self.action_age_steps < 0:
+            raise ValueError("action_age_steps must be non-negative")
+        if any(float(value) < 0 for value in self.stage_latencies_ms.values()):
+            raise ValueError("stage latencies must be non-negative")
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)

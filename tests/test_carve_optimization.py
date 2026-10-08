@@ -14,32 +14,46 @@ from agentic_vla.optimization import (
     ActionFidelityVerifier,
     BenchmarkConfig,
     BenchmarkRunner,
+    CoResidentBenchmarkReport,
     ContractFallbackPolicy,
     EagerBackend,
     FidelityThresholds,
     HardwareSpec,
+    LingBotVlaModelPlugin,
     MaskedViewElisionBackend,
     OptimizationProfile,
     OpenVlaModelPlugin,
     Pi05ModelPlugin,
+    PlannerAdmissionRequirements,
+    PlannerBenchmarkReport,
+    PlannerOptimizationProfile,
     ProfileManifest,
+    RuntimeFallbackPolicy,
     StaticMaskedViewContract,
+    SystemAdmissionRequirements,
+    SystemOptimizationProfile,
     TorchAOInt8Backend,
+    TorchAOInt8MaskedViewBackend,
     TorchCompileBackend,
     create_default_registry,
     create_default_runtime,
+    validate_planner_profile_admission,
     validate_profile_admission,
+    validate_system_profile_admission,
 )
 from agentic_vla.runtime import InferenceControls, InferenceRequest
-from agentic_vla.runtime.adapters import OpenVlaAdapter, Pi05Adapter
+from agentic_vla.runtime.adapters import LingBotVlaAdapter, OpenVlaAdapter, Pi05Adapter
 from agentic_vla.runtime.policies import (
     OpenVlaLoadConfig,
     align_openvla_action_token_mask,
     center_crop_openvla_image,
     postprocess_openvla_libero_action,
 )
-from scripts.benchmark_carve_pi05_profile import monitor_proprio_to_policy_state
-from scripts.benchmark_carve_openvla_profile import (
+from scripts.benchmark_carve_pi05_profile import (
+    monitor_proprio_to_policy_state,
+    system_gpu_memory_used_mib,
+)
+from scripts.legacy.benchmark_carve_openvla_profile import (
     _gpu_memory_mib,
     compare_openvla_replay_actions,
 )
@@ -79,6 +93,129 @@ class FakeOpenVlaTorchPolicy(FakeOpenVlaPolicy):
         self._model.sample_actions = None
         self._model.language_model = mock.Mock()
         self._model._modules = {"language_model": self._model.language_model}
+
+
+class PlannerProfileAdmissionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.profile = PlannerOptimizationProfile(
+            profile_id="qwen35-4b-int4-json-v1",
+            model_id="Qwen3.5-4B",
+            backend="vllm",
+            deployment_precision="INT4",
+            prompt_schema_version="carve-agent-v1",
+            max_tokens=128,
+            timeout_s=10.0,
+            module_precisions={"language_decoder": "NF4"},
+            preserved_modules=("vision_tower", "decision_head"),
+        )
+
+    def test_planner_profile_round_trip_normalizes_backend_and_precision(self) -> None:
+        restored = PlannerOptimizationProfile.from_dict(self.profile.to_dict())
+
+        self.assertEqual(restored, self.profile)
+        self.assertEqual(restored.backend, "vllm")
+        self.assertEqual(restored.deployment_precision, "int4")
+        self.assertEqual(restored.module_precisions, {"language_decoder": "nf4"})
+        self.assertEqual(restored.preserved_modules, ("vision_tower", "decision_head"))
+
+    def test_planner_profile_admission_requires_semantics_and_vla_timing(self) -> None:
+        report = PlannerBenchmarkReport(
+            samples=30,
+            schema_valid_rate=1.0,
+            intent_valid_rate=1.0,
+            reference_agreement_rate=0.97,
+            latency_p50_ms=550.0,
+            latency_p95_ms=720.0,
+            timeout_rate=0.0,
+            co_resident_vla_p95_ms=74.0,
+            co_resident_vla_deadline_miss_rate=0.005,
+            unsafe_intervention_rate=0.0,
+            fail_closed_rate=1.0,
+            peak_vram_gb=4.5,
+        )
+
+        decision = validate_planner_profile_admission(self.profile, report)
+
+        self.assertTrue(decision.accepted)
+        decision.require_accepted()
+
+    def test_planner_profile_rejects_fast_but_semantically_divergent_candidate(self) -> None:
+        report = PlannerBenchmarkReport(
+            samples=30,
+            schema_valid_rate=1.0,
+            intent_valid_rate=1.0,
+            reference_agreement_rate=0.70,
+            latency_p50_ms=100.0,
+            latency_p95_ms=150.0,
+            timeout_rate=0.0,
+            co_resident_vla_p95_ms=70.0,
+            co_resident_vla_deadline_miss_rate=0.0,
+            unsafe_intervention_rate=0.1,
+            fail_closed_rate=0.9,
+            peak_vram_gb=3.0,
+        )
+
+        decision = validate_planner_profile_admission(
+            self.profile,
+            report,
+            PlannerAdmissionRequirements(minimum_samples=20),
+        )
+
+        self.assertFalse(decision.accepted)
+        self.assertTrue(
+            any("reference_agreement_rate" in item for item in decision.violations)
+        )
+        self.assertTrue(
+            any("unsafe_intervention_rate" in item for item in decision.violations)
+        )
+
+
+class SystemProfileAdmissionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.profile = SystemOptimizationProfile(
+            profile_id="qwen9b-vpnf4+pi05-smve-4090",
+            planner_profile_id="qwen9b-vpnf4",
+            vla_profile_id="pi05-smve-bf16",
+            scheduler_policy="safe_boundary_serial",
+            memory_budget_gb=23.0,
+            fallback_planner_profile_id="qwen4b-bf16",
+            fallback_vla_profile_id="pi05-compiled-bf16",
+        )
+        self.report = CoResidentBenchmarkReport(
+            samples=20,
+            peak_vram_gb=21.5,
+            planner_latency_p95_ms=700.0,
+            vla_latency_p95_ms=72.0,
+            vla_deadline_miss_rate=0.0,
+            planner_timeout_rate=0.0,
+            unsafe_intervention_rate=0.0,
+        )
+
+    def test_system_profile_round_trip_and_admission(self) -> None:
+        restored = SystemOptimizationProfile.from_dict(self.profile.to_dict())
+        self.assertEqual(restored, self.profile)
+
+        decision = validate_system_profile_admission(
+            restored,
+            self.report,
+            planner_admitted=True,
+            vla_admitted=True,
+        )
+        self.assertTrue(decision.accepted)
+        decision.require_accepted()
+
+    def test_system_profile_rejects_unadmitted_or_over_budget_pair(self) -> None:
+        report = dataclasses.replace(self.report, peak_vram_gb=23.5)
+        decision = validate_system_profile_admission(
+            self.profile,
+            report,
+            planner_admitted=False,
+            vla_admitted=True,
+            requirements=SystemAdmissionRequirements(maximum_peak_vram_gb=23.0),
+        )
+        self.assertFalse(decision.accepted)
+        self.assertTrue(any("Planner profile" in item for item in decision.violations))
+        self.assertTrue(any("peak_vram_gb" in item for item in decision.violations))
 
 
 class OpenVlaPolicyContractTests(unittest.TestCase):
@@ -132,7 +269,7 @@ class OpenVlaPolicyContractTests(unittest.TestCase):
 
     def test_openvla_profiler_reads_system_gpu_memory(self) -> None:
         with mock.patch(
-            "scripts.benchmark_carve_openvla_profile.subprocess.check_output",
+            "scripts.legacy.benchmark_carve_openvla_profile.subprocess.check_output",
             return_value="1234\n",
         ) as check_output:
             self.assertEqual(_gpu_memory_mib("cuda:1"), 1234.0)
@@ -153,10 +290,19 @@ class CarveOptimizationTest(unittest.TestCase):
 
         self.assertIsInstance(model, Pi05ModelPlugin)
         self.assertIsInstance(backend, EagerBackend)
-        self.assertEqual(registry.model_ids, ("openvla", "pi05"))
+        self.assertEqual(
+            registry.model_ids,
+            ("lingbot-vla", "openvla", "pi05", "starvla"),
+        )
         self.assertEqual(
             registry.backend_ids,
-            ("eager", "torch_compile", "torch_compile_masked_views", "torchao_int8"),
+            (
+                "eager",
+                "torch_compile",
+                "torch_compile_masked_views",
+                "torchao_int8",
+                "torchao_int8_masked_views",
+            ),
         )
 
     def test_openvla_adapter_and_plugin_preserve_autoregressive_contract(self) -> None:
@@ -180,6 +326,38 @@ class CarveOptimizationTest(unittest.TestCase):
         self.assertEqual(chunk.actions.shape, (1, 7))
         self.assertEqual(chunk.model_latency_ms, 8.0)
         self.assertEqual(policy.payloads[0]["unnorm_key"], "libero_10")
+
+    def test_lingbot_profile_uses_server_level_flow_and_compile_options(self) -> None:
+        class FakeLingBotClient:
+            def call(self, **kwargs):
+                del kwargs
+                return None
+
+        adapter = LingBotVlaAdapter(FakeLingBotClient())
+        model = create_default_registry().resolve_model(adapter)
+        self.assertIsInstance(model, LingBotVlaModelPlugin)
+        profile = OptimizationProfile(
+            profile_id="lingbot-bf16-compile-10step-h10",
+            backend="eager",
+            deployment_precision="bf16",
+            action_horizon=10,
+            options={
+                "server_use_compile": True,
+                "server_num_denoising_steps": 10,
+                "server_use_length": 50,
+                "behavioral_equivalence": True,
+            },
+        )
+        model.validate_profile(adapter, profile)
+
+        with self.assertRaisesRegex(ValueError, "policy server"):
+            model.validate_profile(
+                adapter,
+                OptimizationProfile(
+                    profile_id="lingbot-invalid-request-steps",
+                    inference_steps=5,
+                ),
+            )
 
     def test_openvla_profile_rejects_flow_steps_and_action_chunks(self) -> None:
         adapter = OpenVlaAdapter(FakeOpenVlaPolicy())
@@ -313,6 +491,43 @@ class CarveOptimizationTest(unittest.TestCase):
             [{"mode": "reduce-overhead", "fullgraph": False}],
         )
         self.assertTrue(prepared.metadata["source_adapter_unchanged"])
+
+    def test_torch_compile_fixed_step_profile_uses_explicit_sampler(self) -> None:
+        class FakeTorchModel:
+            def sample_actions(self, *args, **kwargs):
+                del args, kwargs
+
+        self.policy._model = FakeTorchModel()
+        factory_calls = []
+
+        def fake_factory(model):
+            factory_calls.append(model)
+            return lambda *args, **kwargs: (args, kwargs)
+
+        profile = OptimizationProfile(
+            profile_id="pi05-compile-fixed-loop",
+            backend="torch_compile",
+            deployment_precision="bf16",
+            inference_steps=2,
+            action_horizon=10,
+            options={"fixed_step_loop": True},
+        )
+        prepared = TorchCompileBackend(
+            compile_fn=lambda function, **_kwargs: function,
+            pi05_sampler_factory=fake_factory,
+        ).prepare(self.adapter, Pi05ModelPlugin(), profile)
+
+        self.assertEqual(factory_calls, [self.policy._model])
+        self.assertTrue(prepared.metadata["fixed_step_loop"])
+
+    def test_pi05_profiler_reads_system_gpu_memory(self) -> None:
+        with mock.patch(
+            "scripts.benchmark_carve_pi05_profile.subprocess.check_output",
+            return_value="4321\n",
+        ) as check_output:
+            self.assertEqual(system_gpu_memory_used_mib("cuda:0"), 4321.0)
+        self.assertIn("--id=0", check_output.call_args.args[0])
+        self.assertIsNone(system_gpu_memory_used_mib("cpu"))
 
     def test_masked_view_backend_records_static_elision_contract(self) -> None:
         class FakeTorchModel:
@@ -481,6 +696,63 @@ class CarveOptimizationTest(unittest.TestCase):
         )
         self.assertEqual(prepared.metadata["quantized_linear_count"], 1)
         self.assertFalse(prepared.metadata["source_adapter_unchanged"])
+
+    def test_torchao_int8_composes_with_named_masked_view_contract(self) -> None:
+        import torch
+
+        class FakeTorchModel(torch.nn.Module):
+            def __init__(self) -> None:
+                super().__init__()
+                self.paligemma_with_expert = torch.nn.Module()
+                self.paligemma_with_expert.paligemma = torch.nn.Module()
+                self.paligemma_with_expert.paligemma.model = torch.nn.Module()
+                self.paligemma_with_expert.paligemma.model.language_model = torch.nn.Linear(4, 4)
+
+            def sample_actions(self, *args, **kwargs):
+                del args, kwargs
+                return np.zeros((1, 6, 7), dtype=np.float32)
+
+        self.policy._model = FakeTorchModel()
+        selected: list[str] = []
+        sampler_indices: list[int] = []
+
+        def fake_quantize(model, config, *, filter_fn):
+            del config
+            selected.extend(
+                name for name, module in model.named_modules() if filter_fn(module, name)
+            )
+
+        def fake_sampler(model, indices):
+            del model
+            sampler_indices.extend(indices)
+            return lambda *args, **kwargs: np.zeros((1, 6, 7), dtype=np.float32)
+
+        profile = OptimizationProfile(
+            profile_id="pi05-int8-smve",
+            backend="torchao_int8_masked_views",
+            deployment_precision="bf16",
+            module_precisions={"vlm_backbone": "int8"},
+            inference_steps=2,
+            action_horizon=3,
+            options={
+                "image_view_order": ["base", "left_wrist", "right_wrist"],
+                "elided_image_views": ["right_wrist"],
+            },
+        )
+        prepared = TorchAOInt8MaskedViewBackend(
+            quantize_fn=fake_quantize,
+            config_factory=object,
+            compile_fn=lambda function, **kwargs: function,
+            sampler_factory=fake_sampler,
+        ).prepare(self.adapter, Pi05ModelPlugin(), profile)
+
+        self.assertEqual(
+            selected,
+            ["paligemma_with_expert.paligemma.model.language_model"],
+        )
+        self.assertEqual(sampler_indices, [2])
+        self.assertEqual(prepared.metadata["elided_image_views"], ["right_wrist"])
+        self.assertIn("static_masked_view_elision", prepared.metadata["transform"])
 
     def test_fidelity_verifier_accepts_identity_and_rejects_gripper_flip(self) -> None:
         thresholds = FidelityThresholds(
@@ -672,6 +944,42 @@ class CarveOptimizationTest(unittest.TestCase):
             policy.infer({"state": np.zeros(8)})
         self.assertEqual(fallback.calls, 1)
 
+    def test_runtime_fallback_retries_only_known_profile_error(self) -> None:
+        class FakeServerPolicy:
+            def __init__(self, error: Exception | None = None) -> None:
+                self._sample_kwargs = {"num_steps": 2}
+                self.error = error
+                self.calls = 0
+
+            def infer(self, request, **kwargs):
+                del request, kwargs
+                self.calls += 1
+                if self.error is not None:
+                    raise self.error
+                return {"actions": np.zeros((10, 7), dtype=np.float32)}
+
+        primary = FakeServerPolicy(RecursionError("maximum recursion depth exceeded"))
+        fallback = FakeServerPolicy()
+        policy = RuntimeFallbackPolicy(
+            primary,
+            fallback,
+            fallback_profile_id="pi05-eager-bf16-2step-h10",
+            trigger_markers=("maximum recursion depth exceeded",),
+        )
+
+        output = policy.infer({"state": np.zeros(8)})
+
+        self.assertEqual(primary.calls, 1)
+        self.assertEqual(fallback.calls, 1)
+        self.assertEqual(policy.fallback_count, 1)
+        self.assertTrue(output["carve_runtime_fallback"]["applied"])
+        self.assertIn("carve_runtime_fallback", policy.metadata)
+
+        primary.error = RuntimeError("CUDA out of memory")
+        with self.assertRaisesRegex(RuntimeError, "out of memory"):
+            policy.infer({"state": np.zeros(8)})
+        self.assertEqual(fallback.calls, 1)
+
     def test_benchmark_runner_uses_profile_on_deployment_path(self) -> None:
         registry = create_default_registry()
         profile = OptimizationProfile(
@@ -729,6 +1037,11 @@ class CarveOptimizationTest(unittest.TestCase):
         samples = report.metadata["latency_samples"]
         self.assertEqual(samples["model_ms"], [3.5, 3.5])
         self.assertEqual(len(samples["runtime_ms"]), 2)
+        self.assertEqual(len(samples["reaction_ms"]), 2)
+        self.assertGreaterEqual(
+            report.metadata["reaction_p95_ms"],
+            report.runtime_p95_ms,
+        )
         self.assertEqual(samples["deadline_miss"], [False, False])
 
 

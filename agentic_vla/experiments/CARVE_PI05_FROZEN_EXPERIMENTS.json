@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "system": {
+    "model_id": "pi05",
+    "runtime_profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+    "fallback_profile_id": "pi05-torch_compile-bf16-2step-h10",
+    "planner_mode": "asynchronous_guarded",
+    "control_deadline_ms": 80.0,
+    "profile_manifest": "results/carve_optimize/deployment/pi05_smve_promoted.json"
+  },
+  "experiments": [
+    {
+      "experiment_id": "planner-lifecycle-integration-smoke",
+      "stage": "integration_smoke",
+      "snapshot_ids": ["task06_episode001_step0013"],
+      "noise_seeds": [7],
+      "branches": ["planner_ticket", "profile_receipt", "safe_fallback"],
+      "claim_boundary": "Interface and trace completeness only; not task-success evidence."
+    },
+    {
+      "experiment_id": "asynchronous-planner-paired-recovery",
+      "stage": "paired_recovery",
+      "snapshot_ids": ["task06_episode001_step0013", "task09_episode001_step0013", "task08_episode003_step0099"],
+      "noise_seeds": [7, 17, 29],
+      "branches": ["continue", "physical_recovery", "planner_escalation"],
+      "claim_boundary": "Exact-state intervention behavior and compute cost; not benchmark-wide success."
+    },
+    {
+      "experiment_id": "libero-plus-zero-shot-transfer",
+      "stage": "libero_plus",
+      "snapshot_ids": ["camera", "layout", "robot", "language"],
+      "noise_seeds": [7, 17, 29],
+      "branches": ["frozen_pi05", "frozen_carve"],
+      "claim_boundary": "Zero-shot robustness under a fixed perturbation subset; no LIBERO-Plus fine-tuning."
+    },
+    {
+      "experiment_id": "libero-pro-heldout-robustness",
+      "stage": "libero_pro",
+      "snapshot_ids": ["object", "position", "semantic", "task", "environment"],
+      "noise_seeds": [7, 17, 29],
+      "branches": ["frozen_pi05", "frozen_carve"],
+      "claim_boundary": "Held-out perturbation robustness only after a positive LIBERO-Plus integration gate."
+    }
+  ]
+}

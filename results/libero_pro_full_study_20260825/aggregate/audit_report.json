@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "study_root": "results/libero_pro_full_study_20260825",
+  "expected_trials_per_task": 10,
+  "expected_episodes": 1200,
+  "counts": {
+    "cells": 120,
+    "episodes": 1200,
+    "video_frames": 454540,
+    "videos": 1200
+  },
+  "paired_state_identities": 400,
+  "checkpoint_ids": [
+    "/home/admin1/.cache/openpi/openpi-assets/checkpoints/pi05_libero_pytorch/model.safetensors:7233650408:1780582212730977243"
+  ],
+  "deployment_profile_ids": [
+    "pi05-torch_compile_masked_views-bf16-2step-h10"
+  ],
+  "failures": []
+}

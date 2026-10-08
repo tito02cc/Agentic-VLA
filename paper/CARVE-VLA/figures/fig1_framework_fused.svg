@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1280" viewBox="0 0 2200 1280">
+  <defs>
+    <style>
+      .title { font: 700 34px "Liberation Sans", Arial, sans-serif; fill: #172033; }
+      .section { font: 700 31px "Liberation Sans", Arial, sans-serif; }
+      .node { font: 700 24px "Liberation Sans", Arial, sans-serif; fill: #172033; }
+      .sub { font: 20px "Liberation Sans", Arial, sans-serif; fill: #2e3948; }
+      .note { font: italic 18px "Liberation Sans", Arial, sans-serif; fill: #495464; }
+      .small { font: 18px "Liberation Sans", Arial, sans-serif; fill: #2e3948; }
+      .edge { fill: none; stroke: #151c25; stroke-width: 3; marker-end: url(#arrow); }
+      .agent { fill: none; stroke: #df5b12; stroke-width: 3; marker-end: url(#orangeArrow); }
+      .runtime { fill: none; stroke: #6c36b2; stroke-width: 3; marker-end: url(#purpleArrow); }
+      .feedback { fill: none; stroke: #151c25; stroke-width: 2.6; stroke-dasharray: 12 9; marker-end: url(#arrow); }
+      .box { rx: 18; ry: 18; stroke-width: 2.4; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#151c25"/></marker>
+    <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#df5b12"/></marker>
+    <marker id="purpleArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#6c36b2"/></marker>
+  </defs>
+
+  <rect width="2200" height="1280" fill="#ffffff"/>
+  <text x="1100" y="47" text-anchor="middle" class="title">CARVE-VLA: Agentic Harness with Evidence-gated Optimize Runtime</text>
+
+  <!-- Edges first: all boxes mask line interiors. -->
+  <path class="edge" d="M322 504 H620"/>
+  <path class="edge" d="M322 646 H620"/>
+  <path class="edge" d="M322 815 H502 V504 H408"/>
+  <path class="agent" d="M520 352 V405"/>
+  <path class="agent" d="M798 352 V405"/>
+  <path class="agent" d="M1076 352 V405"/>
+  <path class="agent" d="M1354 352 V405"/>
+  <path class="agent" d="M574 652 V712 H762 V700"/>
+  <path class="agent" d="M852 652 V712 H1040 V700"/>
+  <path class="agent" d="M1130 652 V712 H1320 V700"/>
+  <path class="agent" d="M1408 652 V712 H1597 V700"/>
+  <path class="edge" d="M1510 805 H1668"/>
+  <path class="feedback" d="M1668 964 H1624 V1112 H367 V952"/>
+  <path class="runtime" d="M1050 1018 V942"/>
+  <path class="runtime" d="M1510 1112 H1686 V973"/>
+  <path class="agent" d="M1408 652 V1065 H1915"/>
+  <path class="feedback" d="M2013 965 V1112 H322 V815"/>
+
+  <!-- 1) Inputs -->
+  <rect x="40" y="100" width="282" height="880" class="box" fill="#ffffff" stroke="#222831"/>
+  <text x="181" y="148" text-anchor="middle" class="section" fill="#172033">1) Inputs</text>
+  <rect x="64" y="185" width="234" height="252" class="box" fill="#fbfcfd" stroke="#3a4048"/>
+  <text x="181" y="226" text-anchor="middle" class="node">RGB observations</text>
+  <rect x="86" y="253" width="190" height="142" rx="8" fill="#edf2f5" stroke="#7b8792" stroke-width="2"/>
+  <path d="M100 365 H260" stroke="#a6b0b8" stroke-width="3"/>
+  <rect x="120" y="314" width="38" height="32" rx="4" fill="#d65730" stroke="#8b3423" stroke-width="2"/>
+  <path d="M158 321 h18 a13 13 0 0 1 0 18 h-18" fill="none" stroke="#8b3423" stroke-width="2"/>
+  <rect x="187" y="303" width="52" height="52" fill="#4b83ce" stroke="#295795" stroke-width="2"/>
+  <path d="M245 285 v70" stroke="#4c8e4c" stroke-width="4"/><circle cx="245" cy="278" r="16" fill="#77a96b"/>
+
+  <rect x="64" y="470" width="234" height="196" class="box" fill="#fbfcfd" stroke="#3a4048"/>
+  <text x="181" y="511" text-anchor="middle" class="node">Robot state</text>
+  <circle cx="110" cy="582" r="12" fill="#fff" stroke="#222831" stroke-width="3"/>
+  <path d="M110 570 L141 542 L177 564 L193 615" fill="none" stroke="#222831" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="141" cy="542" r="9" fill="#fff" stroke="#222831" stroke-width="3"/><circle cx="177" cy="564" r="9" fill="#fff" stroke="#222831" stroke-width="3"/>
+  <text x="220" y="560" class="sub">q, qdot</text><text x="220" y="592" class="sub">x_ee</text><text x="220" y="624" class="sub">f_t</text>
+
+  <rect x="64" y="700" width="234" height="224" class="box" fill="#fbfcfd" stroke="#3a4048"/>
+  <text x="181" y="740" text-anchor="middle" class="node">Language instruction</text>
+  <path d="M90 773 h182 v105 h-132 l-24 22 v-22 h-26 z" fill="#fff" stroke="#3a4048" stroke-width="2"/>
+  <text x="181" y="814" text-anchor="middle" class="small">“Pick up the red</text><text x="181" y="838" text-anchor="middle" class="small">mug and place it</text><text x="181" y="862" text-anchor="middle" class="small">in the blue box.”</text>
+
+  <!-- 2) Agentic Harness -->
+  <rect x="370" y="85" width="1120" height="575" rx="24" fill="#fffdfb" stroke="#df5b12" stroke-width="3"/>
+  <text x="930" y="140" text-anchor="middle" class="section" fill="#c84f0c">2) Agentic Process-Control Harness</text>
+  <text x="930" y="170" text-anchor="middle" class="note">Monitor high-rate execution risk; invoke semantic reasoning only at a safe boundary.</text>
+
+  <rect x="408" y="205" width="224" height="147" class="box" fill="#fff7ee" stroke="#df5b12"/>
+  <text x="520" y="248" text-anchor="middle" class="node">Execution Risk</text><text x="520" y="278" text-anchor="middle" class="node">Monitor</text>
+  <path d="M444 314 h25 l13 -30 17 50 17 -39 14 18 h43" fill="none" stroke="#df5b12" stroke-width="4"/>
+  <text x="520" y="337" text-anchor="middle" class="note">progress | action age | deadline</text>
+
+  <rect x="686" y="205" width="224" height="147" class="box" fill="#f4faf4" stroke="#3f6e3f"/>
+  <text x="798" y="247" text-anchor="middle" class="node">Event-triggered</text><text x="798" y="277" text-anchor="middle" class="node">VLM Critic / Planner</text>
+  <text x="798" y="329" text-anchor="middle" class="note">semantic assessment</text>
+
+  <rect x="964" y="205" width="224" height="147" class="box" fill="#f4faf4" stroke="#3f6e3f"/>
+  <text x="1076" y="247" text-anchor="middle" class="node">Structured Failure</text><text x="1076" y="277" text-anchor="middle" class="node">Memory</text>
+  <ellipse cx="1076" cy="307" rx="31" ry="9" fill="#fff" stroke="#3f6e3f" stroke-width="2"/><path d="M1045 307 v22 c0 12 62 12 62 0 v-22" fill="#fff" stroke="#3f6e3f" stroke-width="2"/>
+  <text x="1076" y="342" text-anchor="middle" class="note">typed records + bounded retrieval</text>
+
+  <rect x="1242" y="205" width="224" height="147" class="box" fill="#fff8ef" stroke="#b87813"/>
+  <text x="1354" y="247" text-anchor="middle" class="node">Recovery / Safe Hold</text>
+  <path d="M1320 285 l34 -14 34 14 v23 c0 17 -15 31 -34 39 -19 -8 -34 -22 -34 -39 z" fill="#fff" stroke="#b87813" stroke-width="2"/><path d="M1342 306 l10 10 20 -25" fill="none" stroke="#b87813" stroke-width="4"/>
+  <text x="1354" y="342" text-anchor="middle" class="note">registered skill | fail closed</text>
+
+  <rect x="584" y="405" width="692" height="99" class="box" fill="#fff8ef" stroke="#df5b12"/>
+  <text x="930" y="446" text-anchor="middle" class="node">Typed Safety Gate</text>
+  <text x="930" y="478" text-anchor="middle" class="sub">schema | confidence | intervention budget | allowlist</text>
+  <text x="930" y="542" text-anchor="middle" class="note">Only accepted typed intents can continue, call the VLA, run a registered skill, or enter SAFE_HOLD.</text>
+  <text x="481" y="385" text-anchor="middle" class="note" fill="#c84f0c">risk event</text><text x="755" y="385" text-anchor="middle" class="note" fill="#c84f0c">semantic escalation</text><text x="1029" y="385" text-anchor="middle" class="note" fill="#c84f0c">retrieve evidence</text><text x="1308" y="385" text-anchor="middle" class="note" fill="#c84f0c">bounded recovery</text>
+
+  <!-- 3) Frozen VLA -->
+  <rect x="620" y="700" width="890" height="210" rx="22" fill="#edf4ff" stroke="#2057b7" stroke-width="3"/>
+  <path d="M690 766 l46 52 M736 766 l-46 52 M713 752 v78 M681 778 l64 27 M745 778 l-64 27" stroke="#2057b7" stroke-width="4" fill="none"/>
+  <text x="1065" y="766" text-anchor="middle" class="section" fill="#2057b7">3) Frozen, Replaceable VLA Policy</text>
+  <text x="1065" y="810" text-anchor="middle" class="node" fill="#2057b7">the only learned low-level action generator</text>
+  <text x="1065" y="850" text-anchor="middle" class="note" fill="#2057b7">task-conditioned observation → bounded action chunk</text>
+  <rect x="1418" y="789" width="34" height="37" rx="6" fill="none" stroke="#2057b7" stroke-width="4"/><path d="M1425 789 v-11 a10 10 0 0 1 20 0 v11" fill="none" stroke="#2057b7" stroke-width="4"/>
+
+  <!-- 4) Optimize Runtime -->
+  <rect x="430" y="1018" width="1120" height="205" rx="22" fill="#faf7ff" stroke="#6c36b2" stroke-width="3"/>
+  <text x="990" y="1068" text-anchor="middle" class="section" fill="#6c36b2">4) Optimize Runtime</text>
+  <rect x="462" y="1090" width="300" height="88" class="box" fill="#fff" stroke="#6c36b2"/>
+  <text x="612" y="1127" text-anchor="middle" class="node">Admitted deployment profile</text><text x="612" y="1158" text-anchor="middle" class="sub">fidelity / validity + latency + closed loop</text>
+  <rect x="840" y="1090" width="270" height="88" class="box" fill="#fff" stroke="#6c36b2"/>
+  <text x="975" y="1127" text-anchor="middle" class="node">Efficient backend</text><text x="975" y="1158" text-anchor="middle" class="sub">compiled BF16 | SMVE | precision</text>
+  <rect x="1188" y="1090" width="330" height="88" class="box" fill="#fff" stroke="#6c36b2"/>
+  <text x="1353" y="1127" text-anchor="middle" class="node">Deadline, fallback, and traces</text><text x="1353" y="1158" text-anchor="middle" class="sub">model | reaction | task-cycle | VRAM</text>
+
+  <!-- 5) Robot execution -->
+  <rect x="1668" y="395" width="334" height="570" rx="24" fill="#f5faf5" stroke="#315d3a" stroke-width="3"/>
+  <text x="1835" y="450" text-anchor="middle" class="section" style="font-size:28px" fill="#315d3a">5) Robot execution loop</text>
+  <rect x="1731" y="492" width="208" height="98" class="box" fill="#fff" stroke="#315d3a"/>
+  <text x="1835" y="532" text-anchor="middle" class="node">Execute action chunk</text><text x="1835" y="564" text-anchor="middle" class="sub">robot / simulator adapter</text>
+  <path class="edge" d="M1835 590 V641"/>
+  <rect x="1731" y="641" width="208" height="98" class="box" fill="#fff" stroke="#315d3a"/>
+  <text x="1835" y="681" text-anchor="middle" class="node">Observe next state</text><text x="1835" y="713" text-anchor="middle" class="sub">progress feedback</text>
+  <path class="edge" d="M1835 739 V787"/>
+  <path d="M1835 787 l58 38 -58 38 -58 -38 z" fill="#fff" stroke="#315d3a" stroke-width="2.5"/>
+  <text x="1835" y="832" text-anchor="middle" class="node">Continue?</text>
+  <text x="1932" y="815" class="small" fill="#315d3a">yes</text><text x="1697" y="815" class="small" fill="#b62d24">no</text>
+  <path class="edge" d="M1893 825 H1965 V492 H1939"/>
+  <rect x="1885" y="1030" width="184" height="108" rx="14" fill="#fff5f3" stroke="#b62d24" stroke-width="3"/>
+  <text x="1977" y="1073" text-anchor="middle" class="node" fill="#a9231d">SAFE_HOLD / STOP</text><path d="M1943 1100 h68" stroke="#b62d24" stroke-width="4"/>
+
+  <!-- Legend -->
+  <g transform="translate(1730,112)">
+    <path class="edge" d="M0 0 H55"/><text x="74" y="7" class="small">data / actions</text>
+    <path class="agent" d="M0 38 H55"/><text x="74" y="45" class="small">supervision / control</text>
+    <path class="runtime" d="M0 76 H55"/><text x="74" y="83" class="small">profile / runtime control</text>
+    <path class="feedback" d="M0 114 H55"/><text x="74" y="121" class="small">logs / feedback</text>
+  </g>
+  <text x="1090" y="1258" text-anchor="middle" class="note">The VLM is an event-triggered semantic module; it never emits low-level robot actions.</text>
+</svg>

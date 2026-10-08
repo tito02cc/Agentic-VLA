@@ -3,11 +3,210 @@
 from __future__ import annotations
 
 import dataclasses
+import enum
 import time
 import uuid
 from collections.abc import Callable, Mapping
 from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Any
+
+import numpy as np
+
+
+class GroundedSubgoalScheduleMode(str, enum.Enum):
+    """Planner invocation schedules for grounded VLA subgoals."""
+
+    EVERY_CHUNK = "every_chunk"
+    SELECTIVE = "selective"
+
+
+@dataclasses.dataclass(frozen=True)
+class GroundedSubgoalScheduleConfig:
+    """Conservative reuse limits for expensive grounded Planner calls."""
+
+    mode: GroundedSubgoalScheduleMode = GroundedSubgoalScheduleMode.SELECTIVE
+    min_reuse_chunks: int = 1
+    max_reuse_chunks: int = 2
+    visual_change_threshold: float = 0.09
+    gripper_change_threshold: float = 0.15
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "mode", GroundedSubgoalScheduleMode(self.mode))
+        if self.min_reuse_chunks < 0:
+            raise ValueError("min_reuse_chunks must be non-negative")
+        if self.max_reuse_chunks <= 0:
+            raise ValueError("max_reuse_chunks must be positive")
+        if self.min_reuse_chunks > self.max_reuse_chunks:
+            raise ValueError("min_reuse_chunks must not exceed max_reuse_chunks")
+        if self.visual_change_threshold < 0:
+            raise ValueError("visual_change_threshold must be non-negative")
+        if self.gripper_change_threshold < 0:
+            raise ValueError("gripper_change_threshold must be non-negative")
+
+
+@dataclasses.dataclass(frozen=True)
+class GroundedSubgoalScheduleDecision:
+    """Planner-call decision at a chunk boundary, not semantic completion authority."""
+
+    invoke: bool
+    reason: str
+    chunks_since_planner: int
+    visual_change: float | None = None
+    gripper_change: float | None = None
+    execution_event: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return dataclasses.asdict(self)
+
+
+class GroundedSubgoalScheduler:
+    """Reuse grounded subgoals until deployable evidence requires replanning.
+
+    The scheduler never infers task semantics. It only controls when the VLM is
+    invoked, using chunk age, image change, gripper change and explicit
+    execution events. Invocation does not authorize interrupting a skill or
+    declaring it complete. Callers own execution-boundary and verification
+    gates; the VLM proposes the next semantic stage and grounded points.
+    """
+
+    def __init__(self, config: GroundedSubgoalScheduleConfig | None = None) -> None:
+        self.config = config or GroundedSubgoalScheduleConfig()
+        self._has_plan = False
+        self._chunks_since_planner = 0
+        self._reference_frame: np.ndarray | None = None
+        self._reference_state: np.ndarray | None = None
+        self._reuse_permitted = True
+
+    @property
+    def chunks_since_planner(self) -> int:
+        return self._chunks_since_planner
+
+    def reset(self) -> None:
+        self._has_plan = False
+        self._chunks_since_planner = 0
+        self._reference_frame = None
+        self._reference_state = None
+        self._reuse_permitted = True
+
+    @staticmethod
+    def _frame(value: Any) -> np.ndarray:
+        frame = np.asarray(value)
+        if frame.ndim not in (2, 3):
+            raise ValueError("frame must be a 2-D or 3-D array")
+        if not np.all(np.isfinite(frame)):
+            raise ValueError("frame contains non-finite values")
+        return frame.astype(np.float32, copy=False)
+
+    @staticmethod
+    def _state(value: Any) -> np.ndarray:
+        state = np.asarray(value, dtype=np.float32).reshape(-1)
+        if state.size == 0:
+            raise ValueError("state must not be empty")
+        if not np.all(np.isfinite(state)):
+            raise ValueError("state contains non-finite values")
+        return state
+
+    @staticmethod
+    def _visual_change(current: np.ndarray, reference: np.ndarray) -> float:
+        if current.shape != reference.shape:
+            raise ValueError("frame shape changed within an episode")
+        scale = 255.0 if max(float(current.max()), float(reference.max())) > 1.5 else 1.0
+        return float(np.mean(np.abs(current - reference)) / scale)
+
+    def decide(
+        self,
+        *,
+        frame: Any,
+        state: Any,
+        execution_event: str | None = None,
+    ) -> GroundedSubgoalScheduleDecision:
+        image = self._frame(frame)
+        proprio = self._state(state)
+        event = str(execution_event or "").strip().lower() or None
+
+        if not self._has_plan:
+            return GroundedSubgoalScheduleDecision(
+                True,
+                "task_start",
+                self._chunks_since_planner,
+                execution_event=event,
+            )
+        if self.config.mode is GroundedSubgoalScheduleMode.EVERY_CHUNK:
+            return GroundedSubgoalScheduleDecision(
+                True,
+                "every_chunk_baseline",
+                self._chunks_since_planner,
+                execution_event=event,
+            )
+        if not self._reuse_permitted:
+            return GroundedSubgoalScheduleDecision(
+                True,
+                "precision_sensitive_grounding",
+                self._chunks_since_planner,
+                execution_event=event,
+            )
+
+        assert self._reference_frame is not None
+        assert self._reference_state is not None
+        visual_change = self._visual_change(image, self._reference_frame)
+        if proprio.shape != self._reference_state.shape:
+            raise ValueError("state shape changed within an episode")
+        gripper_change = float(abs(proprio[-1] - self._reference_state[-1]))
+        metrics = {
+            "chunks_since_planner": self._chunks_since_planner,
+            "visual_change": visual_change,
+            "gripper_change": gripper_change,
+            "execution_event": event,
+        }
+
+        if event is not None:
+            return GroundedSubgoalScheduleDecision(
+                True,
+                f"execution_event:{event}",
+                **metrics,
+            )
+        if self._chunks_since_planner >= self.config.max_reuse_chunks:
+            return GroundedSubgoalScheduleDecision(
+                True,
+                "reuse_budget_exhausted",
+                **metrics,
+            )
+        if self._chunks_since_planner >= self.config.min_reuse_chunks:
+            if gripper_change >= self.config.gripper_change_threshold:
+                return GroundedSubgoalScheduleDecision(
+                    True,
+                    "gripper_state_changed",
+                    **metrics,
+                )
+            if visual_change >= self.config.visual_change_threshold:
+                return GroundedSubgoalScheduleDecision(
+                    True,
+                    "visual_context_changed",
+                    **metrics,
+                )
+        return GroundedSubgoalScheduleDecision(
+            False,
+            "grounded_subgoal_reuse_admitted",
+            **metrics,
+        )
+
+    def record_planner_result(
+        self,
+        *,
+        frame: Any,
+        state: Any,
+        reuse_permitted: bool = True,
+    ) -> None:
+        self._reference_frame = self._frame(frame).copy()
+        self._reference_state = self._state(state).copy()
+        self._chunks_since_planner = 0
+        self._has_plan = True
+        self._reuse_permitted = bool(reuse_permitted)
+
+    def record_chunk_executed(self) -> None:
+        if not self._has_plan:
+            raise RuntimeError("cannot record reuse before the first Planner result")
+        self._chunks_since_planner += 1
 
 
 @dataclasses.dataclass(frozen=True)

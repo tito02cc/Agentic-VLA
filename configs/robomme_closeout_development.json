@@ -1,0 +1,23 @@
+{
+  "protocol": "robomme.closeout.v1",
+  "stage": "development",
+  "tasks": {
+    "VideoUnmaskSwap": [11],
+    "VideoRepick": [12]
+  },
+  "image_id": "sha256:5ef6a54b38919257b08a8bf9380769b9f0bfee8b4af17f29b91387ce8006a2ac",
+  "timeout_s": 900,
+  "demo_root": "artifacts/robomme/closeout_development/official_demos",
+  "memory_root": "artifacts/robomme/closeout_development/identity_memory",
+  "deployment": {
+    "policy_checkpoint": "~/.cache/carve-vla/checkpoints/robomme/mme_vla_suite/symbolic-grounded-subgoal/79999",
+    "planner_model": "~/.cache/carve-vla/checkpoints/Qwen3-VL-4B-Instruct",
+    "planner_adapter": "~/.cache/carve-vla/checkpoints/robomme/vlm_subgoal_predictor/qwenvl/grounded_subgoal/checkpoint-1200",
+    "precision": "bf16",
+    "attention": "sdpa",
+    "policy_seed": 7
+  },
+  "service_pids": {"policy": null, "planner": null},
+  "service_startup_s": {"policy": null, "planner": null},
+  "notes": "Four development admission rollouts only, not held-out results. Default CLI registers without execution. Collect official-boundary demos and compile either admitted memory or explicit rejection before live execution. Fill actual service PIDs immediately before execution. Null startup cost is unknown, not zero."
+}

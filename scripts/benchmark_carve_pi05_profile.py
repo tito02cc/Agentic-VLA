@@ -92,13 +92,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument(
         "--backend",
-        choices=("eager", "torch_compile", "torch_compile_masked_views", "torchao_int8"),
+        choices=(
+            "eager",
+            "torch_compile",
+            "torch_compile_masked_views",
+            "torchao_int8",
+            "torchao_int8_masked_views",
+        ),
         default="eager",
     )
     parser.add_argument("--precision", default="bf16")
     parser.add_argument("--compile-mode", default="reduce-overhead")
     parser.add_argument("--compile-fullgraph", action="store_true")
     parser.add_argument("--compile-dynamic", action="store_true")
+    parser.add_argument(
+        "--compile-fixed-step-loop",
+        action="store_true",
+        help=(
+            "Compile PI0.5 with an equivalent fixed-count denoising loop to "
+            "avoid recursion in tensor-conditioned while loops."
+        ),
+    )
+    parser.add_argument(
+        "--compile-cudagraphs",
+        choices=("auto", "on", "off"),
+        default="auto",
+        help=(
+            "CUDA-graph policy for compile backends; 'auto' keeps the PyTorch default. "
+            "The explicit 'off' candidate is useful for version-compatibility checks."
+        ),
+    )
     parser.add_argument(
         "--elide-image-indices",
         default=None,
@@ -267,7 +290,7 @@ def detect_hardware(device: str, backend: str) -> HardwareSpec:
         device_index = torch.device(device).index or 0
         properties = torch.cuda.get_device_properties(device_index)
         software = {"torch": torch.__version__, "cuda": str(torch.version.cuda)}
-        if backend == "torchao_int8":
+        if backend in {"torchao_int8", "torchao_int8_masked_views"}:
             import torchao
 
             software["torchao"] = torchao.__version__
@@ -304,6 +327,33 @@ def system_gpu_memory_used_mib(device: str) -> float | None:
         return float(output.strip().splitlines()[0])
     except (OSError, subprocess.SubprocessError, ValueError, IndexError):
         return None
+
+
+def build_profile_id(args: argparse.Namespace, group_suffix: str = "") -> str:
+    """Encode execution-affecting compile switches in the profile identity."""
+
+    suffixes: list[str] = []
+    if args.backend in {
+        "torch_compile",
+        "torch_compile_masked_views",
+        "torchao_int8_masked_views",
+    }:
+        if args.compile_cudagraphs != "auto":
+            suffixes.append(f"cg-{args.compile_cudagraphs}")
+        if args.compile_dynamic:
+            suffixes.append("dynamic")
+        if args.compile_fixed_step_loop:
+            suffixes.append("fixed-loop")
+        if args.compile_mode != "reduce-overhead":
+            suffixes.append(str(args.compile_mode))
+        if args.compile_fullgraph:
+            suffixes.append("fullgraph")
+    option_suffix = "" if not suffixes else "-" + "-".join(suffixes)
+    return (
+        f"pi05-{args.backend}-{args.precision}-"
+        f"{args.inference_steps}step-h{args.action_horizon}"
+        f"{group_suffix}{option_suffix}"
+    )
 
 
 def measure_fidelity(
@@ -385,6 +435,8 @@ def main() -> int:
             "mode": args.compile_mode,
             "fullgraph": args.compile_fullgraph,
         }
+        if args.compile_cudagraphs != "auto":
+            backend_options["cudagraphs"] = args.compile_cudagraphs == "on"
         if args.backend == "torch_compile_masked_views":
             if args.elide_image_indices is not None:
                 try:
@@ -413,7 +465,13 @@ def main() -> int:
                 backend_options["elided_image_views"] = elided_views
         if args.compile_dynamic:
             backend_options["dynamic"] = True
-    elif args.backend == "torchao_int8":
+        if args.compile_fixed_step_loop:
+            if args.backend != "torch_compile":
+                raise SystemExit(
+                    "compile-fixed-step-loop currently requires torch_compile"
+                )
+            backend_options["fixed_step_loop"] = True
+    elif args.backend in {"torchao_int8", "torchao_int8_masked_views"}:
         groups = tuple(
             value.strip() for value in args.quantize_groups.split(",") if value.strip()
         )
@@ -424,16 +482,37 @@ def main() -> int:
             "compile_mode": args.compile_mode,
             "fullgraph": args.compile_fullgraph,
         }
+        if args.backend == "torchao_int8_masked_views":
+            if args.elide_image_indices is not None:
+                try:
+                    elided_indices = [
+                        int(value.strip())
+                        for value in args.elide_image_indices.split(",")
+                        if value.strip()
+                    ]
+                except ValueError as exc:
+                    raise SystemExit("elide-image-indices must contain integers") from exc
+                if not elided_indices:
+                    raise SystemExit("elide-image-indices must not be empty")
+                backend_options["elided_image_indices"] = elided_indices
+            else:
+                backend_options["image_view_order"] = [
+                    value.strip()
+                    for value in args.image_view_order.split(",")
+                    if value.strip()
+                ]
+                backend_options["elided_image_views"] = [
+                    value.strip()
+                    for value in args.elide_image_views.split(",")
+                    if value.strip()
+                ]
         if args.compile_dynamic:
             backend_options["dynamic"] = True
     group_suffix = ""
     if module_precisions:
         group_suffix = "-" + "+".join(sorted(module_precisions))
     profile = OptimizationProfile(
-        profile_id=(
-            f"pi05-{args.backend}-{args.precision}-"
-            f"{args.inference_steps}step-h{args.action_horizon}{group_suffix}"
-        ),
+        profile_id=build_profile_id(args, group_suffix),
         backend=args.backend,
         deployment_precision=args.precision,
         module_precisions=module_precisions,
@@ -443,7 +522,7 @@ def main() -> int:
     )
     optimize_runtime = create_default_runtime()
     reference_actions = None
-    if args.backend == "torchao_int8":
+    if args.backend in {"torchao_int8", "torchao_int8_masked_views"}:
         reference_actions = []
         reference_controls = InferenceControls(
             inference_steps=args.inference_steps,

@@ -6,7 +6,10 @@
     "smve": "results/carve_optimize/masked_view_t89_5states_20260717",
     "cross_adapter": "results/carve_optimize/pi05_droid_*_20260717.json",
     "recovery": "results/carve_pi05_recovery_challenge_20260719",
-    "agentic_optimize": "results/carve_pi05_agentic_optimize_pair_20260719"
+    "agentic_optimize": "results/carve_pi05_agentic_optimize_pair_20260719",
+    "libero_pro_full": "results/libero_pro_full_study_20260825/aggregate",
+    "efficiency_full": "results/carve_efficiency_full_20260826",
+    "low_memory_coupling": "results/carve_efficiency_full_20260826/coupling"
   },
   "calibration": {
     "reference": {
@@ -430,6 +433,1541 @@
       "compiled_deadline_compliant": true,
       "smve_deadline_compliant": true,
       "eager_reference_misses_deadline": true
+    }
+  },
+  "libero_pro_full": {
+    "protocol": "libero_pro_full_suite_paired_10state_v1",
+    "cell_count": 120,
+    "task_count": 40,
+    "episode_count": 1200,
+    "tasks": [
+      {
+        "suite": "libero_10",
+        "task_id": 0,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 1,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 2,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 3,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 4,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 5,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 6,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 7,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 8,
+        "methods": {
+          "frozen_vla": {
+            "successes": 7,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 8,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 8,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10",
+        "task_id": 9,
+        "methods": {
+          "frozen_vla": {
+            "successes": 9,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 0,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 1,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 2,
+        "methods": {
+          "frozen_vla": {
+            "successes": 9,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 3,
+        "methods": {
+          "frozen_vla": {
+            "successes": 9,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 4,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 10,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 10,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 5,
+        "methods": {
+          "frozen_vla": {
+            "successes": 9,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 6,
+        "methods": {
+          "frozen_vla": {
+            "successes": 10,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 7,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 1,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 8,
+        "methods": {
+          "frozen_vla": {
+            "successes": 7,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_object",
+        "task_id": 9,
+        "methods": {
+          "frozen_vla": {
+            "successes": 2,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 2,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 2,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 0,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 1,
+        "methods": {
+          "frozen_vla": {
+            "successes": 2,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 2,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 2,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 2,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 3,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 4,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 5,
+        "methods": {
+          "frozen_vla": {
+            "successes": 9,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 9,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 9,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 6,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 7,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 8,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_swap",
+        "task_id": 9,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 0,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 1,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 2,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 3,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 4,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 5,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 6,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 7,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 8,
+        "methods": {
+          "frozen_vla": {
+            "successes": 7,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 6,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 7,
+            "trials": 10
+          }
+        }
+      },
+      {
+        "suite": "libero_10_task",
+        "task_id": 9,
+        "methods": {
+          "frozen_vla": {
+            "successes": 0,
+            "trials": 10
+          },
+          "fixed_recovery": {
+            "successes": 0,
+            "trials": 10
+          },
+          "agentic": {
+            "successes": 0,
+            "trials": 10
+          }
+        }
+      }
+    ],
+    "suites": {
+      "libero_10": {
+        "frozen_vla": {
+          "successes": 96,
+          "trials": 100,
+          "episode_steps": 25500,
+          "episode_wall_s": 1068.586285231926,
+          "vla_calls": 2595,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 0,
+          "safe_stops": 0,
+          "success_rate": 0.96,
+          "success_rate_wilson95": [
+            0.9016292856411208,
+            0.9843366960084523
+          ],
+          "vla_runtime_p50_ms": 55.386114996508695,
+          "vla_runtime_p95_ms": 57.17028099752497,
+          "vla_runtime_p99_ms": 59.7166100051254,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 27.03125
+        },
+        "fixed_recovery": {
+          "successes": 97,
+          "trials": 100,
+          "episode_steps": 25091,
+          "episode_wall_s": 1254.0900267120596,
+          "vla_calls": 2539,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 13,
+          "safe_stops": 3,
+          "success_rate": 0.97,
+          "success_rate_wilson95": [
+            0.9154806357094724,
+            0.9897454759759611
+          ],
+          "vla_runtime_p50_ms": 57.03166300372686,
+          "vla_runtime_p95_ms": 61.277129003428854,
+          "vla_runtime_p99_ms": 66.12199700612109,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 26.175257731958762
+        },
+        "agentic": {
+          "successes": 97,
+          "trials": 100,
+          "episode_steps": 25146,
+          "episode_wall_s": 1342.2352688568062,
+          "vla_calls": 2545,
+          "vla_deadline_misses": 0,
+          "planner_calls": 15,
+          "planner_wall_ms": 137910.97116592573,
+          "recovery_calls": 13,
+          "safe_stops": 2,
+          "success_rate": 0.97,
+          "success_rate_wilson95": [
+            0.9154806357094724,
+            0.9897454759759611
+          ],
+          "vla_runtime_p50_ms": 57.07276499015279,
+          "vla_runtime_p95_ms": 61.67476097471081,
+          "vla_runtime_p99_ms": 65.6023740011733,
+          "planner_mean_ms": 9194.06474439505,
+          "planner_p95_ms": 10809.35505600064,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.005893909626719057,
+          "vla_calls_per_success": 26.237113402061855
+        }
+      },
+      "libero_10_object": {
+        "frozen_vla": {
+          "successes": 66,
+          "trials": 100,
+          "episode_steps": 34183,
+          "episode_wall_s": 1518.8707293939806,
+          "vla_calls": 3447,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 0,
+          "safe_stops": 0,
+          "success_rate": 0.66,
+          "success_rate_wilson95": [
+            0.5627772885472462,
+            0.7453847920265184
+          ],
+          "vla_runtime_p50_ms": 55.47283199848607,
+          "vla_runtime_p95_ms": 59.184215002460405,
+          "vla_runtime_p99_ms": 62.19737700303085,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 52.22727272727273
+        },
+        "fixed_recovery": {
+          "successes": 67,
+          "trials": 100,
+          "episode_steps": 30649,
+          "episode_wall_s": 1556.2720258519985,
+          "vla_calls": 3054,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 33,
+          "safe_stops": 21,
+          "success_rate": 0.67,
+          "success_rate_wilson95": [
+            0.5730534379509052,
+            0.7543687726587197
+          ],
+          "vla_runtime_p50_ms": 57.01859499095008,
+          "vla_runtime_p95_ms": 60.78761401295196,
+          "vla_runtime_p99_ms": 64.67399100074545,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 45.582089552238806
+        },
+        "agentic": {
+          "successes": 68,
+          "trials": 100,
+          "episode_steps": 31493,
+          "episode_wall_s": 1847.5428889139148,
+          "vla_calls": 3141,
+          "vla_deadline_misses": 0,
+          "planner_calls": 50,
+          "planner_wall_ms": 481226.77984589245,
+          "recovery_calls": 33,
+          "safe_stops": 17,
+          "success_rate": 0.68,
+          "success_rate_wilson95": [
+            0.5833738138954762,
+            0.7633085267500092
+          ],
+          "vla_runtime_p50_ms": 56.865285005187616,
+          "vla_runtime_p95_ms": 59.05419899499975,
+          "vla_runtime_p99_ms": 62.637447990709916,
+          "planner_mean_ms": 9624.535596917849,
+          "planner_p95_ms": 17762.50908098882,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.01591849729385546,
+          "vla_calls_per_success": 46.19117647058823
+        }
+      },
+      "libero_10_swap": {
+        "frozen_vla": {
+          "successes": 11,
+          "trials": 100,
+          "episode_steps": 48773,
+          "episode_wall_s": 2427.1225510809745,
+          "vla_calls": 4882,
+          "vla_deadline_misses": 1,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 0,
+          "safe_stops": 0,
+          "success_rate": 0.11,
+          "success_rate_wilson95": [
+            0.06254196357064568,
+            0.18631296503080313
+          ],
+          "vla_runtime_p50_ms": 57.378764991881326,
+          "vla_runtime_p95_ms": 61.15594299626537,
+          "vla_runtime_p99_ms": 65.05452100827824,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.00020483408439164277,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 443.8181818181818
+        },
+        "fixed_recovery": {
+          "successes": 11,
+          "trials": 100,
+          "episode_steps": 44727,
+          "episode_wall_s": 2219.3345711990405,
+          "vla_calls": 4420,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 52,
+          "safe_stops": 26,
+          "success_rate": 0.11,
+          "success_rate_wilson95": [
+            0.06254196357064568,
+            0.18631296503080313
+          ],
+          "vla_runtime_p50_ms": 57.017416998860426,
+          "vla_runtime_p95_ms": 61.142880003899336,
+          "vla_runtime_p99_ms": 65.1765690126922,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 401.8181818181818
+        },
+        "agentic": {
+          "successes": 11,
+          "trials": 100,
+          "episode_steps": 46747,
+          "episode_wall_s": 2659.1637999590894,
+          "vla_calls": 4624,
+          "vla_deadline_misses": 0,
+          "planner_calls": 75,
+          "planner_wall_ms": 667646.8980979989,
+          "recovery_calls": 52,
+          "safe_stops": 16,
+          "success_rate": 0.11,
+          "success_rate_wilson95": [
+            0.06254196357064568,
+            0.18631296503080313
+          ],
+          "vla_runtime_p50_ms": 56.78115799673833,
+          "vla_runtime_p95_ms": 58.936085988534614,
+          "vla_runtime_p99_ms": 62.34384700655937,
+          "planner_mean_ms": 8901.958641306652,
+          "planner_p95_ms": 10639.72440798534,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.016219723183391002,
+          "vla_calls_per_success": 420.3636363636364
+        }
+      },
+      "libero_10_task": {
+        "frozen_vla": {
+          "successes": 7,
+          "trials": 100,
+          "episode_steps": 51195,
+          "episode_wall_s": 2596.1075821240665,
+          "vla_calls": 5123,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 0,
+          "safe_stops": 0,
+          "success_rate": 0.07,
+          "success_rate_wilson95": [
+            0.03431926106727268,
+            0.137495147390735
+          ],
+          "vla_runtime_p50_ms": 57.35412199283019,
+          "vla_runtime_p95_ms": 61.32965500000864,
+          "vla_runtime_p99_ms": 65.18771601258777,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 731.8571428571429
+        },
+        "fixed_recovery": {
+          "successes": 6,
+          "trials": 100,
+          "episode_steps": 45119,
+          "episode_wall_s": 2266.65573788897,
+          "vla_calls": 4429,
+          "vla_deadline_misses": 0,
+          "planner_calls": 0,
+          "planner_wall_ms": 0.0,
+          "recovery_calls": 75,
+          "safe_stops": 49,
+          "success_rate": 0.06,
+          "success_rate_wilson95": [
+            0.027786123963188192,
+            0.1247681544589592
+          ],
+          "vla_runtime_p50_ms": 57.01782600954175,
+          "vla_runtime_p95_ms": 61.20470599853434,
+          "vla_runtime_p99_ms": 65.55046100402251,
+          "planner_mean_ms": 0.0,
+          "planner_p95_ms": 0.0,
+          "vla_deadline_miss_rate": 0.0,
+          "planner_to_vla_call_ratio": 0.0,
+          "vla_calls_per_success": 738.1666666666666
+        },
+        "agentic": {
+          "successes": 7,
+          "trials": 100,
+          "episode_steps": 44717,
+          "episode_wall_s": 3015.661398647906,
+          "vla_calls": 4389,
+          "vla_deadline_misses": 8,
+          "planner_calls": 123,
+          "planner_wall_ms": 1102781.2809810566,
+          "recovery_calls": 75,
+          "safe_stops": 49,
+          "success_rate": 0.07,
+          "success_rate_wilson95": [
+            0.03431926106727268,
+            0.137495147390735
+          ],
+          "vla_runtime_p50_ms": 55.1593019918073,
+          "vla_runtime_p95_ms": 57.62310899444856,
+          "vla_runtime_p99_ms": 60.749444004613906,
+          "planner_mean_ms": 8965.701471390705,
+          "planner_p95_ms": 11227.334586001234,
+          "vla_deadline_miss_rate": 0.001822738664843928,
+          "planner_to_vla_call_ratio": 0.028024606971975393,
+          "vla_calls_per_success": 627.0
+        }
+      }
+    },
+    "aggregate": {
+      "frozen_vla": {
+        "successes": 180,
+        "trials": 400,
+        "episode_steps": 159651,
+        "episode_wall_s": 7610.687147830948,
+        "vla_calls": 16047,
+        "vla_deadline_misses": 1,
+        "planner_calls": 0,
+        "planner_wall_ms": 0.0,
+        "recovery_calls": 0,
+        "safe_stops": 0,
+        "success_rate": 0.45,
+        "success_rate_wilson95": [
+          0.40195222801404185,
+          0.4989990014193878
+        ],
+        "vla_runtime_p50_ms": 56.42849400464911,
+        "vla_runtime_p95_ms": 60.60659200011287,
+        "vla_runtime_p99_ms": 64.25782000587787,
+        "planner_mean_ms": 0.0,
+        "planner_p95_ms": 0.0,
+        "vla_deadline_miss_rate": 6.231694397706736e-05,
+        "planner_to_vla_call_ratio": 0.0,
+        "vla_calls_per_success": 89.15
+      },
+      "fixed_recovery": {
+        "successes": 181,
+        "trials": 400,
+        "episode_steps": 145586,
+        "episode_wall_s": 7296.352361652069,
+        "vla_calls": 14442,
+        "vla_deadline_misses": 0,
+        "planner_calls": 0,
+        "planner_wall_ms": 0.0,
+        "recovery_calls": 173,
+        "safe_stops": 99,
+        "success_rate": 0.4525,
+        "success_rate_wilson95": [
+          0.404404788515386,
+          0.5014988794463721
+        ],
+        "vla_runtime_p50_ms": 57.0188169949688,
+        "vla_runtime_p95_ms": 61.14216599962674,
+        "vla_runtime_p99_ms": 65.31801099481527,
+        "planner_mean_ms": 0.0,
+        "planner_p95_ms": 0.0,
+        "vla_deadline_miss_rate": 0.0,
+        "planner_to_vla_call_ratio": 0.0,
+        "vla_calls_per_success": 79.79005524861878
+      },
+      "agentic": {
+        "successes": 183,
+        "trials": 400,
+        "episode_steps": 148103,
+        "episode_wall_s": 8864.603356377716,
+        "vla_calls": 14699,
+        "vla_deadline_misses": 8,
+        "planner_calls": 263,
+        "planner_wall_ms": 2389565.930090874,
+        "recovery_calls": 173,
+        "safe_stops": 84,
+        "success_rate": 0.4575,
+        "success_rate_wilson95": [
+          0.4093135795917928,
+          0.5064949654266224
+        ],
+        "vla_runtime_p50_ms": 56.44358100835234,
+        "vla_runtime_p95_ms": 59.53764700097963,
+        "vla_runtime_p99_ms": 63.18512198049575,
+        "planner_mean_ms": 9085.802015554653,
+        "planner_p95_ms": 11228.002982010366,
+        "vla_deadline_miss_rate": 0.0005442547112048439,
+        "planner_to_vla_call_ratio": 0.017892373630859243,
+        "vla_calls_per_success": 80.3224043715847
+      }
+    },
+    "comparisons_to_frozen": {
+      "fixed_recovery": {
+        "success_delta": 1,
+        "success_rate_points": 0.2500000000000002,
+        "episode_steps_percent": -8.809841466699238,
+        "vla_calls_percent": -10.001869508319311,
+        "episode_wall_percent": -4.130176159828939,
+        "conversions": 3,
+        "regressions": 2,
+        "preserved_successes": 178,
+        "recovery_episodes": 173,
+        "recovery_successes": 22,
+        "planner_episodes": 0,
+        "mcnemar_exact_p": 1.0,
+        "recovery_success_rate": 0.12716763005780346
+      },
+      "agentic": {
+        "success_delta": 3,
+        "success_rate_points": 0.7500000000000007,
+        "episode_steps_percent": -7.233277586736068,
+        "vla_calls_percent": -8.400324048108681,
+        "episode_wall_percent": 16.47572925007351,
+        "conversions": 4,
+        "regressions": 1,
+        "preserved_successes": 179,
+        "recovery_episodes": 173,
+        "recovery_successes": 24,
+        "planner_episodes": 173,
+        "mcnemar_exact_p": 0.375,
+        "recovery_success_rate": 0.13872832369942195
+      },
+      "agentic_vs_fixed": {
+        "success_delta": 2,
+        "success_rate_points": 0.5000000000000004,
+        "episode_steps_percent": 1.7288750291923674,
+        "vla_calls_percent": 1.7795319207865947,
+        "episode_wall_percent": 21.493630200317767,
+        "planner_calls": 263,
+        "planner_wall_ms": 2389565.930090874,
+        "conversions": 2,
+        "regressions": 0,
+        "preserved_successes": 181,
+        "mcnemar_exact_p": 0.5
+      }
+    },
+    "claim_boundary": "Complete 10-state task coverage on the locally available LIBERO-10 and LIBERO-Pro Object/Position/Task suites; not the official 50-state leaderboard."
+  },
+  "efficiency_full": {
+    "schema_version": "carve-efficiency-full-study-v1",
+    "date": "2026-08-26",
+    "hardware": "NVIDIA GeForce RTX 4090 24GB",
+    "vla_protocol": {
+      "checkpoint": "pi05_libero_pytorch",
+      "paired_recorded_observations": 45,
+      "fixed_noise": true,
+      "action_horizon": 10,
+      "deadline_ms": 80.0
+    },
+    "planner_protocol": {
+      "model": "Qwen3.5-4B",
+      "paired_temporal_observations": 30,
+      "semantic_protocol": "code_v5",
+      "profiles": [
+        "BF16",
+        "INT8",
+        "NF4"
+      ]
+    },
+    "vla_rows": [
+      {
+        "profile_id": "V0",
+        "label": "Eager BF16, 7 steps",
+        "runtime_p50_ms": 277.61396899586543,
+        "runtime_p95_ms": 282.4302706052549,
+        "runtime_p99_ms": 284.1623263375368,
+        "deadline_miss_rate_80ms": 1.0,
+        "peak_vram_gib": 7.119950294494629,
+        "fidelity_passed": true,
+        "fidelity_samples": 0,
+        "decision": "behavior_reference",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_eager_bf16_7step_h10.json",
+        "p95_change_vs_v0_percent": 0.0,
+        "vram_change_vs_v0_percent": 0.0
+      },
+      {
+        "profile_id": "V1",
+        "label": "Eager BF16, 2 steps",
+        "runtime_p50_ms": 147.12867900379933,
+        "runtime_p95_ms": 151.3521423912607,
+        "runtime_p99_ms": 155.82660872139968,
+        "deadline_miss_rate_80ms": 1.0,
+        "peak_vram_gib": 7.119950294494629,
+        "fidelity_passed": true,
+        "fidelity_samples": 0,
+        "decision": "reject_deadline",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_eager_bf16_2step_h10.json",
+        "p95_change_vs_v0_percent": -46.41079298373032,
+        "vram_change_vs_v0_percent": 0.0
+      },
+      {
+        "profile_id": "V2",
+        "label": "Compile BF16, 2 steps",
+        "runtime_p50_ms": 63.768344989512116,
+        "runtime_p95_ms": 66.05965138878673,
+        "runtime_p99_ms": 66.6464300325606,
+        "deadline_miss_rate_80ms": 0.0,
+        "peak_vram_gib": 6.982977867126465,
+        "fidelity_passed": true,
+        "fidelity_samples": 45,
+        "decision": "retain_fallback",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_torch_compile_bf16_2step_h10.json",
+        "p95_change_vs_v0_percent": -76.6102793276304,
+        "vram_change_vs_v0_percent": -1.923783477450336
+      },
+      {
+        "profile_id": "V3",
+        "label": "Compile BF16 + SMVE, 2 steps",
+        "runtime_p50_ms": 52.20068001653999,
+        "runtime_p95_ms": 54.671654012054205,
+        "runtime_p99_ms": 54.88770303898491,
+        "deadline_miss_rate_80ms": 0.0,
+        "peak_vram_gib": 6.982977867126465,
+        "fidelity_passed": true,
+        "fidelity_samples": 45,
+        "decision": "promote_realtime",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_smve_bf16_2step_h10.json",
+        "p95_change_vs_v0_percent": -80.64242409466537,
+        "vram_change_vs_v0_percent": -1.923783477450336
+      },
+      {
+        "profile_id": "V4",
+        "label": "Late-language INT8, 2 steps",
+        "runtime_p50_ms": 954.8011549923103,
+        "runtime_p95_ms": 994.7432449960615,
+        "runtime_p99_ms": 1008.2376199541613,
+        "deadline_miss_rate_80ms": 1.0,
+        "peak_vram_gib": 6.3602495193481445,
+        "fidelity_passed": true,
+        "fidelity_samples": 45,
+        "decision": "reject_current_backend",
+        "source": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_late_int8_2step_h10.json",
+        "p95_change_vs_v0_percent": 252.20843816220642,
+        "vram_change_vs_v0_percent": -10.670029195764318
+      }
+    ],
+    "planner_rows": [
+      {
+        "profile_id": "Q0",
+        "label": "Qwen3.5-4B BF16",
+        "allocated_vram_gib": 8.455068111419678,
+        "peak_allocated_vram_gib": 8.455068588256836,
+        "load_seconds": 9.759892225265503,
+        "latency_mean_ms": 1653.6014905335226,
+        "latency_p95_ms": 1896.5507079119561,
+        "protocol_valid_rate": 1.0,
+        "no_op_false_positive_rate": 0.0,
+        "severe_intervention_recall": 1.0,
+        "semantic_gate_passed": true,
+        "exact_semantic_decision_agreement": 1.0,
+        "intervention_agreement": 1.0,
+        "decision": "promote_latency",
+        "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_bf16_receipt.json",
+        "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_bf16_semantic_gate.json",
+        "vram_change_vs_p0_percent": 0.0,
+        "p95_change_vs_p0_percent": 0.0
+      },
+      {
+        "profile_id": "Q1",
+        "label": "Qwen3.5-4B INT8",
+        "allocated_vram_gib": 4.839301586151123,
+        "peak_allocated_vram_gib": 4.884202003479004,
+        "load_seconds": 30.178561449050903,
+        "latency_mean_ms": 5424.6740391293615,
+        "latency_p95_ms": 6504.446872253901,
+        "protocol_valid_rate": 1.0,
+        "no_op_false_positive_rate": 0.0,
+        "severe_intervention_recall": 1.0,
+        "semantic_gate_passed": true,
+        "exact_semantic_decision_agreement": 1.0,
+        "intervention_agreement": 1.0,
+        "decision": "reject_current_kernel",
+        "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_int8_receipt.json",
+        "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_int8_semantic_gate.json",
+        "vram_change_vs_p0_percent": -42.764487259245,
+        "p95_change_vs_p0_percent": 242.96192794207423
+      },
+      {
+        "profile_id": "Q2",
+        "label": "Qwen3.5-4B NF4",
+        "allocated_vram_gib": 3.0753183364868164,
+        "peak_allocated_vram_gib": 3.0961456298828125,
+        "load_seconds": 10.348504066467285,
+        "latency_mean_ms": 2370.9928451338783,
+        "latency_p95_ms": 2909.7868683515117,
+        "protocol_valid_rate": 1.0,
+        "no_op_false_positive_rate": 0.0,
+        "severe_intervention_recall": 1.0,
+        "semantic_gate_passed": true,
+        "exact_semantic_decision_agreement": 1.0,
+        "intervention_agreement": 1.0,
+        "decision": "retain_memory_tier",
+        "receipt": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_nf4_receipt.json",
+        "semantic_gate": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/planner/qwen35_4b_uniform_nf4_semantic_gate.json",
+        "vram_change_vs_p0_percent": -63.62751552133334,
+        "p95_change_vs_p0_percent": 53.42520799536634
+      }
+    ],
+    "version_sensitivity": {
+      "current_torch": "/home/admin1/ct/CARVE-VLA/results/carve_efficiency_full_20260826/vla/pi05_late_int8_2step_h10.json",
+      "current_int8_p95_ms": 994.7432449960615,
+      "compatible_stack_source": "/home/admin1/ct/CARVE-VLA/results/carve_optimize/pi05_torchao_int8_vlm_late_fidelity45_20260825.json",
+      "compatible_stack": {
+        "cuda": "12.6",
+        "torch": "2.7.1+cu126",
+        "torchao": "0.15.0"
+      },
+      "compatible_int8_p95_ms": 71.6133942019951
+    },
+    "closed_loop_quantization_gate": {
+      "schema_version": "carve-pi05-quantized-closed-loop-v1",
+      "protocol": {
+        "snapshots": [
+          "task06_episode001_step0013",
+          "task09_episode001_step0013"
+        ],
+        "branch": "physical_recovery",
+        "branch_horizon": 440,
+        "fixed_noise_seed": 7,
+        "inference_steps": 2,
+        "action_horizon": 10,
+        "deadline_ms": 80.0
+      },
+      "arms": [
+        {
+          "profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+          "closed_loop": {
+            "successes": 2,
+            "trials": 2,
+            "passed": true,
+            "rows": [
+              {
+                "snapshot": "task06_episode001_step0013",
+                "success": true,
+                "executed_steps": 249,
+                "vla_calls": 119,
+                "deadline_misses": 1,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t6_videos/task06_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t6.json"
+              },
+              {
+                "snapshot": "task09_episode001_step0013",
+                "success": true,
+                "executed_steps": 272,
+                "vla_calls": 130,
+                "deadline_misses": 0,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t9_videos/task09_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/smve_bf16_t9.json"
+              }
+            ]
+          },
+          "runtime": {
+            "calls": 249,
+            "runtime_p50_ms": 51.19351399480365,
+            "runtime_p95_ms": 53.32415679877158,
+            "runtime_p99_ms": 56.10133140289691,
+            "deadline_misses": 1
+          },
+          "decision": "retain_realtime_default"
+        },
+        {
+          "profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_late",
+          "closed_loop": {
+            "successes": 2,
+            "trials": 2,
+            "passed": true,
+            "rows": [
+              {
+                "snapshot": "task06_episode001_step0013",
+                "success": true,
+                "executed_steps": 248,
+                "vla_calls": 118,
+                "deadline_misses": 1,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t6_videos/task06_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t6.json"
+              },
+              {
+                "snapshot": "task09_episode001_step0013",
+                "success": true,
+                "executed_steps": 303,
+                "vla_calls": 146,
+                "deadline_misses": 1,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t9_videos/task09_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/late_int8_t9.json"
+              }
+            ]
+          },
+          "runtime": {
+            "calls": 264,
+            "runtime_p50_ms": 66.22567999875173,
+            "runtime_p95_ms": 69.15477985021425,
+            "runtime_p99_ms": 73.16667364444585,
+            "deadline_misses": 2
+          },
+          "decision": "admit_as_low_memory_tier"
+        },
+        {
+          "profile_id": "pi05-torchao_int8_masked_views-bf16-2step-h10-vlm_late",
+          "closed_loop": {
+            "successes": 1,
+            "trials": 2,
+            "passed": false,
+            "rows": [
+              {
+                "snapshot": "task06_episode001_step0013",
+                "success": true,
+                "executed_steps": 251,
+                "vla_calls": 120,
+                "deadline_misses": 1,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69_videos/task06_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69.json"
+              },
+              {
+                "snapshot": "task09_episode001_step0013",
+                "success": false,
+                "executed_steps": 440,
+                "vla_calls": 214,
+                "deadline_misses": 0,
+                "video_path": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69_videos/task09_episode001_step0013_physical_recovery.mp4",
+                "source": "results/carve_optimize/pi05_late_int8_closed_loop_20260825/int8_smve_t69.json"
+              }
+            ]
+          },
+          "runtime": {
+            "calls": 334,
+            "runtime_p50_ms": 54.46322450006846,
+            "runtime_p95_ms": 56.74392325017834,
+            "runtime_p99_ms": 61.92590382488564,
+            "deadline_misses": 1
+          },
+          "decision": "reject_closed_loop_regression"
+        }
+      ],
+      "default_profile_id": "pi05-torch_compile_masked_views-bf16-2step-h10",
+      "low_memory_profile_id": "pi05-torchao_int8-bf16-2step-h10-vlm_late",
+      "rejected_composition_profile_id": "pi05-torchao_int8_masked_views-bf16-2step-h10-vlm_late",
+      "conclusion": "Late-language INT8 preserves both matched recovery outcomes and is admitted only as a low-memory tier. SMVE remains the realtime default. The composed INT8+SMVE profile fails T9 and is rejected."
+    },
+    "recommended_profiles": {
+      "vla_realtime": "V3",
+      "vla_fallback": "V2",
+      "vla_low_memory": "late-language INT8 only on the validated compatible stack",
+      "planner_latency": "Q0",
+      "planner_low_memory": "Q2"
+    }
+  },
+  "low_memory_coupling": {
+    "schema_version": "carve-low-memory-coupling-gate-v1",
+    "hardware": "NVIDIA GeForce RTX 4090 24GB",
+    "planner_profile": "Q2 Qwen3.5-4B NF4",
+    "vla_profile": "V3 PI0.5 compiled BF16 + SMVE",
+    "measured_process_memory": {
+      "planner_mib": 3638.0,
+      "vla_mib": 7850.0,
+      "pair_mib": 11488.0,
+      "pair_gib": 11.21875,
+      "source": "nvidia-smi compute-process query while both services were resident"
+    },
+    "planner": {
+      "elapsed_ms": 13916.20746999979,
+      "accepted": true,
+      "attempt_count": 1,
+      "decision": {
+        "intent": "vla_act",
+        "rationale": "white mug is visible and ready to grasp",
+        "confidence": 0.9,
+        "subgoal": "grasp the white mug",
+        "vla_instruction": "grasp the white mug",
+        "skill_id": null,
+        "skill_args": {},
+        "expected_outcome": "",
+        "memory_note": "",
+        "failure_type": "",
+        "scene_graph_update": {
+          "entities": [],
+          "relations": [],
+          "source": "vlm_observation",
+          "timestep": 0
+        }
+      }
+    },
+    "vla": {
+      "runtime_latency_ms": 66.69369601877406,
+      "model_latency_ms": 40.23254101048224,
+      "deadline_ms": 80.0,
+      "deadline_miss": false,
+      "fallback_used": false,
+      "action_shape": [
+        10,
+        7
+      ]
+    },
+    "checks": {
+      "canonical_smoke_passed": true,
+      "planner_nf4_profile": true,
+      "planner_decision_accepted": true,
+      "planner_selected_vla": true,
+      "smve_profile_used": true,
+      "action_shape_valid": true,
+      "deadline_met": true,
+      "no_fallback": true,
+      "actions_withheld": true
+    },
+    "passed": true,
+    "decision": "integration_passed_system_admission_pending",
+    "claim_boundary": "One real co-resident Planner-to-VLA dry-run. It validates model loading, typed planning, profile admission, action-contract generation and one VLA deadline. It is not task-success, repeated-latency or stress evidence.",
+    "sources": {
+      "planner_receipt": "results/carve_efficiency_full_20260826/coupling/qwen35_4b_nf4_receipt.json",
+      "integration_receipt": "results/carve_efficiency_full_20260826/coupling/qwen35-4b-nf4-pi05-smve-smoke/model_integration_receipt.json",
+      "events": "results/carve_efficiency_full_20260826/coupling/qwen35-4b-nf4-pi05-smve-smoke/events.jsonl"
     }
   }
 }

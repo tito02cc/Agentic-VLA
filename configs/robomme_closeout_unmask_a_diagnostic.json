@@ -1,0 +1,28 @@
+{
+  "protocol": "robomme.closeout.v1",
+  "stage": "development",
+  "development_diagnostic": {
+    "task": "VideoUnmaskSwap",
+    "episode": 11,
+    "condition": "A"
+  },
+  "tasks": {
+    "VideoUnmaskSwap": [11],
+    "VideoRepick": [12]
+  },
+  "image_id": "sha256:5ef6a54b38919257b08a8bf9380769b9f0bfee8b4af17f29b91387ce8006a2ac",
+  "timeout_s": 900,
+  "demo_root": "artifacts/robomme/closeout_development/official_demos",
+  "memory_root": "artifacts/robomme/closeout_development/identity_memory",
+  "deployment": {
+    "policy_checkpoint": "~/.cache/carve-vla/checkpoints/robomme/mme_vla_suite/symbolic-grounded-subgoal/79999",
+    "planner_model": "~/.cache/carve-vla/checkpoints/Qwen3-VL-4B-Instruct",
+    "planner_adapter": "~/.cache/carve-vla/checkpoints/robomme/vlm_subgoal_predictor/qwenvl/grounded_subgoal/checkpoint-1200",
+    "precision": "bf16",
+    "attention": "sdpa",
+    "policy_seed": 7
+  },
+  "service_pids": {"policy": null, "planner": null},
+  "service_startup_s": {"policy": null, "planner": null},
+  "notes": "One previously used VideoUnmaskSwap ep11/A diagnostic; compare only with the September 23 B development run. No held-out claim, no automatic rerun, and no 100-episode confirmation."
+}

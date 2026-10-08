@@ -1,0 +1,48 @@
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily]
+  \node[anchor=west,text=ink,font=\bfseries\scriptsize] at (0.10,3.60)
+    {PI0.5 MODEL-CALL P95};
+  \node[anchor=east,text=ink,font=\scriptsize] at (8.75,3.60)
+    {45 paired observations $\cdot$ RTX 4090};
+  \draw[ink!35,line width=0.6pt] (2.60,0.89) -- (6.80,0.89);
+  \foreach \x/\lab in {2.60/0,4.00/100,5.40/200,6.80/300} {
+    \draw[ink!45,line width=0.5pt] (\x,0.87) -- (\x,0.98);
+    \node[text=ink,font=\tiny] at (\x,0.70) {\lab};
+  }
+  \node[anchor=west,text=ink,font=\tiny] at (6.98,0.70) {ms};
+  \draw[amber,dashed,line width=0.75pt] (3.72,1.04) -- (3.72,3.12);
+  \node[anchor=west,text=amber,font=\scriptsize] at (3.80,3.23)
+    {80-ms target};
+
+  \node[anchor=west,text=ink,font=\scriptsize] at (0.10,2.94)
+    {7-step eager};
+  \fill[blue!73] (2.60,2.81) rectangle (6.55,3.07);
+  \node[anchor=west,text=ink,font=\scriptsize] at (6.67,2.94)
+    {282.43 / 7.12};
+
+  \node[anchor=west,text=ink,font=\scriptsize] at (0.10,2.42)
+    {2-step eager};
+  \fill[blue!73] (2.60,2.29) rectangle (4.72,2.55);
+  \node[anchor=west,text=ink,font=\scriptsize] at (6.67,2.42)
+    {151.35 / 7.12};
+
+  \node[anchor=west,text=ink,font=\scriptsize] at (0.10,1.90)
+    {2-step compiled};
+  \fill[blue!73] (2.60,1.77) rectangle (3.52,2.03);
+  \node[anchor=west,text=ink,font=\scriptsize] at (6.67,1.90)
+    {66.06 / 6.98};
+
+  \node[anchor=west,text=ink,font=\scriptsize] at (0.10,1.38)
+    {+ masked-view elision};
+  \fill[teal!85] (2.60,1.25) rectangle (3.37,1.51);
+  \node[anchor=west,text=ink,font=\scriptsize] at (6.67,1.38)
+    {54.67 / 6.98};
+
+  \draw[warn!70,line width=0.6pt] (0.10,0.17) rectangle (8.75,0.52);
+  \fill[warn!13] (0.11,0.18) rectangle (8.74,0.51);
+  \node[anchor=west,text=warn,font=\bfseries\scriptsize] at (0.28,0.35)
+    {Late INT8: rejected, off scale};
+  \node[anchor=east,text=warn,font=\scriptsize] at (8.57,0.35)
+    {994.74 ms / 6.36 GiB};
+  \node[anchor=east,text=ink,font=\tiny] at (8.75,3.23)
+    {P95 (ms) / VRAM (GiB)};
+\end{tikzpicture}

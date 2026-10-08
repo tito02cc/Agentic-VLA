@@ -1,0 +1,52 @@
+{
+  "experiment_id": "guanghua_agentic_rag_vlm_challenge_v4_model_selected_tools",
+  "protocol": "/home/admin1/ct/CARVE-VLA/Agentic-RAG-VLM/configs/guanghua_challenge_v4_agent_routing.json",
+  "knowledge_cards": "/home/admin1/ct/CARVE-VLA/Agentic-RAG-VLM/knowledge_base/affordance_cards.json",
+  "knowledge_cards_sha256": "b24104a3132b19a88785d40a1d0ee4660b73bcaca41f635189a31e36c212befd",
+  "perception_adapter": "deterministic_color_geometry_adapter_v3_height_envelope",
+  "agent_tool_contracts": {
+    "retrieval_to_dexterous_skill_router_v1": "When explicitly selected by the VLM, rank public object descriptors against HAA-RAG cards and execute the selected hand synergy; preserve the proposal and routing receipt.",
+    "protected_relation_to_motion_constraint_v1": "When explicitly selected by the VLM, convert a public protected-object relation into a metric away offset, height and force limit.",
+    "role_aware_change_and_memory_verifier_v1": "When explicitly selected by the VLM, apply the public displacement threshold and intersect changed objects with pending targets before replanning."
+  },
+  "endpoint": "http://127.0.0.1:18070/v1/chat/completions",
+  "requested_model": "/home/admin1/g2_multimodal_agent/models/Qwen3.5-4B",
+  "deployment_label": "qwen3.5-4b-bnb-nf4-local",
+  "conditions": {
+    "G1": [
+      "C2_full",
+      "B0_vlm_only"
+    ],
+    "G2": [
+      "C2_full",
+      "A_no_graph"
+    ],
+    "G3": [
+      "C2_full",
+      "A_no_memory",
+      "A_no_replan"
+    ],
+    "G4": [
+      "C2_full",
+      "C1_local",
+      "B0_skill_only"
+    ]
+  },
+  "seeds": [
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310
+  ],
+  "seed_split": "main",
+  "temperature": 0.0,
+  "max_tokens": 500,
+  "skill_only_uses_vlm": false,
+  "claim_boundary": "Real multimodal Agentic mechanism evaluation with model-selected, public-observation tool execution and a calibrated kinematic manipulation skill proxy; not a contact-dynamics grasp claim."
+}

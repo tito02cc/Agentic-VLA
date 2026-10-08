@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "run_id": "organize-table-framework-development-001",
+  "planner": {
+    "mode": "embedded_vlm",
+    "planner_id": "qwen3-vl-4b-bf16-development",
+    "provider": "openai_compatible",
+    "model": "/home/admin1/models/Qwen3-VL-4B-Instruct",
+    "endpoint": "http://127.0.0.1:18170/v1/chat/completions",
+    "timeout_s": 45.0,
+    "max_tokens": 768,
+    "max_calls_per_episode": 16,
+    "max_grounding_repairs": 1,
+    "minimum_intervention_confidence": 0.65
+  },
+  "harness": {
+    "task_start_policy": "startup_wait",
+    "primitive_boundary_policy": "event_only",
+    "retry_budget": 2,
+    "recovery_budget": 2,
+    "physical_skill_budget": 4,
+    "planner_cooldown_steps": 50,
+    "safe_hold_timeout_s": 60.0
+  },
+  "vla": {
+    "policy_id": "robodojo-official-pi05-59999",
+    "adapter_id": "robodojo_official_pi05",
+    "model_id": "pi05",
+    "checkpoint_id": "RoboDojo-Benchmark/RoboDojo@0a709fe7863f6c869a8d141676585a883fce4270:Pi_05/59999",
+    "deployment_profile_id": "official-jax-reference-flow10-h50",
+    "endpoint": "ws://127.0.0.1:18081"
+  },
+  "optimize": {
+    "enabled": false,
+    "enforce_profile_admission": true
+  },
+  "benchmark": {
+    "environment_id": "robodojo",
+    "suite_id": "development",
+    "task_id": "organize_table",
+    "seed": 0,
+    "max_steps": 1000,
+    "record_video": true
+  },
+  "artifacts": {
+    "results_root": "artifacts/robodojo/sorting_framework",
+    "persist_frames": false
+  }
+}

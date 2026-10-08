@@ -4758,7 +4758,7 @@ Evidence:
 
 Artifacts:
 
-- `docs/reports/CARVE_VLA_MIDTERM_PRESENTATION_20260717.md`
+- `docs/archive/midterm/20260717/CARVE_VLA_MIDTERM_PRESENTATION_20260717.md`
 - `paper/CARVE-VLA/generated/cross_adapter_table.tex`
 - `paper/CARVE-VLA/generated/runtime_results_summary.json`
 
@@ -5084,3 +5084,1618 @@ Evidence:
 - `results/carve_pi05_agentic_optimize_pair_20260719/summary.json`
 - `results/carve_pi05_agentic_optimize_pair_20260719/agentic_optimize_pair.png`
 - `scripts/run_carve_pi05_agentic_optimize_pair.sh`
+
+## 2026-08-24: Canonical LIBERO-Pro framework gate
+
+Migrated the final official LIBERO-Pro execution path to
+`CarveAgentSession`, the seven typed tools, local Qwen3.5-4B and the promoted
+PI0.5 SMVE profile. The LIBERO adapter now samples deployable observations and
+video at every control step while keeping evaluator termination private.
+
+Object Task 8 succeeds in 423 steps with no Agentic intervention. Its 43 PI0.5
+calls record 55.22/56.59 ms runtime mean/P95 and zero 80 ms misses. Object Task
+9 triggers two Qwen decisions and one verified 12-action recovery, then safely
+stops at step 362 when door closure remains stalled; the private evaluator
+records failure. This is a complete mechanism and fail-closed integration gate,
+not a success-rate uplift claim.
+
+Evidence:
+
+- `docs/status/LIBERO_PRO_CANONICAL_GATE_20260824.md`
+- `results/libero_pro_canonical_object_t8_step_monitor_20260824/`
+- `results/libero_pro_canonical_object_t9_agentic_complete_20260824/`
+- `scripts/run_agentic_vla_libero_pro_canonical.py`
+
+The full CPU suite passes `207` tests. The next experiment is restricted to a
+three-initial-state paired frozen-VLA versus Agentic pilot.
+
+## 2026-08-24: Canonical three-state paired pilots
+
+Added explicit `frozen_vla` and `agentic` modes to the canonical runner and
+stored the method in each manifest. The pair holds checkpoint, promoted SMVE
+profile, fixed policy noise, initial states, deadline and episode limit fixed.
+
+On LIBERO-Pro `libero_10_object` Task 9, both methods complete `1/3`. Agentic
+preserves the successful trial without intervention, reduces total control
+steps from 1295 to 919 and PI0.5 calls from 130 to 90, and safely stops the two
+failed trials after four Planner calls and two recoveries. The local VLM adds
+37.70 s, so wall time rises from 58.33 s to 77.38 s. This is a safety/compute
+result, not a task-success gain.
+
+On LIBERO-Pro `libero_10` Task 9, both methods complete `3/3` with the same 729
+steps and 74 VLA calls. Agentic makes zero Planner/recovery calls, confirming
+nominal non-interference under event-only scheduling.
+
+Evidence:
+
+- `results/libero_pro_paired_t9_summary_20260824/`
+- `results/libero_pro_paired_long_t9_summary_20260824/`
+- `scripts/summarize_libero_pro_canonical_pair.py`
+
+Decision: stop the natural-task sweep. Any later capability-uplift test must
+use a predeclared semantic perturbation or restored correctable failure state.
+
+## 2026-08-24: Correctable-failure gate
+
+Extended the canonical LIBERO-Pro runner with two isolated, auditable protocols:
+private exact-state restoration and `stale_subgoal_v1`. The latter preserves
+the benchmark task while corrupting only the cached low-level VLA instruction;
+the fault is detected from an instruction-version receipt rather than evaluator
+state. Agentic runs invoke Qwen at startup, while Frozen controls retain the
+same stale command.
+
+The historical T6 stall snapshot is no longer a differentiating failure under
+the promoted PI0.5 profile: Frozen and Agentic both succeed in 93 steps without
+Planner or recovery. On Object Task 8, Qwen detects the stale command at 0.92
+confidence, changes the typed VLA call back to the moka-pot task, and completes
+the rollout in 425 steps. Frozen also succeeds under wrong Task 8 prompts due
+to a strong scene prior, so this is mechanism evidence only.
+
+An executable object-relation swap on `libero_10_task` Task 6 makes Frozen fail,
+and Agentic correctly restores the true instruction, but the correct-instruction
+PI0.5 upper bound also fails. Task 4 and Task 9 fail the same upper-bound
+qualification. These tasks are therefore rejected rather than used to claim a
+Harness success gain.
+
+Evidence:
+
+- `docs/status/LIBERO_PRO_CORRECTABLE_FAILURE_GATE_20260824.md`
+- `results/libero_pro_restore_t6_frozen_smoke_20260824/`
+- `results/libero_pro_restore_t6_agentic_smoke_20260824/`
+- `results/libero_pro_stale_subgoal_t8_agentic_correction_v2_20260824/`
+- `results/libero_pro_stale_subgoal_t6_frozen_swapped_smoke_20260824/`
+- `results/libero_pro_stale_subgoal_t6_agentic_swapped_smoke_20260824/`
+
+Decision: no expansion on the current tasks. Future correction experiments must
+first demonstrate a successful correct-instruction upper bound and a failed
+stale-instruction Frozen control on the same fixed states. The canonical test
+entry point passes `213` tests.
+
+## 2026-08-24: LIBERO-Pro target-grounding and semantic-checkpoint pilot
+
+Applied the correct-instruction qualification funnel to Task 3 and Task 5 in
+`libero_10_task`; both fail at 520 steps and were stopped before Agentic pairs.
+The final predeclared candidate, `libero_10_swap` Task 4, fails at 620 steps but
+reveals a correctable semantic pattern in video: PI0.5 places the white mug on
+the left plate and then places an unmentioned red distractor on the right plate,
+leaving the yellow-white target on the table.
+
+Added optional nominal task-start VLM planning and explicit, budgeted semantic
+checkpoints to the canonical session. A step-250 checkpoint correctly switches
+the remaining subgoal to the yellow-white mug in one run, demonstrating the
+complete checkpoint -> VLM -> typed VLA transition. A semantic-planner-only
+ablation confirms the failure is not caused solely by Monitor recovery or safe
+stop. However, local Qwen3.5-4B is inconsistent at fine-grained grounding: it
+also selects the red distractor, repeats a completed clause, and once falsely
+labels upright mugs unsafe. No condition completes the private evaluator task.
+
+Decision: stop checkpoint/prompt search with the current 4B Planner. The next
+causal comparison must keep the PI0.5 rollout protocol fixed and vary only the
+Planner backend or add a deterministic object-referent validation gate. This is
+a VLM grounding bottleneck, not evidence for retraining PI0.5 or rerunning the
+suite. The canonical test entry point passes `213` tests.
+
+## 2026-08-25: VLM task-grounding guard and LIBERO-PRO Task 4 gate
+
+- Added a task-contract validator at the guarded Planner boundary. A `vla_act`
+  decision is rejected when its action target introduces a color referent that
+  is absent from the benchmark task instruction.
+- Added one bounded grounding-repair call. The rejection reason is returned to
+  the same VLM once, every physical model invocation counts against the episode
+  call budget, and a second invalid decision fails closed.
+- Added `attempt_count` and `validation_errors` to Planner results and persisted
+  both fields in the transcript and event log.
+- Local model/resource decision: retained the resident Qwen3.5-4B Planner. It
+  used 9.6 GiB, while the optimized PI0.5 service used 7.8 GiB; both fit on the
+  RTX 4090. No new VLM was downloaded.
+- Offline gate on the recorded official LIBERO-PRO `libero_10_swap` Task 4
+  frames:
+  - step 150: 4/4 decisions selected the yellow-and-white mug for the right
+    plate;
+  - task start: 3/3 decisions selected the white mug as the first subgoal;
+  - all seven calls passed without a repair.
+- Closed-loop gate:
+  - suite/task/seed: `libero_10_swap`, Task 4, seed 7;
+  - method: startup Planner plus one semantic checkpoint at step 150, with
+    Monitor-triggered intervention masked;
+  - optimized VLA profile:
+    `pi05-torch_compile_masked_views-bf16-2step-h10`;
+  - Planner requests: 2. The checkpoint request required one internal bounded
+    repair before its decision was accepted;
+  - result: 0/1 success after 620 steps.
+- Causal reading of the video: the white mug reached the left plate, but PI0.5
+  placed the red distractor on the right plate and left the yellow-and-white mug
+  on the table. The accepted Planner decision preserved the correct task
+  mapping, so this run isolates a remaining VLA instance-grounding/execution
+  limitation rather than a Planner target-selection failure.
+- Artifacts:
+  - `results/vlm_grounding_gate_20260825/`
+  - `results/libero_pro_swap_task4_vlm_guarded_20260825/`
+
+## 2026-08-25: Canonical LIBERO-Pro three-method completion gate
+
+- Added a native `fixed_recovery` condition to the canonical official
+  LIBERO-Pro runner. It uses the same Monitor and one typed physical skill as
+  Full Agentic but has no in-process Planner.
+- Completed Object T8/T9 with Frozen VLA, Fixed Recovery and Full Agentic on
+  three paired states per task: 18 real MuJoCo episodes in total.
+- Success is identical across methods: T8 `2/3`, T9 `1/3`, aggregate `3/6`.
+- Relative to Frozen VLA, Full Agentic reduces control steps by `17.1%` and VLA
+  calls by `18.3%`; it preserves all successful states and converts all three
+  persistent failures to bounded safe stops.
+- Full Agentic makes six event-triggered Qwen calls at 9.63 s mean latency. The
+  co-resident PI0.5 path records `0/214` deadline misses at 80 ms.
+- The success-uplift expansion condition is not met, so no 10-state sweep is
+  run. The final claim is bounded failure handling and realtime-path
+  preservation, not improved benchmark success.
+- Evidence:
+  - `docs/status/LIBERO_PRO_CANONICAL_TRIAD_GATE_20260825.md`
+  - `results/libero_pro_canonical_triad_study_20260825/`
+  - `scripts/summarize_libero_pro_canonical_triad.py`
+  - `scripts/summarize_libero_pro_canonical_study.py`
+
+## 2026-08-26: Full 1,200-episode LIBERO-Pro paired study
+
+- Superseded the minimum-gate stop decision and completed the full predeclared
+  matrix: four suites, ten tasks, ten paired states and three methods.
+- Fixed a recovery-boundary defect before the formal run. The monitor now
+  resets after a recovery primitive; a 30-episode T4/T6/T7 regression gate
+  passed at 30/30 with five successful recoveries and no safe stops.
+- Completed 1,200 physics-simulator episodes with 1,200 videos:
+  - Frozen VLA: `180/400`;
+  - Fixed Recovery: `181/400`;
+  - Full Agentic: `183/400`.
+- Full Agentic records four Frozen-failure conversions and one regression;
+  exact paired McNemar `p=0.375`, so no statistically significant aggregate
+  success-uplift claim is made.
+- Relative to Frozen, Agentic reduces control steps by `7.2%` and VLA calls by
+  `8.4%`. VLA P95/P99 is `59.54/63.19 ms` with `8/14,699` misses at 80 ms.
+- The local Qwen3.5-4B Planner is invoked 263 times at 9.09 s mean and 11.23 s
+  P95. Total Agentic wall time rises `16.5%`; high-level Planner optimization is
+  therefore the next runtime target.
+- Integrity audit passed: 120 cells, 1,200 episodes, 1,200 decodable videos,
+  454,540 frames, 400 paired identities, one checkpoint/profile, and no private
+  evaluator keys in Agent event logs.
+- Evidence:
+  - `docs/status/LIBERO_PRO_FULL_STUDY_RESULTS_20260826.md`
+  - `docs/status/LIBERO_PRO_RECOVERY_BOUNDARY_GATE_20260825.md`
+  - `results/libero_pro_full_study_20260825/aggregate/`
+
+## 2026-08-26: Full VLA and Planner efficient-inference ablation
+
+- Re-ran five PI0.5 runtime profiles on 45 paired recorded observations with
+  fixed diffusion noise and persisted per-call latency samples.
+- PI0.5 P95 results: eager 7-step `282.43 ms`, eager 2-step `151.35 ms`,
+  compiled 2-step `66.06 ms`, and compiled 2-step + SMVE `54.67 ms`.
+  Compile and SMVE pass all 45 action-fidelity checks and record no 80 ms
+  deadline misses.
+- Added an auditable `uniform_int8` Qwen Planner service profile and evaluated
+  BF16, INT8 and NF4 on the same 30 temporal pairs. All three pass the semantic
+  gate with 100% paired semantic-decision agreement.
+- Planner BF16/INT8/NF4 allocated VRAM is `8.46/4.84/3.08 GiB`; P95 is
+  `1.90/6.50/2.91 s`. BF16 remains the latency tier, while NF4 is retained only
+  as a shared-GPU capacity tier.
+- PI0.5 late-language INT8 passes 45/45 action fidelity and reduces peak VRAM
+  to `6.36 GiB`, but the current Torch `2.12.0` / TorchAO `0.15.0` stack
+  produces P95 `994.74 ms`. It is rejected on this stack. The previously
+  validated Torch `2.7.1` stack reached `71.61 ms` and 2/2 matched closed-loop
+  recovery successes, so this optimization remains explicitly version-gated.
+- The complete report, CSV tables, JSON summary and PNG/PDF figure are in
+  `results/carve_efficiency_full_20260826/`.
+- Added a real co-resident low-memory coupling gate with Qwen3.5-4B NF4 and the
+  promoted PI0.5 SMVE profile. The two model-service processes used `11.22 GiB`
+  in total. One Qwen decision was accepted in `13.92 s`; PI0.5 produced a
+  `10 x 7` action chunk in `66.69 ms` with no deadline miss or fallback.
+- The action chunk was deliberately withheld from the environment. This result
+  is recorded as `integration_passed_system_admission_pending`, not as task
+  success or repeated contention evidence.
+
+## 2026-08-28: RoboMME environment and CARVE adapter admission
+
+- Pinned the official benchmark at commit
+  `d57969fd30f8e8318fb67c389a848b3776724470` and the official policy stack at
+  `ecf086c3be7c2223167d9bb2f6ef1f0a6e24353b`.
+- Built the official CUDA 12.8 RoboMME container. It detects the RTX 4090,
+  CUDA, Vulkan 1.3.275, SAPIEN 3.0.2 and the official ManiSkill fork.
+- The official `MoveCube`, test episode 0 sample-action rollout completed and
+  produced a readable 548-frame H.264 video. Its timeout is expected because
+  no trained policy was loaded.
+- The independent CARVE adapter gate passed on the same state:
+  - 247 initial memory frames;
+  - front RGB, wrist RGB and 8-D public robot state only;
+  - 32 executed simulator steps and 279 recorded frames;
+  - 8.14 s total wall time;
+  - evaluator status remained private.
+- Added `scripts/run_robomme_policy_admission.py` for the next checkpoint gate.
+  It records policy latency, call counts, history batches, control steps,
+  evaluator-private outcome and video without exposing oracle online subgoals.
+- This is an environment/adapter result only. No RoboMME policy success or
+  Agentic improvement is claimed yet.
+- Evidence: `results/robomme_admission_20260828/`.
+
+## 2026-08-28: RoboMME high-level Planner schema admission
+
+- Ran the existing local Qwen3.5-4B BF16 CARVE Planner on a real paired
+  front/wrist frame from official RoboMME `MoveCube`, test episode 0.
+- The initial guarded call failed closed because the model used the semantic
+  plan intent `move`, which the manipulation-oriented alias vocabulary did not
+  yet normalize to the already-authorized `vla_act` primitive.
+- Extended semantic intent normalization to bounded verb-led robot operations
+  only when the top-level intent is already `vla_act` and no tool is selected.
+  Raw action, trajectory, lifecycle and grounding guards remain unchanged.
+- The next guard correctly rejected model-added `red/purple` attributes that
+  were absent from the task instruction. With two bounded repair opportunities,
+  the model removed those attributes and returned an accepted one-stage
+  `vla_act` plan: `transport cube to target`.
+- The accepted sequence required three model calls and 32.67 s. This is a
+  schema/functionality gate, not a task-success or efficient-inference result.
+- Focused high-level Agent, task-plan and toolchain regression: `71 passed`.
+- Evidence: `results/robomme_planner_admission_20260828/`.
+
+## 2026-08-28: Real GroundSG PI0.5 RoboMME policy Gate B
+
+- Downloaded only the released `symbolic-grounded-subgoal/79999` checkpoint
+  (`11,551,449,841` bytes), verified the official LFS SHA256
+  `4a9577f5afa8e5225cb2e69e3820d4c7e5c7deb18f2ef00c10b4401eab575f94`,
+  passed ZIP CRC validation, and restored the full Orbax checkpoint.
+- The policy server loaded `symbolic-grounded-subgoal.yaml`, checkpoint-local
+  RoboMME norm statistics, and listened successfully on one RTX 4090 at about
+  8,586 MiB resident GPU memory.
+- Passed the four-task policy admission on official test episode 0:
+  `StopCube`, `VideoUnmaskSwap`, `VideoRepick`, and `RouteStick`.
+- Every task completed reset, one initial-history transfer, one real policy
+  inference, one 16-action execution chunk, private evaluator isolation, clean
+  shutdown, summary output, and H.264 video output.
+- The first JAX call compiled in `29,881.11 ms`. Three post-compile calls were
+  `102.50`, `104.07`, and `103.63 ms` (mean `103.40 ms`, P95 `104.03 ms`).
+- Fixed episode-0 initial subgoals were used only as an oracle-format technical
+  gate. No full-episode task success, Agentic uplift, or Optimize benefit is
+  claimed from these four runs.
+- Evidence: `results/robomme_policy_gate_b_20260828/`.
+
+## 2026-08-28: RoboMME dynamic-planning gap on paired MoveCube episodes
+
+- Held the released GroundSG PI0.5 checkpoint and five official test episode
+  identities fixed, then compared two subgoal interfaces.
+- A single generic Planner-output string, `move the cube to the target`, solved
+  `1/5` episodes. The other outcomes were three timeouts and one evaluator
+  failure. This is an interface pilot, not the complete event-triggered CARVE
+  Planner.
+- The benchmark's privileged online grounded-subgoal oracle solved `5/5`. Its
+  instructions changed with execution stage and included image-space points.
+  Episodes 1, 3 and 4 additionally required picking up a peg and hooking the
+  cube, which cannot be recovered from the generic one-stage instruction.
+- The action policy therefore has sufficient capability on these five states;
+  the immediate bottleneck is dynamic stage selection and visual point
+  grounding at safe action boundaries. The oracle is an upper bound and is not
+  reported as deployable CARVE performance.
+- Warm PI0.5 inference remained stable at roughly 98--100 ms mean per method;
+  the observed success gap is not attributable to different checkpoints or
+  runtime profiles.
+- Evidence:
+  - `results/robomme_carve_text_subgoal_pilot_20260828/`
+  - `results/robomme_oracle_upper_bound_20260828/`
+  - `scripts/summarize_robomme_planning_gap.py`
+
+## 2026-08-28: Deployable RoboMME GroundSG VLM Planner
+
+- Loaded the official Qwen3-VL-4B-Instruct GroundSG LoRA behind CARVE's guarded
+  OpenAI-compatible Planner provider while keeping the released GroundSG PI0.5
+  checkpoint and five paired `MoveCube` test episodes fixed.
+- The complete deployable VLM condition succeeds on `4/5` episodes, compared
+  with `1/5` for one fixed generic text subgoal and `5/5` for the privileged
+  online-oracle upper bound.
+- The VLM Planner preserves episode 0 and converts episodes 2, 3 and 4 from
+  failure to success. Episodes 3 and 4 correctly select and ground the two-stage
+  peg strategy. Episode 1 also selects the correct peg strategy but PI0.5 does
+  not complete execution within 1,300 steps, isolating an execution-layer
+  failure rather than a high-level tool-selection failure.
+- Across five VLM episodes, mean steps are 434.0 including the timeout and
+  217.5 on successes; mean policy/Planner calls are 27.8. In the queue-isolated
+  rerun, mean per-episode VLA P95 is 118.43 ms and Planner P95 is 2.92 s.
+- BF16 Qwen Planner and PI0.5 coexist on one RTX 4090 at approximately 9.1 GiB
+  and 8.6 GiB idle process memory. Planner latency is now the measured target
+  for the GroundSG-specific Optimize Runtime ablation.
+- All five queue-isolated VLM rollouts are valid H.264 videos at 512x256. The
+  paired summary stores per-video SHA256 hashes and explicit deployable/oracle
+  claim boundaries.
+- Evidence:
+  - `results/robomme_vlm_groundsg_bf16_queue_isolated_20260828/`
+  - `scripts/run_robomme_vlm_groundsg.py`
+  - `scripts/serve_robomme_groundsg_planner.sh`
+  - `scripts/summarize_robomme_planning_gap.py`
+
+## 2026-08-28: GroundSG Planner NF4 closed-loop optimization gate
+
+- Repeated all five paired `MoveCube` episodes with only the Qwen3-VL-4B base
+  changed from BF16 to bitsandbytes NF4; the GroundSG LoRA, PI0.5 checkpoint,
+  seeds, action horizon and simulator states remain fixed.
+- Queue-isolated BF16 reproduces `4/5`; NF4 reaches `2/5`. Both produce the same
+  high-level stage sequence on `5/5`, but NF4 loses BF16 successes on episodes
+  3 and 4 despite selecting the correct peg strategy.
+- At matched trace steps, NF4 grounding differs from BF16 by 3.80 pixels mean
+  absolute coordinate error. The result demonstrates why semantic agreement
+  alone is insufficient for quantized grounded robot planners.
+- Idle Planner process memory falls from 9,120 MiB to 3,994 MiB (`56.2%`),
+  while mean per-episode Planner P95 rises from 2.92 s to 4.61 s (`1.58x`).
+- No external request shared the BF16 Planner queue. A separate Qwen3.5-NF4
+  process did share the GPU during part of the BF16 rerun, so the observed
+  latency ratio is conservative and not reported as an empty-GPU speedup.
+- NF4 fails the closed-loop quality gate and is retained only as a capacity
+  fallback, not the default Optimize Runtime profile.
+- The first BF16 latency run was exposed to unrelated G2 requests and was
+  removed from canonical evidence after audit; reported BF16 numbers come from
+  the queue-isolated rerun.
+- Evidence:
+  - `results/robomme_vlm_groundsg_bf16_queue_isolated_20260828/planner_quantization.json`
+  - `results/robomme_vlm_groundsg_nf4_20260828/`
+  - `scripts/summarize_robomme_planner_quantization.py`
+
+## 2026-08-29: Complexity-aware GroundSG Planner scheduling gate
+
+- Added a reusable grounded-subgoal scheduler to the CARVE runtime and bound it
+  to the official RoboMME GroundSG runner with task-start, reuse-budget,
+  gripper-change, visual-change and external execution-event invalidation.
+- A uniform two-chunk reuse ablation reduced Planner calls but regressed
+  `MoveCube` episode 3, producing `3/5` instead of the BF16 baseline's `4/5`.
+  It is therefore rejected rather than reported as an admitted optimization.
+- The promoted complexity-aware schedule reuses single-point grounded subgoals
+  for at most two action chunks, while multi-point spatial/tool subgoals are
+  refreshed every chunk.
+- On the same five official test episodes it preserves `4/5`, reduces total
+  Planner calls from 139 to 115 (`17.3%`) and aggregate wall time from 492.79 s
+  to 457.47 s (`7.2%`). Across the four episodes solved by both conditions,
+  Planner calls fall `35.1%` and wall time falls `18.7%`.
+- Episode 1 remains the same execution-layer timeout and receives little reuse
+  because its long two-point hook phase is precision-sensitive.
+- All five adaptive videos pass H.264/512x256 inspection. Runtime and runner
+  regressions pass (`46 passed` focused; `248 passed` excluding three known
+  legacy test files that import scripts removed during repository cleanup).
+- Evidence:
+  - `results/robomme_vlm_groundsg_adaptive_selective2_bf16_20260829/`
+  - `results/robomme_vlm_groundsg_adaptive_selective2_bf16_20260829/planner_scheduling_ablation.json`
+  - `scripts/run_robomme_selective_groundsg.sh`
+  - `scripts/summarize_robomme_planner_scheduling.py`
+
+## 2026-08-29: RoboMME VideoRepick memory/tool-routing pilot
+
+- Extended the deployable GroundSG runner with typed demonstration-memory
+  hints, relational color grounding and auditable repetition progress. The
+  online Planner and VLA receive no evaluator-private state or oracle subgoal.
+- A Qwen3.5-9B NF4 offline encoder extracted relational memory from 32 sampled
+  demonstration frames. Qwen3-VL-4B GroundSG remained the online Planner and
+  the official GroundSG PI0.5 checkpoint remained frozen.
+- `VideoRepick` episode 0 failed without structured memory and also failed with
+  memory alone. Memory plus the local relation-grounding tool completed all
+  three pick/put cycles and the final button press.
+- On the paired successful episode-0 rollout, the tuned event scheduler
+  preserves success, reduces Planner calls from 24 to 20 (`-16.7%`) and wall
+  time from 62.92 s to 54.05 s (`-14.1%`).
+- In this initial pilot, episode 1 is a memory-identification failure. Episode 2 reaches the
+  button stage after three cycles but does not satisfy the final evaluator.
+  Button-center refinement does not change the outcome. A two-turn semantic
+  transition confirmation gate over-delays progress and is rejected as a
+  default; it remains disabled and recorded as a negative ablation.
+- Privileged online-oracle upper bounds solve episodes 1 and 2. They are used
+  only to localize the Planner/memory gap and are not deployable results.
+- Focused parser, grounding, progress and transition regressions: `14 passed`.
+- Evidence:
+  - `results/robomme_memory_tool_study_20260829/`
+  - `scripts/summarize_robomme_memory_tool_study.py`
+  - `scripts/run_robomme_vlm_groundsg.py`
+  - `tests/test_robomme_grounded_planner.py`
+
+## 2026-08-29: VideoRepick instance memory and execution-monitor closure
+
+- Added official SAM2.1 Hiera Tiny instance tracking for initial demonstration
+  memory. Episode 1 tracks the demonstrated `topmost red block` through
+  occlusion/rearrangement to the final `bottom-left red block`; the resolved
+  point `[133.57, 113.12]` is admitted after one reacquisition and 24 missing
+  frames. No evaluator-private point is used online.
+- Added tracker admission based on missing runs and reacquisition count. The
+  tracker is rejected on episode 0 after two loss runs, so the system falls
+  back to the VLM identity rather than trusting a poor track; episodes 1 and 2
+  are admitted and match their oracle-localization diagnostics.
+- Normalized GroundSG action aliases (`pick`, `pick up`, `grasp`, `put`,
+  `put it down`, `press`) at the primitive boundary.
+- Added ordered one-cycle procedure control and a proprioceptive
+  `PrimitiveExecutionMonitor`. Semantic progress is monotonic, and transitions
+  to put/press require observed gripper closure/reopening rather than fixed
+  step counts or evaluator state.
+- With correct SAM2 memory but without physical completion monitoring, episode
+  1 enters the button stage at 112 steps and fails after 184 steps. With the
+  execution monitor, the same episode succeeds in 282 steps with 18 Planner
+  calls.
+- The tuned selective Planner schedule preserves the 282-step success, reduces
+  Planner calls from 18 to 16 (`-11.1%`) and wall time from 38.36 s to 36.11 s
+  (`-5.9%`). This is a paired single-episode mechanism result, not a multi-seed
+  success-rate claim.
+- Focused grounding, procedure, monitor and tracker regressions: `23 passed`.
+- Evidence:
+  - `results/robomme_video_repick_ep1_monitor_study_20260829/`
+  - `results/robomme_video_instance_memory_sam2_admitted_20260829/`
+  - `results/robomme_video_repick_ep1_execution_monitor_v2_20260829/`
+  - `results/robomme_video_repick_ep1_execution_monitor_selective_20260829/`
+  - `results/robomme_representative_videos_20260829/05_ep1_sam2_monitor_event_success.mp4`
+  - `results/robomme_representative_videos_20260829/06_ep1_sam2_identity_track.mp4`
+
+## 2026-08-29: VideoRepick repeated-procedure closure and full paired runtime study
+
+- Added a deployable `RepeatedProcedureController` for repeated pick/put tasks.
+  The GroundSG VLM still selects primitive and target; the controller permits
+  semantic progress only after gripper proprioception confirms closure and
+  reopening for each cycle. Press is permitted only after all cycles complete.
+- Episode 2 changes from a near-complete evaluator failure to success. SAM2
+  identity memory is admitted with zero missing frames and resolves the
+  demonstrated instance to the final `leftmost red block` at `[107.18, 86.4]`.
+- Repeated-procedure monitoring also preserves success on episode 0. Its SAM2
+  track is rejected after two loss runs, exercising the explicit VLM identity
+  fallback rather than consuming a low-quality tracker output.
+- Completed a matched every-chunk/selective study on all three official
+  `VideoRepick` episodes. Both schedules reach `3/3`; selective scheduling
+  reduces aggregate Planner calls from `87` to `75` (`13.8%`) and wall time
+  from `200.79 s` to `176.67 s` (`12.0%`). VLA calls remain `87` in both.
+- Excluded the first episode-2 every-chunk timing from the paired aggregate
+  because its first policy call contains a 28.25 s cold compile; a warm rerun
+  under the same service is canonical. All six paired videos are H.264 at
+  512x256.
+- Reliability/efficiency boundary: the strict monitor is more conservative on
+  episode 0 than the earlier relaxed successful controller (`594` versus `383`
+  steps). The efficiency claim therefore compares selective scheduling only
+  with its matched strict-monitor baseline.
+- Final focused procedure, tracker and Planner regressions: `25 passed`.
+- Evidence:
+  - `results/robomme_video_repick_full_monitor_study_20260829/`
+  - `results/robomme_video_repick_ep0_repeated_monitor_every_chunk_warm_20260829/`
+  - `results/robomme_video_repick_ep0_repeated_monitor_selective_20260829/`
+  - `results/robomme_video_repick_ep2_repeated_monitor_every_chunk_warm_20260829/`
+  - `results/robomme_video_repick_ep2_repeated_monitor_selective_20260829/`
+
+## 2026-08-31: Four-suite RoboMME C3 Agentic/Optimize pilot
+
+- Completed 20 deployable, oracle-free method episodes over `StopCube`,
+  `VideoRepick`, `RouteStick` and `VideoUnmaskSwap`, with five fixed official
+  test episodes per task.
+- Added legal RouteStick primitive contracts and a demonstration-RGB trajectory
+  tool that converts image direction to robot-frame route direction. RouteStick
+  reaches `3/5`; one additional method failure is solved by the privileged
+  upper bound and remains the only measured Agentic gap.
+- Added multi-object SAM2 memory for VideoUnmaskSwap. The compiler associates
+  visible colors with containers, tracks identity through swaps, and provides
+  admitted color-to-container memory without evaluator fields. The unified
+  event configuration reaches `5/5`.
+- Refined repeated physical primitives with cycle-dependent dwell, gripper-event
+  replanning, grasped-instance locking, final-pick semantics and button memory.
+  The latest VideoRepick configuration reaches `4/5`; its remaining failed
+  episode also fails with the official privileged online subgoal.
+- Raw deployable success is `14/20`. Five of six failures also fail under the
+  PI0.5 oracle upper bound. The deployable method therefore reaches `14/15`
+  (`93.3%`) on ceiling-eligible episodes, with raw and adjusted metrics kept
+  explicitly separate.
+- Mean per-episode Planner-call reduction is `42.4%`, `41.8%`, `42.9%` and
+  `43.1%` for the four task families respectively. All 20 canonical method
+  videos pass `ffprobe` validation.
+- Focused Planner, memory, procedure and tool regression: `45 passed`.
+- Evidence:
+  - `docs/status/ROBOMME_C3_PILOT_RESULTS_20260831.md`
+  - `results/robomme_c3_pilot_canonical_20260831/`
+  - `scripts/summarize_robomme_c3_pilot.py`
+  - `scripts/build_robomme_unmask_swap_memory.py`
+
+## 2026-08-31: Paired RoboMME C2/C3 Planner-scheduling ablation
+
+- Added a restartable `C2-agentic` runner that uses the same frozen GroundSG
+  PI0.5, Qwen3-VL-4B Planner, admitted task memory, visual grounding tools,
+  Harness logic and action horizon as the canonical C3 pilot. The only causal
+  variable is `every_chunk` versus event-triggered selective Planner scheduling.
+- Completed all 20 paired official test episodes with valid summaries and
+  rollout videos.
+- C2 every-chunk reaches `10/20`; C3 selective reaches `14/20`. The paired
+  transitions are four failure-to-success and zero success-to-failure.
+- C3 reduces total Planner calls from `256` to `171` (`33.2%`) and total wall
+  time from `766.5 s` to `602.7 s` (`21.4%`). C3 executes `298` policy chunks
+  versus C2's `256`, because four additional long-horizon episodes complete.
+- By task, C2 -> C3 success is: StopCube `2/5 -> 2/5`, VideoRepick
+  `2/5 -> 4/5`, RouteStick `1/5 -> 3/5`, and VideoUnmaskSwap `5/5 -> 5/5`.
+- The paired success delta is `+20.0` percentage points, bootstrap 95% interval
+  `[+5.0, +40.0]`, with McNemar exact two-sided `p=0.125`. This is reported as
+  a 20-episode mechanism pilot, not full-benchmark significance.
+- Evidence:
+  - `results/robomme_c2_agentic_every_chunk_20260831/`
+  - `results/robomme_c2_c3_runtime_ablation_20260831/`
+  - `scripts/run_robomme_c2_agentic_pilot.sh`
+  - `scripts/summarize_robomme_c2_c3_ablation.py`
+
+## 2026-08-31: Paired RoboMME raw B1 Agentic baseline
+
+- Added a guarded `raw` GroundSG Planner profile and restartable B1 runner.
+  It uses the same frozen GroundSG PI0.5 and Qwen3-VL-4B checkpoint but removes
+  CARVE task memory, grounding tools, semantic repair, procedure controllers
+  and temporal Monitor events. It invokes the VLM on every action chunk.
+- Completed all 20 fixed pilot episodes. An automated audit confirms every B1
+  summary has `planner_profile=raw`, no task memory, no tool grounding and no
+  temporal-monitor event.
+- Success is B1 `2/20`, C2 `10/20`, C3 `14/20`. By task, B1 reaches StopCube
+  `0/5`, VideoRepick `1/5`, RouteStick `0/5`, VideoUnmaskSwap `1/5`.
+- B1 -> C2: nine failure-to-success, one success-to-failure, delta `+40.0`
+  points, paired bootstrap 95% interval `[+15.0, +65.0]`, McNemar exact
+  two-sided `p=0.0215`.
+- B1 -> C3: 12 failure-to-success, zero success-to-failure, delta `+60.0`
+  points, interval `[+40.0, +80.0]`, McNemar `p=0.0005`.
+- Evidence:
+  - `results/robomme_b1_raw_policy_20260831/`
+  - `results/robomme_b1_c2_c3_paired_pilot_20260831/`
+  - `scripts/run_robomme_b1_raw_policy_pilot.sh`
+  - `scripts/summarize_robomme_b1_c2_c3_pilot.py`
+
+## 2026-08-31: RAL-oriented paired RoboMME extension
+
+- Extended the same four RoboMME task families from five to ten fixed episodes
+  per condition. The formal paired study now contains 40 episodes per condition
+  and 120 total rollouts.
+- Compiled all 20 new initial demonstrations into deployable memory. Added an
+  audited VideoRepick fallback that selects the manipulated instance from
+  persistent demonstration motion when the VLM omits object identity, then
+  tracks it with SAM2. All five new VideoRepick tracks pass admission.
+- Final success is B1 raw `5/40` (`12.5%`), C2 Harness `16/40` (`40.0%`) and
+  C3 Harness + Optimize Runtime `22/40` (`55.0%`).
+- B1 -> C3 yields 18 failure-to-success and one success-to-failure transition,
+  `+42.5` points, paired bootstrap 95% `[+25.0, +60.0]`, and McNemar exact
+  two-sided `p=0.0000763`.
+- C2 -> C3 reduces Planner calls `459 -> 305` (`33.6%`) and wall time
+  `1366.7 -> 1103.9 s` (`19.2%`) while improving success by `15.0` points.
+- All `120/120` rollout videos pass first/last-frame decoding validation.
+- Evidence:
+  - `docs/reports/RAL_CORE_EXPERIMENT_REPORT_20260831.md`
+  - `results/robomme_b1_c2_c3_paired_40ep_20260831/`
+  - `results/robomme_extension_b1_raw_20260831/`
+  - `results/robomme_extension_c2_agentic_20260831/`
+  - `results/robomme_extension_c3_full_20260831/`
+
+## 2026-08-31: RoboMME held-out expansion and combined study
+
+- Added four held-out official RoboMME tasks, one from each suite: BinFill,
+  ButtonUnmask, PickHighlight, and MoveCube. Each task uses ten paired initial
+  episodes under B1 raw, C2 Harness, and C3 Harness + Optimize Runtime.
+- The expansion contains 120 rollouts. B1 reaches `18/40` (`45.0%`), C2
+  `20/40` (`50.0%`), and C3 `20/40` (`50.0%`). C3 matches C2 success while
+  reducing Planner calls by `42.7%` and wall time by `31.3%`. The expansion's
+  B1 -> C3 success delta is not significant by itself (`p=0.6875`).
+- Combined with the original four-task study, the formal evidence now contains
+  eight tasks, 80 paired episodes per condition, and 240 total rollouts. B1 is
+  `23/80` (`28.75%`), C2 is `36/80` (`45.0%`), and C3 is `42/80` (`52.5%`).
+- B1 -> C3 gives 22 failure-to-success and three success-to-failure
+  transitions, a `+23.75` point delta, paired bootstrap 95% interval
+  `[+12.5, +35.0]`, and exact McNemar `p=0.0001565`.
+- C3 reduces Planner calls by `40.6%` and wall time by `28.1%` relative to C2.
+  C2 -> C3 success improvement is not independently significant (`p=0.146`),
+  so this comparison supports the efficiency claim rather than a standalone
+  success claim.
+- The deployable online method uses RGB observations, instructions, execution
+  signals, process memory, and bounded recovery only. No evaluator state or
+  oracle labels are consumed online. All evaluated videos are retained.
+- Evidence:
+  - `results/robomme_b1_c2_c3_combined_80ep_20260831/`
+  - `results/robomme_extension_selected_b1_c2_c3_40ep_20260831/`
+  - `results/robomme_oracle_survey_20260831/` (diagnostic only; excluded)
+  - `docs/reports/RAL_CORE_EXPERIMENT_REPORT_20260831.md`
+
+## 2026-09-11 — Native-path request evidence (code only, no robot run)
+
+Follow-up to plan item 9.21(1): the B0 arm had no per-request input/output/latency
+record, so it could not be compared with C1/C2/C3 in a common format.
+
+- Root cause, in the real policy entry
+  `third_party/robodojo_official/XPolicyLab/policy/starVLA/model.py::_infer_chunk`:
+  with `carve_mode=baseline` there is no `CarveRuntime`, so the call goes straight
+  to `self.client.predict_action(...)` and returns. Only the wrapped arms emit
+  `runtime_trace.jsonl`.
+- Change: new `_record_native_request()` writes one record per native request in
+  the same schema, reusing `hash_starvla_request_input` /
+  `summarize_starvla_request_input` from
+  `agentic_vla/runtime/adapters/starvla.py` so digests are comparable, and timing
+  the same `predict_action` scope the adapter times. Wrapper-only fields stay
+  `null` rather than being filled from the request.
+- Opt-in via `carve_native_trace_path` / `STARVLA_CARVE_NATIVE_TRACE_PATH`, wired
+  through `deploy.yml` and `setup_eval_policy_server.sh --overrides`. Disabled by
+  default: nothing imported, timed or written, so baseline numerics are unchanged.
+- Verification (CPU, `openpi/.venv/bin/python`): 124 passed in
+  `tests/test_starvla_robodojo_bridge.py` (7 new), 346 passed together with
+  `test_recovery_verification.py` and `test_robodojo_nominal_finalizer.py`,
+  74 passed in the workspace contract set, `ruff` clean on the changed ranges.
+- Not established by this entry: no robot episode was run, so no B0 record exists
+  yet and the cross-process initial-RGB difference is still unlocalized. A
+  comparable latency field is not the same as a completed comparison.
+- Frozen evidence untouched: `artifacts/robodojo/recovery_lifecycle_20260910/`
+  has no file modified after 2026-09-10.
+- Model/scope: StarVLA QwenPI-v3 (`steps_100000_pytorch_model.pt`) as the action
+  model; no VLM involved in this change. Sample size: not applicable, code change.
+
+## 2026-09-11 B0 原生路径逐次记录实跑（诊断，n=2）
+
+目的：补齐 B0（原生 flow 路径，不经 `CarveRuntime`）的逐次输入摘要、输出摘要与时延，
+使其与 C1/C2/C3 同模式可读；并判断能否按输入摘要跨进程对齐两条路径。
+对应计划 9.21 第 1 项，记录于 9.22 节。
+
+模型：StarVLA PI-v3，`checkpoints/huggingface/pi_v3/checkpoints/steps_100000_pytorch_model.pt`。
+B0 为 `carve_mode=baseline`，不加载 Qwen3-VL-4B。
+样本量：`stack_bowls` layout set 0，布局 0 与 1，2 回合，57 次 VLA 请求。
+测量口径：`model_latency_ms` 围绕 `client.predict_action` 单次调用计时，与包装路径
+adapter 计时范围相同；输入摘要复用 `hash_starvla_request_input` /
+`summarize_starvla_request_input`；生效 flow 步数以服务端 handshake 为准
+（`native_inference_steps=4`），不以 payload 旧键 `num_ddim_steps=10` 为准。
+包装器开销口径为同一请求内 `runtime_latency_ms − model_latency_ms`。
+
+| 臂 | 请求数 | 生效 flow 步数 | model p50 | 包装器开销 p50 | 来源 |
+|---|---:|---:|---:|---:|---|
+| B0（本次，原生） | 57 | 4 | 321.72 ms | 不适用 | 本次运行 |
+| C1（冻结 9-10） | 100 | 2 | 225.39 ms | 2.34 ms | 冻结 trace |
+| C2（冻结 9-10） | 74 | 4 | 293.15 ms | 2.26 ms | 冻结 trace |
+| C3（冻结 9-10） | 77 | 2 与 4 | 227.25 ms | 2.33 ms | 冻结 trace |
+
+结论：
+1. B0 逐次证据补齐，57/57 条 `input_sha256`/`action_sha256`/`model_latency_ms`/
+   逐视角 `image_sha256`/`state_sha256`/`language_sha256` 齐全，0 失败请求，
+   reset 审计 valid=true。finalizer 未改动即读到该 trace（`vla_calls=57`）。
+2. 包装器开销中位数 2.26–2.34 ms，约一次模型调用的 1%。不得用 B0 与 C1 的 p50
+   相减代替：两臂生效步数为 4 对 2，差值含计算量变化。
+3. 跨进程按 `input_sha256` 对齐失败，共享 0 条。差异定位在渲染 RGB：
+   3 视角图像每步都不同，`language_sha256` 全部相同，`state_sha256` 仅每回合第 0 步相同。
+   同代码同布局同种子的两次运行同样 0/24 相同，属进程级渲染差异。
+   因此原生与 Runtime 的输出数值比较必须改为同进程固定输入重放。
+
+过程中修正一处记录错误：首次冒烟把 `inference_steps` 记成 10（读了被 pi_v3 丢弃的
+旧键）。已改为以 handshake 为准记 4，并保留被丢弃的请求值供审计。
+`smoke_1ep/` 保留为过程证据，其步数字段不可引用。
+
+边界：本次 2/2 为 n=2 诊断结果，**不是**成功率证据，不替换
+`artifacts/robodojo/recovery_lifecycle_20260910/` 的 8 回合成绩（2/2、0/2、1/2、1/2），
+不与冻结 C 臂组成新配对。包装器 2.3 ms 不构成"开销可忽略"的一般结论，未测硬实时。
+"同输入下原生与 Runtime 动作是否逐元素一致"仍未验证。
+
+证据路径：`artifacts/robodojo/native_trace_b0_20260911/`
+（`README.md`、`B0/runtime_trace.jsonl`、`B0/summary.json`、`B0/policy_reset_audit.json`、
+`trace_comparison.json`、`source_manifest_B0.json`、6 段视频）。
+复算工具：`scripts/compare_native_and_runtime_traces.py`。
+回归：354 项（bridge + flow wiring + recovery verification + finalizer）+ 契约集 74 项通过。
+
+## 2026-09-11 同进程固定输入重放：包装器保真验证 + flow2 代价量化
+
+目的：回答"`CarveRuntime` 包装是否改变 VLA 输出"。9.22 已证明跨进程无法按
+`input_sha256` 配对（共享 0 条，差异在渲染 RGB），故改为捕获真实 payload、
+在同一进程内重放。对应计划 9.23 节。
+
+模型：StarVLA PI-v3 `steps_100000`，进程内 `PolicyServerWrapper`，bf16，
+base VLM `/home/admin1/models/Qwen3-VL-4B-Instruct`（离线本地权重）。
+样本量：12 个真实 payload（取自 `stack_bowls` layout set 0 布局 0 的 1 回合捕获运行，
+timestep 0..176 步长 16，action_seed 101..277），共 40 次模型调用，2 次预热。
+测量口径：两条路径同 `action_seed`，服务端按请求 `fork_rng` + `manual_seed`，
+采样噪声相同；动作比较取两者公共前缀 16 行（原生返回完整 50 步 chunk，
+包装按 `max_actions=16` 截断，截断属声明控制）；包装器开销为同一次调用内
+`CarveRuntime.infer` 总时长减 adapter 计时的模型调用。
+12/12 payload 重建后复现记录的 `input_sha256`，重放确为机器人当时的观测。
+
+| 对比 | 请求步数 | 算力对齐 | 动作逐位相同 | max abs diff | 包装器开销 p50 | 包装总时延 p50 |
+|---|---:|---|---:|---:|---:|---:|
+| matched_steps | 4 | 是 | **12/12** | **0** | 2.529 ms | 339.411 ms |
+| arm_default | 2 | 否 | 0/12 | 0.022481 | 2.647 ms | 262.411 ms |
+
+原生 p50 340.368 ms；执行段动作量纲 abs_max 2.109、abs_mean 0.4438。
+
+结论：
+1. 模型跨进程逐位确定：重放在另一进程复现实况动作 12/12，max abs diff = 0。
+   9.22 的跨进程差异全部归于渲染，模型与调度不确定性被排除。
+2. 包装器在同算力下输出保持：执行的 16 步动作 12/12 逐位相同，包装路径的
+   `input_sha256` 与原生一致。Optimize Runtime 的保真前提由未验证转为已验证。
+3. 包装器开销 2.53 ms（范围 2.455–3.423 ms），与 9.22 实况闭环 trace 的
+   2.26–2.34 ms 相互印证；两次独立测量、不同进程、不同方法收敛在 2.3–2.6 ms，
+   约一次模型调用的 0.8%。
+4. flow2 代价：同输入同种子下 2 步与 4 步动作 0/12 相同，最大偏差 0.022481、
+   平均 0.00293（相对峰值约 1.07%、均值约 0.66%），换来时延省约 77 ms / 23%。
+   故冻结矩阵中 C1 与 B0 的差异不来自包装而来自降步。
+
+边界：包装器等价性限于本次 12 个真实 payload、单 checkpoint、单任务，
+不是全体输入上的等价性证明。n=2 不足以把 C1 的 0/2 归因于这 1% 动作偏差，
+**flow2 仍未获本任务部署准入**。不得用"包装总时延 − 原生总时延"（中位数 +12.4 ms）
+当包装开销，那是两次独立模型调用相减、含调用间方差。VLM 切换前后对 VLA 时延的影响
+仍未测量。本次未产生新机器人成绩，不改变冻结的 8 回合结果（2/2、0/2、1/2、1/2）。
+
+证据路径：`artifacts/robodojo/native_trace_b0_20260911/`
+（`README.md` 第二阶段、`replay_report.json`、`capture_1ep/captured_payloads/`
+12 个 npz + `payload_manifest.jsonl`、`capture_1ep/runtime_trace.jsonl`）。
+工具：`scripts/replay_native_vs_runtime_payloads.py`。
+回归：新增 `tests/test_native_vs_runtime_replay.py` 7 项；bridge +4；flow wiring +1。
+
+## 2026-09-11 统一语义检查调度（交接 B 项 / 计划 9.21 第 2 项）
+
+目的：让周期检查与 Monitor 强制检查共用观察有效期、最小步间隔与调用预算，
+使"160/163 步仅隔 3 步"不再被当作长期停滞证据；保留 unknown，不放宽语义判定。
+详见计划 9.24 节。
+
+改动位置：真实控制入口 `third_party/.../starVLA/model.py`
+（`_apply_scalar_semantic_checkpoint` 与新纯函数 `resolve_stall_evidence_limits`）、
+`reset_contract.py`（清单 33 → 34 项）、`deploy.yml`、
+`setup_eval_policy_server.sh`、`scripts/run_robodojo_starvla_nominal.sh`。
+派生默认：最小停滞间隔 = 1 倍 checkpoint 周期，观察有效期 = 2 倍；
+`resolve_stall_evidence_limits(160)` = `(160, 320)`。派生只在模型内一处。
+
+规则：强制检查仍可立即观察、仍被记录、仍占用预算，但与上次计入观察相隔不足最小间隔时
+不推进停滞计数（held）；观察超出有效期则丢弃旧值、序列重启；停滞恢复要求本次观察计入，
+deadline 恢复不要求；unknown 一律清零永不参与恢复；周期门控改以上次计入观察为基准，
+强制检查不再延迟周期档期。
+
+用新规则重放冻结 `C3/planner_trace.jsonl` 的 6 条 critic 记录（样本量：2 回合 6 次检查）：
+
+| 回合 | 冻结运行实际 | 新规则下 |
+|---|---|---|
+| 0 | 步 160 stale=1；步 163 强制 stale=2 → 触发恢复 | 相隔 3 步，held，**0 次恢复** |
+| 1 | 步 160 stale=1；步 320 stale=2 → 触发恢复 | 相隔 160 步，计入，**1 次恢复** |
+| 合计 | 2 次 | 1 次 |
+
+结论：新规则精确移除了证据不足的那次恢复，保留了证据充分的那次。
+
+边界：**不能**据此说冻结 C3 回合 0 的恢复有害或该回合成功与恢复无关——反事实未知，
+恢复确实发生并清空了动作块，步 323 的 confirmed 是在"恢复已发生"的世界里观测到的，
+且两次核验本来都是 inconclusive。**可以**说：冻结 C3 的"2 次恢复"在当前代码下不可复现，
+基于"两次恢复"的叙述若重跑必须重新导出。冻结产物不修改。
+本次**未跑新机器人回合**：交接对 B 项的验收标准是回归测试覆盖，已满足；
+D 项门控要求 A/B/C 通过后才登记新试验。该改动会改变未来 C2/C3 的检查时机，
+故冻结运行与未来运行在"检查次数/恢复次数"轴上不可直接比较。
+
+证据路径：`artifacts/robodojo/recovery_lifecycle_20260910/C3/planner_trace.jsonl`（输入，未修改）；
+规则实现与测试见上述源码与 `tests/test_starvla_robodojo_bridge.py`。
+回归：bridge 新增 7 项、flow wiring 新增 1 项、reset 计数 33→34；相关文件与契约集 538 项通过。
+
+## 2026-09-11 VLM 切换保真与驻留分项计量（交接 A 项后半 + C 项）
+
+目的：(1) 比较 VLM 切换前后的 VLA 输出，验证"搬下 GPU→跑 VLM→搬回"是否输出保持；
+(2) 分别记录 VLA 推理、VLM 生成、权重搬运、预热与端到端成本，并独立复验驻留优化。
+详见计划 9.25 节。
+
+模型：VLA StarVLA PI-v3 `steps_100000_pytorch_model.pt` bf16；
+VLM 本地 Qwen3-VL-4B-Instruct bf16 离线加载。
+样本量：6 个真实 payload（取自 `capture_1ep`，digest 全部 round-trip）；
+每模式 3 次 VLM 调用（`max_new_tokens=64`，实际输出均 36 token）；VLA 预热 2 次；
+两种驻留模式各测，正反顺序各跑一次（共 2 次运行）。
+测量口径：分项计时取自 `CpuStagedVisionPlanner.decide().timings`，非本工具重新实现；
+VLA 时延为 `PolicyServerWrapper.predict_action` 单次调用；动作逐元素比较取公共前缀。
+
+结论 1（A 项后半）：2 次运行 × 2 模式 × 2 个切换后状态，动作全部 **6/6 逐位一致，
+max_abs_diff = 0.0**，摘要序列相同。VLA 单次时延 p50 基本不受状态影响
+（`transfer` 305.1/303.7/314.7 ms，`cpu_mirror` 300.5/284.8/302.1 ms）。
+即 VLM 切换是输出保持的。
+
+结论 2（C 项）p50 ms，正序（反序）：
+
+| 阶段 | transfer | cpu_mirror | 变化 |
+|---|---:|---:|---:|
+| vla_to_cpu | 6322.4（5520.0） | 219.1（219.7） | −96.5% |
+| vlm_to_gpu | 1751.3（1873.9） | 1443.4（1495.9） | −17.6% |
+| vlm_generate | 1579.5（1536.2） | 1532.9（1594.5） | −2.9%（噪声） |
+| vlm_to_cpu | 5178.9（5387.9） | 187.9（188.2） | −96.4% |
+| vla_restore | 2099.4（2087.8） | 1698.1（1795.4） | −19.1% |
+| 搬运小计 | 15352.0（14698.0） | 3574.5（3697.0） | −76.7%（−74.8%） |
+| 端到端 | 16931.7（16283.6） | 5081.3（5271.5） | −70.0%（−67.6%） |
+
+收益集中在两个卸载方向（各约 −96%），生成本身没有变快。
+代价：主机 CPU 副本 17.712 GiB。VLA 单次推理约 285–315 ms，与切换成本差两个量级。
+
+反序运行推翻了一个错误结论：正序中 `cpu_mirror` GPU 峰值 16.517 GiB、反序中仅
+9.699 GiB，峰值跟随"同进程第二个被测模式"而非模式属性，
+故"cpu_mirror 多耗 6.8 GiB 显存"是测量假象；单模式下两模式峰值均约 9.70 GiB。
+冷加载与启动准备受 page cache 影响、跟随运行顺序，只作记录不参与模式比较。
+
+与旧数字关系：旧记录 16.531 → 7.341 秒（−55.59%）。本次 transfer 基线
+16.28–16.93 秒复现其 16.531 秒；本次 cpu_mirror 5.08–5.27 秒低于其 7.341 秒，
+但提示词与生成长度不同，不可直接比较，可确认的是方向与机制一致。
+
+边界：未跑机器人回合，不产生成功率结论，不改变冻结的 8 回合成绩。
+staged 设计串行，**不能**据此声称单卡并发共驻，也不构成硬实时保证。
+输出保持限于 6 payload、单 checkpoint、单任务、36 token 输出。
+5.08 秒切换成本远大于一次 VLA 推理，不等于"VLM 可高频调用"。
+
+证据路径：`artifacts/robodojo/vlm_switch_residency_20260911/`
+（`README.md`、`vlm_switch_report.json`、`vlm_switch_report_reversed.json`、
+`measure.log`、`measure_reversed.log`）。
+工具：`scripts/measure_vlm_switch_and_residency.py`。
+回归：新增 `tests/test_vlm_switch_residency_measurement.py` 6 项。
+
+## 2026-09-11 初始 RGB 差异根因与 D 项门控结论
+
+目的：补齐交接 A 项要求的"查初始 RGB 差异…不预设故障原因"，并据此复评 A/B/C 门控、
+判断 D 项能否开启。详见计划 9.26 节。
+
+方法与样本量：新增同布局同种子重复捕获 `capture_1ep_repeat`（rc=0，265.72 秒，
+1 回合，12 payload），与 `capture_1ep` 做像素级比较；另取四次独立同布局运行
+（`smoke_1ep`、`B0` 回合 0、`capture_1ep`、`capture_1ep_repeat`）比较步 0 摘要。
+模型：StarVLA PI-v3 `steps_100000`，`stack_bowls` layout set 0 布局 0，种子基数 101。
+测量口径：摘要为 `hash_starvla_request_input` / 逐模态哈希；像素差为 uint8 绝对差。
+
+结果 1：四次独立进程步 0，`state_sha256` **4/4 逐位相同**、`language_sha256`
+**4/4 相同**、`image_sha256` **4/4 互不相同（6/6 成对不同）**、动作 4/4 不同。
+
+结果 2：像素级幅度（head / left wrist / right wrist）最大差 **6 / 3 / 3**（0–255），
+有差异像素占 56.04% / 43.31% / 48.43%，非零差均值 1.077 / 1.004 / 1.006，
+差 > 1 的像素仅 1.535% / 0.076% / 0.126%。
+
+结论：初始 RGB 差异是**渲染管线浮点非确定性被量化进 uint8 最低位（±1 LSB）**，
+不是物理随机、不是初始化、不是指令或预处理、不是场景或相机差异——每一项排除都有实测依据。
+闭环放大：最大像素差 步0=6 → 步16=119 → 步32=162 → 步64=231；
+平均像素差 0.24 → 3.79（步 80）；状态自步 16 起不同。
+
+门控复评：A、B、C 三项按交接验收标准**均已达成**（分别见 9.23/9.25、9.24、9.25）。
+**D 项按原设计不可执行**：其逐回合配对前提被上述根因实测否证——跨进程观测从第一帧
+不可复现，动作从第 0 步即不同，16–32 步内轨迹分叉，故"同布局下结局不同"必然混入
+与条件无关的分叉。这是冻结 8 回合矩阵不能把结局归因于 Agent 的机制层面原因，
+现已被测量而非假设。
+
+据此**不启动 D、不扩大矩阵**。三条可选路线属实验设计变更，需决策后执行：
+(1) 拆分主张——保真/时延走同进程重放，闭环成功率按非配对并重算样本量；
+(2) 先验证同进程内重复 reset 同一布局是否给出逐位相同初始 RGB（本轮未做：
+需改动官方 evaluator 布局循环，触及官方计分与簿记，不宜在无人值守时进行）；
+(3) 只依赖状态而非像素的主张本就可配对（state 四次逐位相同），可单独成立。
+
+证据路径：`artifacts/robodojo/native_trace_b0_20260911/README.md`（新增"初始 RGB
+差异的根因"一节）、`capture_1ep_repeat/`、`capture_1ep/`。
+未新增代码路径，未触碰冻结目录，未改动官方 evaluator。
+
+## 2026-09-11 Harness 触发器证据准入与 Monitor 阈值离线标定（设计复审第 1–3 项）
+
+目的：给 Agentic Harness 的干预触发器建立与 Optimize Runtime 对称的证据准入；
+按实测分布重标 Monitor 阈值；把停滞判据从"检查次数"改为"未变步跨度"。
+全部离线完成，未消耗机器人机时。详见计划 9.27 节。
+
+模型/来源：Monitor trace 来自 `ral_matrix_20260907_stack_bowls_{c2,c3}_set0`
+（StarVLA PI-v3，`stack_bowls`，layout set 0 布局 0–24，两条件同一批布局）。
+样本量：Monitor 逐步样本 16385 + 16519 = **32904 步**，回合 25 + 25 = **50**，
+基线失败率 **0.62**。
+测量口径：离线重放使用 trace 中已记录的窗口均值，均值不依赖阈值故重放**精确**
+（由 `test_offline_replay_matches_the_live_monitor_exactly` 与真实 `ExecutionRiskMonitor`
+逐项对齐钉住）。只扫阈值——改 window_size/warmup 会改变均值本身。
+准入四标准：可达性、特异性（相对基线失败率的 lift）、及时性（恢复余量 200 步）、
+预算可行性（冷却 128 步合并后 ≤ 3 次机会/回合）。
+
+结果 1：实测分位点 `mean_state_response` p50 = **0.02599**，而部署阈值 0.002
+小 **12.7 倍**；`stall` 三条件合取在 32904 步中出现 **0 次**。
+
+结果 2：**当前部署的两个触发器都不满足准入**——`stall` 不可达；
+`no_progress` 每回合 3.30 次触发机会超预算 3。
+
+| 候选 | stall | no_progress | 并集覆盖失败 | 并集精确率 |
+|---|---|---|---:|---:|
+| deployed_default | 0/50 拒 | 10/50 拒 | 25.8% | 0.80 |
+| stall_state_p50 | 11/50 准入 | 10/50 拒 | 54.8% | 0.85 |
+| visual_p25 | 0/50 拒 | 6/50 准入 | 19.4% | 1.00 |
+| **both_recalibrated_state_p50** | 10/50 准入 | 6/50 准入 | **45.2%** | **0.93** |
+| both_recalibrated_state_p25 | 5/50 准入 | 6/50 准入 | 32.3% | 1.00 |
+
+推荐 `both_recalibrated_state_p50`（state 0.02599 / command 0.01006 / 视觉两项 0.00242）：
+相对部署默认，失败覆盖率 25.8% → 45.2%、精确率 0.80 → 0.93，两者同时改善。
+
+结果 3：停滞判据改为未变步跨度（默认派生 `stale_checks × checkpoint` = 320，
+~~标准间隔下行为不变~~ —— **2026-09-11 纠正：该说法是错的**。原判据在第 2 次计入检查即
+触发、跨度仅 160；默认取 320 需要第 3 次检查，故这是**更严格的新策略**，
+不是等价改写。实测：跨度 0 最早恢复第 320 步、跨度 320 最早恢复第 480 步）。
+在冻结 C3 的 6 条 critic 记录上离线回放：
+冻结实际 2 次恢复 → 9.24 规则 1 次 → 9.24+跨度 **0 次**。
+两次恢复之后谓词都自行变化（回合 0 第 323 步 confirmed、回合 1 第 480 步变 2.0），
+即两次都在任务仍推进时触发。
+
+顺带发现（记录未修）：`min_unchanged_steps=320` 配 `checkpoint_steps=160` 时，
+跨度最早在第 3 次检查才够，而 `max_calls_per_episode` 默认 3 ——
+触发窗口恰只剩最后一次预算内检查。跨度要求与调用预算耦合，应一起定。
+
+边界：准入通过**不等于**成功率会提升——这是触发器与失败结局的**关联**，
+说明该信号选中的回合更常失败、值得闭环验证，不说明干预会修好它们。
+精确率/覆盖率来自的 9-07 c2/c3 两次运行**未加载 VLM**（`planner_model` 为空、
+语义检查 0 次），故结局是"基线 + 少量廉价重规划"的结局；信号与结局均真实、关联有效，
+但不可当作"带 VLM 的 Harness"效应量。只扫了阈值，未扫窗口/预热/冷却/预算联动。
+跨度判据仅在冻结 C3 的 6 条记录与单测序列上验证，未在新回合验证。
+本次未跑机器人回合，不改变冻结的 8 回合成绩。
+
+证据路径：`artifacts/robodojo/monitor_calibration_20260911/`
+（`README.md`、`monitor_calibration.json`）。
+代码：`agentic_vla/toolchain/trigger_admission.py`、
+`scripts/calibrate_monitor_thresholds.py`、
+`third_party/.../starVLA/model.py::resolve_min_unchanged_steps`。
+回归：新增 `tests/test_trigger_admission.py` 12 项、bridge +5、flow wiring +1；
+reset 清单 34 → 35。
+
+## 2026-09-11 整体策略可行性审计 + 修复 9.24 引入的档期缺陷
+
+目的：把 9.27 推荐的阈值与预算/冷却/检查间隔/跨度作为**整体**过一遍离线准入，
+回答"恢复在自己的预算内还有没有可能触发"。详见计划 9.28 节。全部离线，未消耗机时。
+
+**修复的缺陷（由本审计发现，非机器人运行发现）**：9.24 把语义检查的周期门控基准从
+"上次检查"改为"上次**计入**观察"。但未计入的检查同样不推进该基准，导致门保持打开、
+之后每步都触发，把每回合调用预算烧在连续步上（模拟中表现为
+`checks=(80,160,161,162,163)`）。触发条件为 `min_stall_interval_steps > checkpoint_steps`；
+派生默认值下周期门一开必然计入，故冻结运行与既有测试均未暴露。
+修法：周期档期由周期检查推进（无论是否计入），强制检查仍不推进档期（保留 9.24 性质）；
+新增 per-env `semantic_last_periodic_step_by_env`，reset 清单 35 → 36。
+
+样本量与口径：50 回合（9-07 c2+c3 set0），阈值取 9.27 推荐的
+`both_recalibrated_state_p50`（state 0.02599 / command 0.01006 / 视觉 0.00242），
+强制检查由重标 `stall` 事件驱动。可行性为**上界**——假设谓词读数恒不变。
+
+| 配置 | ckpt | 预算 | 跨度 | 可达回合 | 可达失败回合 | 检查/回合 | 最早恢复步 | 判定 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| deployed | 160 | 3 | 320 | 26/50 | 25/31 | 2.64 | 480 | 可行 |
+| **budget_4** | 160 | 4 | 320 | 32/50 | **31/31** | 3.28 | 480 | 可行 |
+| budget_5 | 160 | 5 | 320 | 32/50 | 31/31 | 3.42 | 480 | 可行 |
+| checkpoint_80 | 80 | 3 | 320 | 0/50 | 0/31 | 3.00 | — | **不可行** |
+| checkpoint_80_budget_5 | 80 | 5 | 320 | 41/50 | 28/31 | 4.88 | 400 | 可行 |
+| span_240 | 160 | 3 | 240 | 28/50 | 27/31 | 2.64 | 480 | 可行 |
+| span_160 | 160 | 3 | 160 | 50/50 | 31/31 | 2.64 | 320 | 可行 |
+
+结论：
+1. 部署配置可行但仅覆盖 25/31 个失败回合，窗口只有一次检查宽（最早第 480 步 =
+   预算内最后一次检查）。**预算 3 → 4 即覆盖 31/31**，5 无额外收益。
+2. **跨度要求意外充当成功回合过滤器**：失败回合可达 25/31（80.6%）、
+   成功回合仅 1/19（5.3%），因成功回合结束早、跨度来不及累积。
+3. 只减半检查间隔会让策略**完全失能**（0/50）——计入间隔仍 160，
+   预算被未计入的检查吃掉；要靠提频获益必须同时降低计入间隔或提高预算。
+4. 跨度放宽到 160 可达 50/50，但退回弱判据并失去第 2 条过滤，**不建议**。
+
+推荐整体配置：`checkpoint_steps=160`、`min_stall_interval_steps=160`、
+`min_unchanged_steps=320`、**`max_calls_per_episode=4`**、`cooldown_steps=128`、
+`max_recoveries=1` + `both_recalibrated_state_p50` 阈值。
+
+边界：可行 ≠ 有效，通过的配置仍需闭环验证；可行性是上界，真实触发只会更少；
+重标阈值本身未闭环验证；回合长度与结局来自**未加载 VLM** 的 9-07 c2/c3，
+Agent 真正介入后回合长度会变、可达率需重算；未扫 max_recoveries /
+stale_checks_required / cooldown_steps 联动。本次未跑机器人回合，不改变冻结的 8 回合成绩。
+
+证据路径：`artifacts/robodojo/monitor_calibration_20260911/`
+（`README.md` 第二阶段、`policy_feasibility.json`）。
+代码：`agentic_vla/toolchain/trigger_admission.py`、
+`scripts/audit_intervention_policy_feasibility.py`、
+`third_party/.../starVLA/model.py`（档期修复）、`reset_contract.py`。
+回归：`tests/test_trigger_admission.py` 12 → 25 项；bridge 新增 3 项；清单 35 → 36。
+
+## 2026-09-14 执行意图修复与真实小范围集成
+
+用户确认毕业与RA-L为最终目标，按框架修复、集成、冻结对照顺序推进。
+修复scalar Planner的CONTINUE/SAFE_STOP被当作恢复、同次动作调用停止延迟、
+task-only重规划返回值不一致；分析器补充新停止事件去重。恢复归档的真实OpenVLA
+测量脚本至legacy，仅修优化单测引用，不重跑旧模型。
+
+最终可收集CPU：1294通过、1跳过，显式排除3个现存收集错误文件。
+失败与修正后的XML保留`results/framework_revision_20260914/`；初次3个意图夹具非法，
+已修正，不能把全部初始失败说成正确缺陷复现。没有改VLA权重或驱动。
+
+真实实验：官方RoboDojo stack_bowls set0前2个布局，PI-v3 BF16 flow4/h16，
+Qwen3-VL-4B CPU mirror，160步检查/320步跨度/3次预算，源码预冻结。
+结果1/2，VLA75次、Critic5次均恢复VLA、廉价重规划1次，无Planner恢复或post-check。
+6段原始视频保留，reset/完整性和11项工程检查通过；未触发的分支仍待真实验证。
+单次VLA P50/P95为292.91/329.26ms，语义调用累计23.41秒；不作新效率对照结论。
+证据：`artifacts/robodojo/framework_integration_20260914/README.md`、`audit.json`。
+
+新诊断：480步组数谓词确认1组但描述只包含中心两碗，官方最终失败；705步风险出现时
+周期预算已耗尽。另合成差分确认旧可行性模拟的stall选择/冷却与bridge不一致，
+撤回用旧31/31直接准入新默认参数的建议。下轮先修调度及目标覆盖/局部核验，再冻结对照。
+实验已退出，GPU释放；G2两项服务按既有授权保持停止，无新增后台实验。
+
+### 2026-09-14 后续：B阶段调度修复与RoboDojo任务复核
+
+修复真实scalar Critic事件调用未消耗冷却的问题、周期/事件重合后的重复检查；
+缺图与预算拒绝不再提前推进周期时钟。沿用已注册reset时钟，不新增跨回合状态。
+离线模拟显式event_name；no_progress支持强制检查，stall/stale_action不走该入口。
+审计脚本不再默认stall或宣称offline_exact，不重写旧31/31历史分析。
+
+36个合成CPU差分用例核对实际bridge与调度器，范围为首次恢复前、观测/调用可用。
+定向507通过；可用CPU集合1335通过、1跳过，仍排除3个既有收集问题文件。
+XML：`results/framework_revision_20260914/scheduler_targeted.xml`、`scheduler_cpu.xml`。
+全量测试命令仍使用此前三项--ignore；测试数不是GPU回合数，也不是语义准确率。
+
+重新核对官方任务目录、模型卡和本地task代码，不修改官方任务。put_bottles与
+build_tower为主候选；conveyor须通过历史信息到动作的接口验收后做记忆专项；
+stack_bowls只做开发回归，电脑耳机/模仿排序暂缓。方案见主计划9.31，底稿13.8同步。
+目标覆盖/局部进展/完成三类核验及事件预算分配仍未完成，没有新增GPU实验或后台队列。
+此前1/2真实结果属于修复前冻结源码，不能冒充本子轮效果。paper与旧原始结果未改。
+
+### 2026-09-14 目标覆盖接口与VLM开发检查
+
+新增可选expected_object_count分组覆盖验证，launcher/server与真实Critic接通；
+未知/缺失/关系不一致不用于标量停滞或恢复，组数确认也不授权整任务停止。
+默认不变；软件1351通过/1跳过，仍排除3收集问题文件，coverage_final_cpu.xml。
+初次新测试缺少导入、随后空字典与归零断言错误均已纠正；未改运行逻辑迎合测试。
+
+真实模型：Qwen3-VL-4B BF16/SDPA，固定旧视频7帧，legacy/coverage两模式。
+首轮14次，coverage0/7接受（字段遗漏）；完整JSON示例修正后另存第二轮14次，
+coverage4/7协议接受、仅2帧可用组数、其余未知或拒绝。全部原始输出与源码哈希保留。
+合计28次调用但仅7个开发样本，不是独立准确率或新机器人成功率实验。
+成功终帧的遮挡计数仍未知，不启用候选默认、不扩跑机器人矩阵。
+证据artifacts/robodojo/coverage_probe_20260914/，路线更新主计划9.32与底稿13.9。
+下一步是主任务局部事实的独立观测核验和事件预算；本轮GPU进程已结束。
+
+### 2026-09-14 事件预算候选与工期收敛
+
+接入CARVE_SEMANTIC_EVENT_RESERVE_CALLS，scalar Critic总预算3次内预留事件尾部，
+默认0，配置校验和调用前后预算日志齐全，无新增reset状态。离线模型同步预算与
+观察有效期；旧两回合真实Monitor日志在3配置下6次CPU回放一致，使用假Critic读数。
+预留1让失败轨迹在706有检查预算，但旧读数已过期，不能称为新增恢复。
+结果artifacts/robodojo/event_budget_audit_20260914/，新GPU回合与VLM调用均0。
+可用CPU1441通过/1跳过，仍排除3收集问题；event_reserve_cpu.xml。shell语法通过。
+
+旧多视角/多条件核验已测过且未准入，纠正重复试验风险；不以新测试数替代Agent收益。
+原计划9.33明确3--5工作日决策检查点；限定毕业实验整理估计2--3周、RA-L准备4--8周，
+前提无新训练且反馈/动作验收能通过，不保证毕业评定或投稿录用。
+
+### 2026-09-14 小规模完整验证完成，未通过Agent效果验收
+
+用户确认先做小规模；固定瓶子入桶/搭塔各3个开发布局、C1/C3，共12回合。
+两组均PI-v3 BF16 flow4/h16，Agent使用独立Qwen3-VL-4B CPU mirror。
+运行前修复普通事件Planner CONTINUE不得清空chunk，以及恢复pending/预算耗尽时
+不得再次执行VLA_ACT。相关296测试通过，可用CPU1443通过/1跳过，仍排除3既有问题。
+
+结果：瓶子C1 2/3、C3 3/3；搭塔C1 3/3、C3 1/3。4组reset/完整性检查通过、
+source_drift为空。537次VLA调用、18次真实VLM任务调用、36段640x480 H.264原始视频。
+瓶子3次起始计划均被拒绝；搭塔3次沿宿主既有模板生成计划，9次核验7unknown/2确认。
+所有Agent回合均没有动作干预、事件Planner或post-check；不能将成败差额说成救回/误伤。
+6个布局对从step0已有输入差异，239个共同请求时刻没有完全相同输入。
+VLM完整调用总计145.707秒，生成78.880秒，18/18均恢复VLA；启动黑帧预热不计任务调用。
+
+入口artifacts/robodojo/small_complete_20260914/README.md，RESULTS.md含全部头部视频，
+summary.json/episodes.csv含明细。GPU服务已退出，无后台扩样。主计划9.34和技术底稿
+13.11已更新，旧图/PPT/压缩包没有自动替换本轮数字。
+下一步只修计划协议、早期检查预算与语义到合法动作的通路，不继续160回合矩阵。
+
+### 2026-09-14 基于12回合的协议、任务覆盖与阶段预算修复
+
+精简Planner返回为confidence/stages，模型不再填写固定工具字段；宿主编译后仍经过
+完整权限/语义校验。增加复合拿取/投放任务覆盖防错，发现并拒绝原本接受的“只拿起瓶子”
+错误计划。可选阶段时刻配置贯通launcher/server/bridge，保持3次预算与160最小间隔，
+CPU检查迟到不突发、缺图不耗预算、原任务指令不变；无新增reset状态。
+
+同6旧视频首帧，两协议18次真实Qwen调用；补guard后一次6帧9调用，总27任务调用+2预热。
+搭塔配对旧/新均3/3接受，生成18.000→12.687秒、token455→317；仅模板约束固定图生成
+成本，不是机器人速度或成功率。瓶子初始1/3接受经复核为错误、不可算收益；新guard下
+真实仍0/3，塔3/3。两轮运行内source_drift为空。全部输出与源码在
+artifacts/robodojo/planner_protocol_20260914/，guard_review.json为CPU复核，不是新推理。
+
+可用CPU1476通过/1跳过，见planner_guard_final_cpu.xml；仍排除3既有收集问题。
+两处shell语法与git diff --check通过。
+本轮没有新增机器人回合、没有扩大benchmark，GPU模型退出。下一步先对齐task_only
+执行接口与高层计划，并解决可靠反馈到合法动作，不能以接受率/台账代替物理收益。
+
+### 2026-09-15 参考文章归档与下一阶段规划
+
+用户提供的GPT 6 Astra/π0.5 RoboDojo文章HTML及同名资源目录已复制到根目录参考/，
+保留paper原件。HTML SHA256一致，资源目录diff一致；未执行网页脚本、未安装外部Skill。
+部分原图仍为懒加载占位，未补齐在线视频，未独立核验作者代码/成绩。
+
+新增参考/README.md，主计划更新至9.36，交接提示同步。关键方向改为原任务VLA候选
+审核与独立受限EEF纠正，不再把修改VLA子目标当唯一前置条件。P0运动学契约、P1受限
+工具优先；之后P2真实只读审核、P3小闭环、P4分别验证工作记忆与审核效率。
+两任务×3布局×3组=18回合仅为工具准入后的开发预案，不立即执行、不称RAL统计确认。
+保持当前PI-v3 flow4/h16，不混成参考文章π0.5；14.4%和25Hz均不作为本项目实时证据。
+本轮无运行代码/模型修改，无新增实验回合或GPU服务。
+
+### 2026-09-15 按用户补充独立评估任务与机制，原位修订9.36
+
+用户强调文章只作参考，不要求照搬。核对本地官方任务代码及PI-v3发布方模型卡后，
+将9.36从“先做EEF工具”改为“任务/模型/工具适配→有效动作闭环→记忆与效率消融”。
+EEF/FK是有条件候选，先根据真实缺口选择动作通道；不为凑模块实现所有工具。
+
+保留瓶子/搭塔回归；优先审查整理桌面与传送带记忆，模仿排序和语言分类需先确认
+观测与动作能力。整理桌面task文件的显式评分覆盖需继续核对，暂不认定官方bug；
+模仿排序需完整演示观察，禁止读取内部目标序列。发布方低SR不是我们的复现结论，
+也不足以单独判断失败来自底层动作。新任务、模型和矩阵都未冻结或启动。
+
+主计划原节更新，参考说明和交接提示同步；未再新建版本化计划。保留全部历史结果、
+paper与原参考材料。本次仅文档与来源核对，无代码/权重/实验数据改动，无新增GPU实验。
+
+### 2026-09-15 切换官方RoboDojo π0.5并完成原生准入
+
+用户确认主VLA使用RoboDojo π0.5。选官方HF数据仓库RoboDojo-Benchmark/RoboDojo，
+revision `0a709fe7863f6c869a8d141676585a883fce4270`，
+`ckpt/RoboDojo/Pi_05/RoboDojo-sim-arx_x5-joint-0/59999`。
+18个推理文件共12,440,992,402 bytes完成哈希检查；未下载train_state，不是社区续训或LIBERO版。
+下载经历TLS中断，最终使用本机既有代理及aria2分段传输，完整文件再次匹配官方SHA256。
+未更改系统代理、TLS验证、驱动/CUDA/PyTorch；仅补msgpack-numpy 0.4.8。
+
+新增准备脚本和有限验收脚本，复用Pi05Adapter/CarveRuntime、官方Pi_05模型和任务。
+CPU定向58通过。实际加载OpenPI/JAX模型10.229秒，同真实录制观测/同随机状态的
+native与Runtime透传动作最大差0。默认10步采样、horizon50、三相机、14维绝对关节/夹爪。
+
+stack_bowls/layout0原生真实仿真1回合：官方成功1/1，score100，unstable0；6次VLA调用，
+日志控制步294，另2次为预热/一致性检查。任务调用完整infer wall time112.97--130.89ms，
+仅6样本，不作为P95/优化收益。入口阶段耗时242.165秒包含初始化/JIT/仿真/退出。
+三视角H.264原始视频640x480、25FPS、各295帧/11.8秒，头部关键帧检查与堆叠成功一致。
+源码记录集合无漂移；GPU进程退出。视频时长/FPS不代表真实系统达到实时性能。
+
+证据：`artifacts/robodojo/official_pi05_admission_20260915/README.md`及stack_bowls_native/。
+本轮不含Planner、记忆、恢复、量化/少步等优化；Runtime仅同输入核验，未用作rollout模式。
+因此只证明基础模型接入，不证明Agent增益、跨任务泛化或统计成功率；主任务评估尚未扩样。
+下一步迁移审计reset与合法Agent动作通路，再按主计划9.36审查/诊断候选任务。
+保留所有旧模型、结果、paper及参考材料，不把PI-v3或旧PI0.5性能数字套用到该权重。
+
+### 2026-09-15 两项分拣任务：框架接入、任务指令保护与可撤销记忆
+
+用户收敛本轮任务为整理桌面和按语言指令分类。模仿分拣序列/传送带暂缓；
+先框架、后小范围准入，未启动两项任务的仿真矩阵，未产生它们的新成功率。
+
+新增SortingEpisode复用CarveAgentSession与工具运行时；接官方Pi_05部署、
+三相机RGB和ARX X5 14维绝对关节动作。独立AgenticPi05目录保留官方Pi_05原件。
+注册VLA和真实一步保持/重观察工具；没有新增抓取纠正、IK或oracle动作。
+每步数值Monitor用目标-当前状态而非绝对目标幅度，异常时丢弃剩余chunk。
+Planner低频调度、Critic预算、近期视觉/假设备忘和审计记录进入统一执行循环。
+
+修复框架级接口冲突：旧解析器会将计划第一阶段子目标自动赋给VLA指令，
+新增task_only能力标志后不再对未准入模型重写指令。默认行为对旧部署不变。
+计划台账可由新相反Critic证据重新打开已确认步骤，依赖步骤回到待做，保留审计前后状态。
+符号任务完成不写官方success，仍由原评分逻辑判定；提前停止不归为无效样本。
+
+验证：
+
+- 173项定向CPU测试通过，JUnit保存在`artifacts/robodojo/sorting_framework/framework_tests.xml`。
+  包含真工具路径的CPU替身、拒绝非法输出、Parser能力限制、RGB/动作编解码、
+  风险中断、记忆隔离与状态撤销；不是173次机器人任务。
+- 在RoboDojo仿真Python环境导入实际部署模块、读取配置通过；模块语法检查通过。
+- 首次真实权重回放检查失败于录制图像未使用官方输入转换。修复HWC/CHW入口后重测。
+- `model_gate_rgbfix_20260915/check.json`记录：官方权重加载19.771s，原生/Runtime同观测
+  动作完全相同，最大差0；同seed重置再次得到相同50×14动作。该检查没有启动仿真或真实VLM。
+- 新pi05模型回执实现观察清空、调用计数清空和RNG重置。官方旧严格客户端审计仍绑定StarVLA，
+  本次没有声称已迁移多回合审计，暂限定每回合新进程与部署层pi05回执。
+
+运行入口与限制见`third_party/robodojo_official/XPolicyLab/policy/AgenticPi05/README.md`。
+共用配置`configs/robodojo_sorting_agent.json`故意要求填真实VLM模型ID，占位符会被拒绝。
+新JAX部署暂用Reference Runtime；旧量化/compile/SMVE及P95不能直接算作本轮效果。
+下一步真实VLM初始观测检查和两任务各一个预登记布局的原生能力准入，再做配对Agent。
+
+### 2026-09-15 两任务原生回合完成，VLM语义准入暴露并修复合同校验缺口
+
+证据总入口：`artifacts/robodojo/sorting_development_20260915/README.md`。
+官方π0.5 seed0/59999、JAX flow10/h50、layout-set0/layout0、每任务一个开发回合：
+
+- organize_table：success=false，score75/100，1000步、20次VLA调用，启动到退出519.660s。
+- classify_objects_by_language：success=false，score0/100，1100步、22次VLA调用，505.671s。
+- 均为native、无Agent、无优化；两份summary源码检查无漂移，全部原始三相机视频保留。
+  头部视频分别40.04s/1001帧、44.04s/1101帧，640x480/25FPS，不代表系统实时性能。
+- 任务推理调用中位数分别117.00ms、115.77ms；排除两次预热/透传检查，未宣称加速或可靠P95。
+
+新增首条真实rollout输入保存，仅state/RGB/instruction，不含评分或隐藏类别标签。
+随后独立启动真实Qwen3-VL-4B BF16，仅用这些输入做有限离线规划检查，无机器人动作。
+发现旧规则误把六步整理压成两步，修复后又发现缺少抽屉步骤/分类目标仍可通过格式校验。
+新增窄范围显式指令覆盖、类别目的地和复数后验检查；修复compact协议task_only保护，
+分拣上下文支持八阶段。最终`framework_tests_final_verified.xml`中178项CPU测试通过；
+保留早期失败JUnit与模型原文，不把测试数量写成仿真回合数。
+
+目前桌面整理六项指令覆盖通过，但VLM后验描述仍有不可靠位置/属性；语言分类最新检查
+仍把复数目标缩成单数，已被拒绝。不能称两个Agent任务已跑通或成功率提高。
+后续先改善语义合同与Critic、测低显存部署、验收动作干预能力，再开同布局Agent对照。
+BF16模型加载allocated8.27GiB；VLA+分类仿真约18.8GB总显存，两者不能直接共驻。
+Probe采用90s/1024tokens，部署模板45s/768tokens，不能混为相同配置的准入结果。
+未启用少步/量化闭环，不沿用旧PI0.5 P95；本轮结束释放自建服务，未启动后台矩阵。
+
+### 2026-09-15 后续修复：任务目标与视觉假设分离，4B NF4初始规划检查
+
+新task_only明确语法任务改为简洁的目标清单提示，消除单实例/全类别指令冲突。
+Host在计划覆盖检查后绑定公开任务的预期条件，不让模型添加颜色/位置改变验收要求；
+原始响应保留。此处属于规则性合同保护，不是自动补出遗漏计划或证明视觉判断正确。
+
+真实Qwen3-VL-4B vision_preserving_nf4服务成功加载，252语言线性层量化，
+视觉编码器及输出头保持BF16。加载allocated3.268GiB（先前BF16为8.266GiB）；
+不代表完整共驻峰值，也没有宣称量化加速或无损。模板默认BF16尚未切换。
+
+最终两次真实观测离线检查都一次调用通过：整理桌面六操作12.071s；语言分类三类全部
+对象目的地+回臂9.594s。实际每请求45s/768tokens。178项CPU测试通过。
+证据：`organize_planner_nf4_concise_contract/`、`classify_planner_nf4_concise_contract/`、
+`vlm_nf4_repair_profile.json`、`framework_tests_concise_contract.xml`，均在本轮证据目录。
+同目录保留长提示下NF4失败及早期不完整输出，不能用这些迭代算统计指标。
+
+只解决两条开发输入上的初始清单问题；Critic/实例覆盖、共驻峰值、动作干预仍需验收。
+没有新增机器人回合、成功率或Optimize闭环成绩；自建VLM服务在检查后退出。
+
+### 2026-09-15 Critic准入：同五例比较BF16/NF4，发现共同高置信度误确认
+
+新增`probe_robodojo_sorting_critic.py`，复用真实GuardedVisualVerifier和原提示词。
+固定鼠标初始/末帧、抽屉末帧、分类初始/末帧五例，三相机真实输入，人工参考不传入模型。
+NF4与BF16均在初始鼠标位置上错误confirmed（1.0/0.98），末帧鼠标正确confirmed，
+其他三例inconclusive。保留源视频/NPZ路径、输入图像哈希、请求及原文。
+此处只有十次离线模型调用；不能算Agent成功率、量化无损证明或正确失败检测。
+相关87项CPU测试通过，脚本编译通过。结果在本轮证据目录的`critic_*_fixed_cases/`。
+
+当前4B Critic不准入自主完成判断，不能用已通过的初始计划检查代替它。
+下一步需定位视觉关系误判，考虑证据抽取与结论分离或更适合的视觉模型；
+不调高阈值掩盖置信度失准，不开始无效Agent矩阵。服务已退出，原生仿真不重跑。
+
+### 2026-09-15 官方π0.5指令敏感性与人工子目标诊断
+
+`classify_instruction_sensitivity/`记录分类实际首帧、seed0/1、原指令/汽车子目标/
+手表子目标/原指令重复，共8次真实模型推理。原指令重复均精确一致，两个子目标在
+两个seed均改变动作输出。关节平均绝对变化0.0114--0.0137仅是敏感性，不是任务收益。
+该检查无仿真、无VLM；首调用35.73s含JIT，不能拿它计算加速。模型manifest已校验。
+
+已为同布局单回合人工手表子目标注册计划，保留官方1100步预算与评分；不使用Critic、
+不自动换目标，输入与原始环境指令分别记账。仅用于动作能力诊断，不是自主Agent。
+接口默认关闭，28项相关CPU测试通过；记录结果前不宣称子目标执行成功。
+
+上述真实人工子目标回合已完成：1100步、22次VLA调用、484.513s，official score0、
+success=false、unstable0，source_drift=[]。三视角原始视频和每100帧的诊断图保留。
+初始机器人状态与原生基线相同，RGB不同，因此不称精确反事实对照。
+日志证明手表子目标持续生效，但画面显示仍操作多种物体且存在混放，未证明手表子任务完成。
+不把更多搬运动作归因于自主Agent；本回合未调用VLM，原始环境指令和评分也未修改。
+结论为“语言敏感性成立，正确子目标执行未准入”，默认task_only保持。
+下一步核对技能/指令接口和真实工具能力，不继续大规模benchmark或扫prompt。
+证据：`classify_watch_subgoal_execution/summary.json`及同目录关键帧，服务已退出。
+
+### 2026-09-18 毕业贡献凝练与RoboDojo Critic视角诊断
+
+主技术报告17.2凝练三项候选贡献，并分开自主设计、历史效果、当前待验证部分。
+未修改论文原件、生产Critic提示或排序部署配置；未新增benchmark和训练。
+
+扩展原Critic探测脚本，默认五例保持，新增可选固定中间帧和all/head输入对照。
+真实Qwen3-VL-4B vision_preserving_nf4共16次请求，45s/768tokens，各8例。
+三相机初始鼠标误confirmed1.0重现；仅头部为inconclusive0.3且描述鼠标未在垫上。
+两项鼠标正例均confirmed；头部其余6项均inconclusive，不算正确负判或100%准确。
+八组头部PNG哈希相同。三个中间帧条件为同回合时间迁移，不是独立留出布局。
+初始/末帧人工参考及新增帧复核均不提供给模型，不是假称仿真器真值。
+
+40项CPU测试通过；新增脚本选项不改变默认行为。全视角/头部平均请求2422.69/2278.73ms，
+运行顺序及共享GPU未控制，不作加速结论；G2服务未停，仅运行VLM，无π0.5共驻验证。
+模型服务加载allocated3.269GiB，探测后进程快照4306MiB非峰值，自建PID86819已终止。
+
+接口审计确认本地参考RPent某些模式有深度/笛卡尔移动/释放权限，而新排序驱动仅有
+VLA+reobserve；当前π0.5接口无对象ID/抓取点控制参数。不能只靠更多重试弥补该差距。
+结论：核验输入有改善线索，但自主完成和子目标执行仍未准入，不启动Agent矩阵。
+没有新增机器人回合或成功率，所有响应、图像、复核与预登记在
+`artifacts/robodojo/critic_view_diagnostic_20260918/`。
+
+### 2026-09-18 汇报用RoboDojo真实闭环集成
+
+有效运行：`artifacts/robodojo/conservative_closed_loop_20260918/run04/summary.json`。
+官方π0.5/59999 JAX flow10/h50 + Qwen3-VL-4B vision_preserving_nf4 + 官方物理仿真。
+organize_table set0/layout0，seed0，1000步/20次VLA调用，官方score25、success=false。
+10次Planner请求均解析接受（首次计划+9次continue），9次Critic建议，不授予账本完成权限。
+中断动作块0、额外技能0、提前停止否；没有纠错收益证明。运行期间源码哈希无漂移。
+三相机原视频各640x480、1069帧/25FPS/42.76秒；原视频未剪辑。视频时间不等于墙钟。
+回合wall379.084s，启动至退出541.656s；Planner总55.531s、Critic总21.400s。
+首VLA客户端调用33.943s含JIT；后19次服务器中位120.557ms，客户端中位218.499ms。
+整卡10秒采样最高22801MiB，无OOM，非瞬时峰值；未启用新JAX模型优化，不借用旧加速比。
+
+保留开发问题：run01任务名读取字段错误；run02 Planner违反task_only后停止，未终止的
+环境默认success=True造成原始100分及success后缀，**均无效，禁止作成果**；run03正常复核
+耗尽失败重试预算后await无请求，运行终止、无有效分数。没有覆盖或删除失败记录。
+对应修复：任务字段；原生终止结算；紧凑继续/停止协议；复核/失败预算分账；无ticket
+立即hold处理。209项定向与回归测试通过，包含1000步完整生命周期fixture，不计入真实结果。
+
+画面显示鼠标入垫，最终键盘倾斜未对齐、抽屉仍关闭。官方25分低于历史原生75分，
+两者第一动作块哈希不同且缺少严格输入配对，不直接作因果归因。下一步先核对输入编码、
+观察时序和RNG，然后解决语义核验与受限纠错工具；不扩充大矩阵。
+主技术报告13.18、主计划9.36.O与本目录README已同步。实验服务已退出，GPU无计算进程；
+无关G2服务按用户要求不重启。
+
+## 2026-09-18 整理桌面适配审计与定点优化
+
+证据目录：`artifacts/robodojo/organize_adapter_audit_20260918/`。仅一个任务，无新benchmark。
+实现同控制步只读观察共享、动作后失效；新增首观察NPZ、每次输入/RNG指纹与动作数组；
+增加同执行器Agent开关。214项聚焦测试通过，官方π0.5在三个真实保存首观测上通过
+原生/封装精确一致、重置重复和动作转换检查，最大动作差0（非物理成功实验）。
+
+真实对照：off75/on25，均success=false，各1000步/20次VLA，无动作中断/额外技能/提前停止。
+观察读取均1001次，三相机原视频1001帧/25FPS；旧Agent回合1069帧，不推导加速比。
+off回合353.015s，on435.597s；on10次Planner总67.672s，9次Critic总26.286s。
+Critic九次inconclusive，但多次文字错误描述鼠标已在垫上。视频可见开启回合摆件倒下
+未恢复、局部反复动作，保守Agent没有救回。消除重复取图未解决效果退化。
+
+首状态/指令/RNG相同，RGB不同；同进程双输入重放证明仅换RGB可改变首动作，另有较小
+跨进程同输入数值差，不能解释全部分差或宣称Agent无责。全部失败保留，源码运行无漂移。
+官方分数与抽屉/杂物语言目标覆盖存在差异，详见任务源码及审计README，不改官方判据。
+主报告13.19与主计划9.36.P同步；停止重复只读全回合，下一步核验可靠性与可执行纠正能力。
+
+## 2026-09-18 整理桌面工具接口修复与15次真实视觉诊断
+
+证据：`artifacts/robodojo/organize_repair_20260918/README.md`。226项测试通过，无新增物理回合。
+修复compact协议工具不可达、advisory始终审查首阶段、Critic证据未传Planner；
+新增默认关闭的feedback_refresh：完整指令推理50步，仅执行10步、丢弃尾部并重新观察推理。
+工具受预算/终止限制，不改语义账本，不接受模型关节参数。仅软件链路测试，不宣称恢复收益。
+
+三张真实图，NF4/BF16，两种提示，共12次推理：视觉张量均存在，跨精度同图指纹一致。
+原提示NF4三例弃权，BF16正例确认/负例弃权；独立谓词提示两精度均错误确认两个负例。
+另3次BF16定位把负例键盘框识别为鼠标垫，不能仅因关系标签碰巧正确而通过。
+没有将15次开发诊断称为独立benchmark准确率，没有授予Critic完成权限，未切换生产模型。
+当前视觉可靠性与实际纠错效果仍未解决；服务已回收，主报告13.20、主计划9.36.Q同步。
+
+## 2026-09-18 本地Qwen3.5-9B模型替换对照
+
+证据：`artifacts/robodojo/organize_model_comparison_20260918/README.md`。新增15次真实GPU请求，
+无机器人动作：9B BF16六次关系+三次定位，视觉保留NF4六次关系。三张图/提示复用旧诊断。
+BF16在两种提示下三例关系status均正确，NF4原提示正确但独立谓词误确认两个负例。
+BF16定位三次返回错误顶层格式，两个负例仍把键盘框认成鼠标垫；初始图左右说明也不正确。
+因此可将9B作为下一阶段语义候选，但不准入自主完成、定位控制或可信空间记忆。
+BF16/NF4加载后allocated分别17.527/7.973GiB，不代表共卡峰值；没有切换生产配置。
+π0.5不变，没有新增仿真成功率。主报告13.21、主计划9.36.R同步，诊断服务已回收。
+
+## 2026-09-18 Qwen多关系视觉核验：两模型未通过准入
+
+证据：`artifacts/robodojo/organize_multirelation_gate_20260918/README.md`。
+两个既有真实回合各3个中间头部帧，加2个腕部缺视野例；8张图32项关系问题。
+先固定参考/门槛，再按9B、4B顺序运行BF16/SDPA；同生产提示、关闭thinking，64次真实GPU
+调用，无物理动作。32对提示/PNG/实际pixel_values相同；运行源码及图像哈希未变化。
+
+可判断22项正确：4B 5/22、9B 17/22；可见负例误确认均3/13；不确定参考正确弃权：
+4B 10/10、9B 0/10。9B三次把倒下摆件判断直立、两次否定柜顶闹钟，还把不可见当未完成。
+两模型格式/服务/现有guard失败均0，仍都未通过预设语义门槛。232项CPU测试通过。
+标注由Codex目视生成且未独立人工复核，帧来自同布局两个已观察回合，非独立泛化测试。
+
+没有在线换模、量化准入或新增成功率；下一步优先补对象绑定/可见性与关系证据，
+在新样本验证后再决定更强模型与受限干预。主报告13.22、主计划9.36.T已同步。
+两个实验服务均退出，保留桌面/ToDesk，未恢复无关G2服务。
+
+## 2026-09-18 证据协议50次诊断结束；收敛近期三项能力
+
+证据：`artifacts/robodojo/organize_evidence_protocol_20260918/README.md`。
+新增evidence可选协议、不可见文字冲突保护、反馈后新观察同目标复核；默认不切换候选协议。
+262项CPU回归通过。9B BF16完成50次GPU请求，无新机器人回合：旧32项可见正确16/22，
+误确认3次；新增单头部8项正确3/8、已有头部+腕部录像8项正确4/8，各误确认2次；
+新增2个不可见例均错误确定判断，整体未通过。全部50次原始visibility为clear。
+旧输出guard重放拦截5个不可见却确定的结论，3次可见误确认不变；不是新增模型收益。
+保留全部失败，不更改官方场景、π0.5权重/输入或生产部署，不追加多视角路线。
+
+用户确认先完善记忆、可靠反思与纠错、推理优化，把可验证经验学习及可能的技能训练
+作为后续自进化重点。主计划文首明确了验收条件及顺序，技术报告13.23同步。
+本次文档整理未启动GPU实验；不把历史后端效率与当前任务效果混合宣传。
+
+## 2026-09-18 RPent源码参考与工具闭环修复
+
+官方RPent已在third_party；fetch参考提交886b3b274d3dd30bbc15615ea512d65ae90bc8b3，
+原检出2c1f87d保持不变。未安装、运行上游工具，也未下载其记忆库。
+实际检查toolkit、LIBERO接触/几何原语、memory manager和相关文档，避免仅照框架图。
+
+修复排序适配器三处缺口：记忆检索忽略query、真实工具回执未传入last_primitive、
+反馈工具后未立即交回Planner。新增分离的执行回执记忆、预算内词项检索和工具返回决策，
+保留原场景/模型/指令。反馈后已有Critic结果复用，不重复轮询；默认不打开反馈候选。
+
+297项CPU回归通过，含59项排序框架测试；测试结果与边界说明在
+`artifacts/robodojo/rpent_tool_feedback_20260918/`。合成端口不计入机器人成功率。
+未跑新GPU实验或物理回合，可靠语义判断/有效抓取纠正仍未解决。主报告13.24、主计划V同步。
+
+## 2026-09-18 整理桌面：修复后的工具返回链路完成真实单回合检查
+
+证据：`artifacts/robodojo/organize_tool_return_validation_20260918/README.md`。
+预先固定一回合，官方π0.5/原场景/原相机/指令不变，1000步得75分，success=false。
+20次VLA共999步、1次自主reobserve占1步，11次Planner、9次advisory Critic。
+第200步工具执行后201步即时重决策，transcript确认实际回执进入last_primitive及记忆，
+下一VLA之前完成Planner返回，无重复Critic、无误晋升完成阶段。短前缀反馈未被选中，
+所以只验证重新观察的工具闭环，不验证恢复效果。297项CPU回归通过，源码无漂移。
+
+三路视频完整保存、解码通过，目视抽查发现201帧鼠标在垫外、抽屉关闭，Planner却声称
+全部完成；错误笔记仍进入后续上下文。可靠语义判断和有效纠错仍未解决。
+当前75分与历史off75/on25不能作单变量归因，也不能写作75%成功率。
+回合428.597秒；Planner/Critic累计75.855/24.853秒；19个热VLA调用P50/P95为
+167.288/185.395毫秒，首次36158.815毫秒单列。整卡采样峰值23814MiB，不是优化收益。
+不继续重复只读完整回合；下一步先查判断/假设记忆反馈及受限纠错动作。主报告13.25、
+主计划W同步。实验服务已回收、无GPU计算进程，无关G2服务未恢复。
+
+## 2026-09-18 历史模型结论隔离修复：真实对照仍有视觉误判
+
+证据：`artifacts/robodojo/organize_memory_quarantine_20260918/README.md`。
+新增quarantine默认策略：过去Planner/Critic笔记只留审计，检索只返回实际执行回执；
+移除回执嵌套postcheck以免绕过过滤，仅同timestep的当次Critic单独提供未验证视觉证据。
+保留legacy显式对照及全部原始记录。303项CPU回归通过，原π0.5/场景/相机未改。
+
+用上一回合4个时刻、每时刻legacy/quarantine/no_text_memory，共12次4B视觉保留NF4
+真实GPU请求；配对图像及system prompt一致，压缩视频重建，不是位精确线上重放或holdout。
+三组对两个鼠标垫外负例均误确认，两个正例均确认；移除文本记忆后依然有错误。
+本轮只证明历史模型叙述不是这些误判的必要条件，没有证明总体记忆效果或模型根因。
+12次格式通过、11次continue、1次reobserve只读建议，零机器人动作，无新成功率。
+
+主报告13.26、主计划X同步。判断可靠性与有效动作纠正仍未解决，不重跑只读整回合凑结果。
+继续以原场景下高层目标绑定/关系能力准入为前置，保留信息隔离修复，不宣称性能改善。
+实验服务已回收，无GPU计算进程。
+
+## 2026-09-18 目标绑定修复：空检测兼容修好，候选身份流程未准入
+
+证据：`artifacts/robodojo/organize_grounded_detection_20260918/README.md`。
+Grounding DINO tiny固定revision、FP32、box/text阈值0.25/NMS0.5，只用原头部RGB。
+首次10batch/20角色查询遇到两次空输出解析失败；复现本机`batch_decode([]) == ['']`，
+修复仅限空boxes/scores的单空标签，保留非空错配拒绝。第二轮同10张全部接口接受。
+两个版本全部保存，未覆盖失败结果。鼠标8张定位正确，垫3张正确/5张多候选弃权；
+另两张无目标图出现底座误检（一次located、一次unknown）。
+
+新增候选身份选择诊断，9B BF16共10次：8张整理桌面图均选中真正的鼠标垫区域，
+2张无目标图都把机器人底座认作鼠标垫；鼠标缺失时均返回unknown。未通过准入，
+不接入在线完成判断，不追加关系判断或物理回合。新模块仍为只读候选而非生产路径。
+414项CPU测试、Ruff检查通过；所有运行内source_drift为空。
+
+检测器热batch约202--233ms、峰值allocated 2.800GiB；9B加载后17.527GiB，
+身份10调用累计79.478s。分时运行，没有新量化、端到端加速、共驻留或任务收益证据。
+原始录像同回合开发帧，Codex目视参考未独立复核；不能称独立检测准确率。
+原π0.5/相机/场景/评分未变，零机器人动作；最新物理成绩仍为1000步75分、整任务失败。
+主报告13.27、主计划Y同步；GPU实验服务已退出，无关G2未恢复。
+
+## 2026-09-18 目标无关候选检查：12对完成，未达到上线门槛
+
+证据：`artifacts/robodojo/organize_target_rejection_20260918/README.md`。
+新增只读目标无关实体描述和host类型否决，只能撤销定位，不能新增坐标/动作/完成权限。
+12个检测batch后做24次Qwen3.5-9B BF16请求，交替顺序，不重试选优；6张旧开发图、
+6张既有录像的新时间点，不是独立泛化测试集。12对原图/裁剪像素集合一致，无目标名
+泄漏；另有24条实际processor视觉输入指纹。运行内源码无漂移，全部响应保留。
+
+5张无目标图中的错误定位接受2→0；5张清晰图中的两角色正确保留5→4，2张遮挡图弃权。
+新增109帧中模型名称字段已识别鼠标，却分类为scene_fixture，被类型硬过滤误伤。
+这既是模型分类不一致，也是我们的规则粒度问题，不是模型规模/量化的单一问题。
+预登记要求清晰目标全保留，未通过。该候选不接生产，停止此提示分支，不事后放宽门槛。
+
+426项CPU测试、Ruff检查通过。条件选择累计93.268s，附加盲检查174.304s，总计267.572s，
+约2.87倍原VLM耗时；含诊断指纹开销，不是性能优化成果。无动作、无新物理回合或成绩。
+主报告13.28、主计划Z同步；服务退出，无GPU计算进程，无关G2未恢复。
+
+## 2026-09-21 执行反馈审计与默认权限修复
+
+证据：`artifacts/robodojo/execution_feedback_audit_20260921/README.md`。
+最新旧回合20个动作块，8个端点能以同控制步、无中间工具动作和下一次推理状态哈希
+严格绑定。最大单关节目标误差0.016992rad、夹爪归一化误差0.033315；12块显式排除，
+不能代表全1000步轨迹、接触成功或任务完成。只读源数据无漂移，无新机器人动作。
+
+默认Critic改为advisory，真实VLM路径拒绝未准入authoritative。VLA/reobserve回执
+增加公开关节反馈，使用实际执行前缀末端；不赋予语义完成权，不改变原VLA输入或动作。
+控制步耗尽时先拒绝推理。447项相关CPU回归通过，Ruff通过；没有新GPU或仿真成绩。
+
+上游ee/IK分支存在失败时手臂目标缺失但夹爪命令继续的控制流；当前端口只走joint，
+不将此风险误写成已证实的失败根因，也不直接开放IK纠正工具。下一步单工具能力验证，
+不扩benchmark、不继续旧帧提示调参。主计划AA与主报告13.29同步，9月18日交付包不覆盖。
+
+## 2026-09-21 框架集中修复与真实反馈工具闭环
+
+证据：`artifacts/robodojo/framework_closure_20260921/README.md`。
+完成时间/观测指纹绑定、过期核验排除、Critic同输入去重、VLA调用预算（含失败请求）、
+动作成本账本及Planner预算上下文。468项相关CPU测试通过，Ruff与diff检查通过。
+
+真实检查使用官方RoboDojo organize_table/layout0/seed0、原π0.5 59999 JAX flow10/h50、
+原三相机/完整指令/关节接口，真实Qwen3-VL-4B NF4 Critic/advisory。测试驱动显式
+调用一次feedback_refresh再调用vla_act，不含自主Planner，不含脚本关节轨迹。
+生成100步，执行10+50=60步，丢弃40步；2次真实Critic、1次相同请求复用；
+第二次VLA输入由工具后的新观测绑定。10项核查全通过、源码无漂移、3路视频完整解码。
+
+这是提前结束的受控检查：官方0分/失败不能与1000步完整任务75分比较，也不算Agent
+成功率。两次Critic均inconclusive，其描述仍有错误完成关系，因此不解除advisory限制。
+执行61.083秒、全轮240.457秒；VLA冷调用35.864秒、仅1个warm样本153.35ms，不报P95。
+三路视频各62帧/25FPS/2.48秒。去重命中是主动重复输入，不是自然任务加速比例。
+
+本轮模型和仿真已结束，G2 VLM/ASR停止后未恢复。主报告13.30、主计划AB同步；
+接口可固定，语义可靠性与定向纠正仍未验证，自进化仍在规划，不启动扩展矩阵。
+
+## 2026-09-21 当前Critic信息隔离、按需调度及Qwen候选
+
+证据：`artifacts/robodojo/critic_boundary_repair_20260921/README.md`。
+修复最新advisory Critic的状态/置信度/自由描述仍进入Planner的问题；新投影只保留
+目标、时间/观测指纹、schema接受情况与固定未知通知，保留原始审计。两条旧真实回复
+重放通过。默认tool_only减少无控制用途的周期Critic调用，保留Planner及工具后核验；
+periodic显式可选。476项相关CPU测试通过，未把fixture调用9→0当成实际时延加速。
+
+原冻结32项、原提示/门槛，真实Qwen3.5-4B BF16完成32调用；清晰判断正确14/22，
+错误确认2/13、未知画面确定断言3/10，5次语义冲突被guard拒绝。不通过、不上线。
+与历史Qwen3-VL-4B BF16的32请求和图像哈希/标签一致，但不是在线NF4新配对对照。
+累计98.127秒含诊断指纹开销，不作效率结论；源文件无漂移、服务退出、无新物理动作。
+主报告13.31/主计划AC同步；旧视频/包不覆盖。本轮没有自主恢复或成功率提升证据。
+
+## 2026-09-21 Agent动作能力对标与坐标准入
+
+核查RoboDojo官方Astra L3、Astra+pi05公开代码/逐任务结果、EMERGE及已有RPent审计。
+新增只读稀疏参考仓库`third_party/gpt_as_policy_reference`，不执行上游脚本、不安装依赖。
+详情：`docs/research/ROBODOJO_AGENTIC_ACTION_GAP_20260921.md`；主计划AD。
+
+实现Pinocchio FK/SciPy数值IK和kinematics_smoke，生产动作权限不变。
+`artifacts/robodojo/robot_kinematics_admission_20260921/run01`在任何VLA动作前因Boost
+parents转换失败；改用同URDF标准XML拓扑检查，阈值不变，失败记录保留。
+run02真实原π0.5执行50步；前后双臂4项FK通过，24/28数值候选接受（含4个零位移），
+初始双臂正负X四项拒绝。0个IK动作、0个VLM调用，不是自主恢复。
+原生提前终止0分/失败，不混入完整任务统计。三路视频52帧/25FPS/2.08秒；
+冷VLA35.536秒、执行窗口50.028秒、全轮193.614秒；无稳态样本，不报P95。
+482项相关回归、17项独立运动学测试通过，源文件无漂移；本轮服务退出、GPU进程为空。
+主报告13.32同步；旧交付包不覆盖。下一步是单独验证有限运动，再接入Agent工具，
+不是再跑一次只有观察/重试的完整整理桌面回合。
+
+## 2026-09-21 原场景受限末端运动及原VLA续执行
+
+预登记：`artifacts/robodojo/robot_motion_admission_20260921/PLAN.md`。
+新增motion_probe_smoke，原organize_table场景/相机/pi05不变；原RGB目视准入记录
+绑定回合/观测。唯一GPU run01完成：保持10、右臂上移2mm十步、返回十步，均通过
+跟踪检查；再以新观测执行1次原VLA的50步。共80步、VLA1次、Planner/Critic0次。
+上移关节变化最大约0.007585rad；另一臂和夹爪保持。不是自主纠错或自动避碰证据。
+原生提前终止0分/失败；视频三路82帧/25FPS/3.28秒并完整解码。VLA冷调用35.462秒，
+执行窗口84.508秒含目视等待，全轮235.813秒；没有稳态/P95结果。运行内源代码无漂移。
+
+482项原链回归通过。新测试fixture最初缺两路相机，修正后35项通过；GPU结束后复现
+观测指纹误作命令消费ID，改独立proposal_id+消费集合，最终运动/URDF36项通过。
+后置补丁未再跑GPU，原失败测试与run01哈希保留。所有模型/仿真退出，GPU进程列表空。
+主报告13.33/主计划AE更新；生产Agent工具不自动扩权，不覆盖既有交付包。
+
+## 2026-09-21 原VLA动作提案审阅与真实Planner选择
+
+证据：`artifacts/robodojo/proposal_review_20260921/README.md`；预登记PLAN保留。
+新增不可变动作提案、robot-only FK摘要和execute_prefix_10/50工具；消费已经生成的
+原动作，不重复推理，不改指令/场景/三相机。观测/时间/ID绑定及重放拒绝有测试。
+可选proposal_review_smoke完成唯一GPU run01：2次原π0.5、2次Qwen3-VL-4B NF4 Planner，
+均选50步，共100步，0次Critic，无强制决策/修复请求。原生提前停止0分/失败，不进入
+完整任务成功率。三路视频各102帧/25FPS/4.08秒完整解码，源码运行内无漂移。
+
+协议接通但语义不可靠：第一次把未放好的鼠标/闹钟说成完成；第二次把动作执行回执
+误作摆件完成，并错误解释右臂运动。原回执为semantic_outcome=not_verified，第一条
+错误笔记未进入下一次检索。没有自主恢复/成功率提升结论，不开放自主EEF。
+
+两次VLA RPC34225.18/160.66ms（仅1个warm样本）；Planner9616.30/15582.50ms，
+预览949.03/179.88ms；执行86.55秒、全轮250.53秒；整卡采样最大23858MiB，非峰值。
+本轮不是提速证据，尤其不能把每块都VLM审阅当高效调度。全部服务退出，GPU已释放。
+
+494项回归、运动/FK最终38项通过；Ruff通过。GPU结束后修复预览夹爪单位描述，
+区分原始模型预测与执行器[0,1]限幅值，不改动作；该补丁仅CPU验证，没有GPU重跑。
+主报告13.34/主计划AF更新；下一步独立验证视觉、运动方向与回执解释，再做有限配对。
+
+## 2026-09-21 有止损条件的能力诊断：52调用后结束当前扩跑
+
+证据：`artifacts/robodojo/bounded_capability_decision_20260921/`，PLAN/manifest均在调用前固定。
+原生视频125/375/725/925头部帧与两个原腕部视野检查，共18视觉项；真实两段执行
+回执4项、FK分类4项。新时间点但同开发轨迹，不是独立布局，视觉参考尚无人独立复核。
+
+4B vision-preserving NF4与9B BF16串行各26调用，0重试，26/26 JSON有效，各0服务错误。
+清晰视觉10/13→11/13，但负例误确认1/3→2/3；不确定正确弃权4/5→1/5；执行/语义
+回执2/4→4/4；运动分类均2/4。两候选均未通过预设门槛，不切模型、不开放恢复权限。
+模型和精度同时变化，不能称为量化消融或参数量单因子对照。正确标签不认证理由。
+
+审计：请求逐项相同，无参考标签输入；每候选18图像张量+8纯文本；图像/代码/manifest
+无漂移，52调用全部保存。耗时134.54/111.43秒含张量审计，不报加速；无VLA或仿真
+共驻，0新物理动作。8项解析/评分断言通过、Ruff通过，所有模型退出，GPU计算进程为空。
+
+按停止条件不再启动这两配置的完整organize_table自主恢复/18回合矩阵，不在本组数据
+继续提示搜索，不添加规则/反思来延长工程循环。主报告13.35/主计划AG更新；需要有
+依据的视觉定位和有效纠正能力方案，而非把接入完成宣称为操作收益。历史结果保留。
+
+## 2026-09-22 整理桌面局部上下文工具：16调用后不准入
+
+证据：`artifacts/robodojo/local_inspection_20260922/`。预登记8张原图与参考后，DINO
+FP32对mouse定位8次，6张头部图可生成局部，2张腕部图无可靠定位。全图与全图加
+自动上下文裁剪各8次Qwen3-VL-4B vision-preserving NF4；文本一致、顺序交替，
+192token/45秒/温度0，无重试/JSON修复。原VLA/场景/相机/评分不改，0机器人动作。
+
+两组清晰判断均3/6、垫外鼠标误确认均3/3、未知正确弃权均0/2，JSON各8/8有效。
+无改善，不准入，停止本组crop/阈值/问法调参。参考为Codex调用前目视，不是独立
+人工/官方真值；同场景历史轨迹不是留出benchmark，不比较昨日不同prompt准确率。
+
+16条模型processor记录、22张实际输入；局部像素/paired全图/来源哈希核查通过，
+标签未传模型。51项检测测试、扩展对象记忆和工具链共104项回归通过，Ruff通过。
+模型服务均退出，GPU计算进程为空。最新完整任务仍75分失败，无新增操作收益。
+主报告13.36、计划AH更新；后续需可核查关系与有效受限动作，不再以重复长回合
+掩盖当前语义误确认。论文、旧交付包与原始仿真视频未修改。
+
+## 2026-09-22 对象辨认与图像几何分工：局部进展，未过完整准入
+
+证据：`artifacts/robodojo/relational_grounding_20260922/`。冻结8张前轮原图+2张
+无目标压力图后，10批DINO两角色检测、10次当前4B NF4身份选择；无新提示、重试
+或调参，原模型/场景不改。新增对象记忆当前帧几何接口，不接生产控制。
+
+6张清晰图选框经Codex目视检查对应目标，3个垫外/3个垫内的中心关系一致；此前
+同6图直接问VLM只对3项，属不同方法/成本的开发对照，不报成功率提升。
+原协议9/10通过，4未知例仅3个正确弃权：一例漏角色拒绝；一例同一腕部背景被识别
+成mouse与pad，两框仅差1像素。另一个无目标例pad仍误认底座。原预登记门槛失败。
+
+后置修复近同框歧义，原10响应CPU重放使腕部返回unknown；没有补角色或模型重跑，
+不以事后结果替换原门槛。原执行源码快照/哈希保留。3个负例中心边界仅3px，定位
+误差可翻转方向，下一轮须测新观察与不确定性，仍不得授权完成或任意纠正。
+
+VLM累计57.393秒、46张实际输入；检测12.873秒含加载，非共驻/部署速度证据。
+118项运行前回归、120项修复后回归通过。全部模型服务退出，无新VLA动作/任务视频。
+主报告13.37与计划AI更新：保留单条候选，追求一次有效干预，不扩任务矩阵。

@@ -134,6 +134,212 @@ class OptimizationProfile:
 
 
 @dataclasses.dataclass(frozen=True)
+class PlannerOptimizationProfile:
+    """Deployment profile for a replaceable high-level VLM planner."""
+
+    profile_id: str
+    model_id: str
+    backend: str
+    deployment_precision: str
+    prompt_schema_version: str
+    max_tokens: int
+    timeout_s: float
+    module_precisions: Mapping[str, str] = dataclasses.field(default_factory=dict)
+    preserved_modules: tuple[str, ...] = ()
+    options: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        for name in (
+            "profile_id",
+            "model_id",
+            "backend",
+            "deployment_precision",
+            "prompt_schema_version",
+        ):
+            value = str(getattr(self, name)).strip()
+            if not value:
+                raise ValueError(f"{name} must not be empty")
+            if name in {"backend", "deployment_precision"}:
+                value = value.lower()
+            object.__setattr__(self, name, value)
+        if self.max_tokens <= 0 or self.timeout_s <= 0:
+            raise ValueError("planner max_tokens and timeout_s must be positive")
+        preserved_modules = tuple(str(value).strip() for value in self.preserved_modules)
+        if any(not value for value in preserved_modules):
+            raise ValueError("preserved_modules must contain non-empty names")
+        if len(set(preserved_modules)) != len(preserved_modules):
+            raise ValueError("preserved_modules must not contain duplicates")
+        object.__setattr__(
+            self,
+            "module_precisions",
+            _normalized_mapping(self.module_precisions, lower_values=True),
+        )
+        object.__setattr__(self, "preserved_modules", preserved_modules)
+        object.__setattr__(self, "options", _normalized_mapping(self.options))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "profile_id": self.profile_id,
+            "model_id": self.model_id,
+            "backend": self.backend,
+            "deployment_precision": self.deployment_precision,
+            "prompt_schema_version": self.prompt_schema_version,
+            "max_tokens": self.max_tokens,
+            "timeout_s": self.timeout_s,
+            "module_precisions": dict(self.module_precisions),
+            "preserved_modules": list(self.preserved_modules),
+            "options": dict(self.options),
+        }
+
+    @classmethod
+    def from_dict(cls, values: Mapping[str, Any]) -> "PlannerOptimizationProfile":
+        return cls(**dict(values))
+
+
+@dataclasses.dataclass(frozen=True)
+class SystemOptimizationProfile:
+    """One admitted Planner/VLA/scheduler composition on shared hardware."""
+
+    profile_id: str
+    planner_profile_id: str
+    vla_profile_id: str
+    scheduler_policy: str
+    memory_budget_gb: float
+    fallback_planner_profile_id: str | None = None
+    fallback_vla_profile_id: str | None = None
+    options: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        for name in (
+            "profile_id",
+            "planner_profile_id",
+            "vla_profile_id",
+            "scheduler_policy",
+        ):
+            value = str(getattr(self, name)).strip()
+            if not value:
+                raise ValueError(f"{name} must not be empty")
+            object.__setattr__(self, name, value)
+        if self.memory_budget_gb <= 0:
+            raise ValueError("memory_budget_gb must be positive")
+        for name in ("fallback_planner_profile_id", "fallback_vla_profile_id"):
+            value = getattr(self, name)
+            if value is not None:
+                value = str(value).strip()
+                if not value:
+                    raise ValueError(f"{name} must be non-empty or null")
+                object.__setattr__(self, name, value)
+        if self.fallback_planner_profile_id == self.planner_profile_id:
+            raise ValueError("Planner fallback must differ from the primary profile")
+        if self.fallback_vla_profile_id == self.vla_profile_id:
+            raise ValueError("VLA fallback must differ from the primary profile")
+        object.__setattr__(self, "options", _normalized_mapping(self.options))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "profile_id": self.profile_id,
+            "planner_profile_id": self.planner_profile_id,
+            "vla_profile_id": self.vla_profile_id,
+            "scheduler_policy": self.scheduler_policy,
+            "memory_budget_gb": self.memory_budget_gb,
+            "fallback_planner_profile_id": self.fallback_planner_profile_id,
+            "fallback_vla_profile_id": self.fallback_vla_profile_id,
+            "options": dict(self.options),
+        }
+
+    @classmethod
+    def from_dict(cls, values: Mapping[str, Any]) -> "SystemOptimizationProfile":
+        return cls(**dict(values))
+
+
+@dataclasses.dataclass(frozen=True)
+class PlannerBenchmarkReport:
+    """Semantic, capacity, and co-resident timing evidence for one planner."""
+
+    samples: int
+    schema_valid_rate: float
+    intent_valid_rate: float
+    reference_agreement_rate: float
+    latency_p50_ms: float
+    latency_p95_ms: float
+    timeout_rate: float
+    co_resident_vla_p95_ms: float
+    co_resident_vla_deadline_miss_rate: float
+    unsafe_intervention_rate: float
+    fail_closed_rate: float
+    peak_vram_gb: float | None = None
+    metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.samples <= 0:
+            raise ValueError("samples must be positive")
+        rates = (
+            self.schema_valid_rate,
+            self.intent_valid_rate,
+            self.reference_agreement_rate,
+            self.timeout_rate,
+            self.co_resident_vla_deadline_miss_rate,
+            self.unsafe_intervention_rate,
+            self.fail_closed_rate,
+        )
+        if any(not 0.0 <= value <= 1.0 for value in rates):
+            raise ValueError("planner benchmark rates must be in [0, 1]")
+        if min(
+            self.latency_p50_ms,
+            self.latency_p95_ms,
+            self.co_resident_vla_p95_ms,
+        ) < 0:
+            raise ValueError("planner benchmark latencies must be non-negative")
+        if self.peak_vram_gb is not None and self.peak_vram_gb < 0:
+            raise ValueError("peak_vram_gb must be non-negative")
+        object.__setattr__(self, "metadata", _normalized_mapping(self.metadata))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **dataclasses.asdict(self),
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclasses.dataclass(frozen=True)
+class CoResidentBenchmarkReport:
+    """Shared-GPU evidence for one Planner/VLA/scheduler composition."""
+
+    samples: int
+    peak_vram_gb: float
+    planner_latency_p95_ms: float
+    vla_latency_p95_ms: float
+    vla_deadline_miss_rate: float
+    planner_timeout_rate: float
+    unsafe_intervention_rate: float
+    metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.samples <= 0:
+            raise ValueError("samples must be positive")
+        if min(
+            self.peak_vram_gb,
+            self.planner_latency_p95_ms,
+            self.vla_latency_p95_ms,
+        ) < 0:
+            raise ValueError("co-resident memory and latencies must be non-negative")
+        for value in (
+            self.vla_deadline_miss_rate,
+            self.planner_timeout_rate,
+            self.unsafe_intervention_rate,
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError("co-resident rates must be in [0, 1]")
+        object.__setattr__(self, "metadata", _normalized_mapping(self.metadata))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            **dataclasses.asdict(self),
+            "metadata": dict(self.metadata),
+        }
+
+
+@dataclasses.dataclass(frozen=True)
 class HardwareSpec:
     """Hardware identity used to prevent accidental profile reuse."""
 

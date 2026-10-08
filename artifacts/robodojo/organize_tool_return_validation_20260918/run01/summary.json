@@ -1,0 +1,162 @@
+{
+  "completed": true,
+  "agent_enabled": true,
+  "run_id": "2026-09-18_14-49-05_agent_on",
+  "critic_authority": "advisory",
+  "official_result_path": "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/AgenticPi05/arx_x5/0_official_pi05_conservative/2026-09-18_14-49-05_agent_on/_result.json",
+  "official_result": {
+    "success_rate": 0.0,
+    "eval_time": 1,
+    "score": 75.0,
+    "details": {
+      "0": {
+        "layout_id": 0,
+        "success": false,
+        "score": 0.75,
+        "policy_reset_receipt": null
+      }
+    }
+  },
+  "execution_summary_path": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/organize_tool_return_validation_20260918/run01/sessions/2026-09-18_14-49-05_agent_on/execution_summary.json",
+  "execution_summary": {
+    "agent_enabled": true,
+    "observation_reads": 1001,
+    "task": "organize_table",
+    "control_steps": 1000,
+    "vla_calls": 20,
+    "vla_control_steps": 999,
+    "interrupted_chunks": 0,
+    "inference_wall_ms": [
+      36158.814588999914,
+      164.58816700003354,
+      185.7238080000343,
+      162.02346700004,
+      159.99972700001308,
+      167.2884319999639,
+      185.35860600002252,
+      178.96085799998218,
+      180.85507699993286,
+      175.79543399995146,
+      166.78718700006812,
+      180.56480800009922,
+      168.2087419999334,
+      181.0361960000364,
+      160.28545599999688,
+      182.1909450000021,
+      166.25933199998144,
+      158.44670799992855,
+      154.14906099999826,
+      150.819441999829
+    ],
+    "critic": {
+      "calls": 9,
+      "accepted_calls": 9,
+      "total_latency_ms": 24852.801907000074,
+      "mean_latency_ms": 2761.4224341111194
+    },
+    "stopped": false,
+    "execution_config": {
+      "agent_enabled": true,
+      "semantic_interval_steps": 100,
+      "critic_call_budget": 12,
+      "max_consecutive_rejections": 2,
+      "subgoal_conditioning_admitted": false,
+      "memory_enabled": true,
+      "critic_authority": "advisory",
+      "critic_camera_mode": "head",
+      "critic_protocol": "legacy",
+      "compact_task_only_review": true,
+      "feedback_refresh_enabled": true,
+      "feedback_prefix_steps": 10
+    },
+    "skill_calls": 1,
+    "feedback_postchecks": 0,
+    "tool_return_reviews": 1,
+    "task_plan": {
+      "installed": true,
+      "completed": false,
+      "active_stage": "1",
+      "steps": [
+        {
+          "stage": "1",
+          "intent": "vla_act",
+          "subgoal": "place the mouse on the mouse pad",
+          "expected_outcome": "The requested operation is completed: place the mouse on the mouse pad",
+          "skill_id": null,
+          "constraints": [],
+          "status": "active",
+          "attempts": 20,
+          "verification": null
+        },
+        {
+          "stage": "2",
+          "intent": "vla_act",
+          "subgoal": "push the keyboard into the frame",
+          "expected_outcome": "The requested operation is completed: push the keyboard into the frame",
+          "skill_id": null,
+          "constraints": [],
+          "status": "pending",
+          "attempts": 0,
+          "verification": null
+        },
+        {
+          "stage": "3",
+          "intent": "vla_act",
+          "subgoal": "put the figurine on the stand",
+          "expected_outcome": "The requested operation is completed: put the figurine on the stand",
+          "skill_id": null,
+          "constraints": [],
+          "status": "pending",
+          "attempts": 0,
+          "verification": null
+        },
+        {
+          "stage": "4",
+          "intent": "vla_act",
+          "subgoal": "place the alarm clock on the drawer",
+          "expected_outcome": "The requested operation is completed: place the alarm clock on the drawer",
+          "skill_id": null,
+          "constraints": [],
+          "status": "pending",
+          "attempts": 0,
+          "verification": null
+        },
+        {
+          "stage": "5",
+          "intent": "vla_act",
+          "subgoal": "open the drawer",
+          "expected_outcome": "The requested operation is completed: open the drawer",
+          "skill_id": null,
+          "constraints": [],
+          "status": "pending",
+          "attempts": 0,
+          "verification": null
+        },
+        {
+          "stage": "6",
+          "intent": "vla_act",
+          "subgoal": "put all remaining miscellaneous items inside",
+          "expected_outcome": "full task visibly satisfied: place the mouse on the mouse pad, push the keyboard into the frame, put the figurine on the stand, place the alarm clock on the drawer, then open the drawer and put all remaining miscellaneous items inside.",
+          "skill_id": null,
+          "constraints": [],
+          "status": "pending",
+          "attempts": 0,
+          "verification": null
+        }
+      ]
+    },
+    "stop_reason": "",
+    "wall_seconds": 428.59735797999997,
+    "official_success": null,
+    "official_score": null,
+    "scope": "framework execution trace; scores must come from the official evaluator",
+    "native_early_stop_finalized": false
+  },
+  "videos": [
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/AgenticPi05/arx_x5/0_official_pi05_conservative/2026-09-18_14-49-05_agent_on/episode_0000000_cam_head_fail.mp4",
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/AgenticPi05/arx_x5/0_official_pi05_conservative/2026-09-18_14-49-05_agent_on/episode_0000000_cam_left_wrist_fail.mp4",
+    "/home/admin1/ct/CARVE-VLA/third_party/robodojo_official/eval_result/RoboDojo/organize_table/AgenticPi05/arx_x5/0_official_pi05_conservative/2026-09-18_14-49-05_agent_on/episode_0000000_cam_right_wrist_fail.mp4"
+  ],
+  "wall_seconds": 619.89275062,
+  "source_drift": []
+}

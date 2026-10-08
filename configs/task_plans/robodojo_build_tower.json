@@ -1,0 +1,44 @@
+{
+  "schema_version": "carve.verified-task-plan.v1",
+  "plan_id": "robodojo-build-tower-v1",
+  "task_instruction": "Build a tower using the wooden blocks and wooden boards.",
+  "source": "verified_procedural_memory",
+  "steps": [
+    {
+      "stage": "base",
+      "intent": "vla_act",
+      "subgoal": "assemble the stable lower tower base",
+      "vla_instruction": "build the lower base with two upright wooden blocks supporting one wooden board",
+      "expected_outcome": "one horizontal wooden board is stably supported by two upright wooden blocks at the lower level",
+      "skill_id": null,
+      "constraints": [
+        "preserve any visibly completed structure",
+        "use only wooden task pieces"
+      ]
+    },
+    {
+      "stage": "middle",
+      "intent": "vla_act",
+      "subgoal": "assemble the supported middle tower level",
+      "vla_instruction": "build the middle level with two upright wooden blocks supporting a second wooden board on the base",
+      "expected_outcome": "a second horizontal wooden board is stably supported above the lower board by two upright wooden blocks",
+      "skill_id": null,
+      "constraints": [
+        "do not disturb the completed lower base",
+        "keep the middle board centered over its supports"
+      ]
+    },
+    {
+      "stage": "top",
+      "intent": "vla_act",
+      "subgoal": "complete and align the top tower structure",
+      "vla_instruction": "complete the top using the remaining rectangular wooden piece and top cube without disturbing lower levels",
+      "expected_outcome": "the remaining rectangular wooden piece and top cube are centered and stacked above the middle board, completing the tower",
+      "skill_id": null,
+      "constraints": [
+        "preserve the completed base and middle levels",
+        "finish with a stable aligned top"
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from agentic_vla.runtime import PolicyAdapter
@@ -53,6 +53,14 @@ class TorchAOInt8Backend(BackendPlugin):
         import torch
 
         return torch.compile(function, **kwargs)
+
+    def _sample_actions_for_compile(
+        self,
+        torch_model: Any,
+        profile: OptimizationProfile,
+    ) -> tuple[Callable[..., Any], dict[str, Any]]:
+        del profile
+        return torch_model.sample_actions, {}
 
     def prepare(
         self,
@@ -126,7 +134,10 @@ class TorchAOInt8Backend(BackendPlugin):
         compile_options: dict[str, Any] = {"mode": mode, "fullgraph": fullgraph}
         if dynamic_value is not None:
             compile_options["dynamic"] = dynamic_value
-        policy._sample_actions = self._compile(torch_model.sample_actions, **compile_options)
+        sample_actions, sampler_metadata = self._sample_actions_for_compile(
+            torch_model, profile
+        )
+        policy._sample_actions = self._compile(sample_actions, **compile_options)
 
         return PreparedPolicy(
             adapter=adapter,
@@ -140,5 +151,61 @@ class TorchAOInt8Backend(BackendPlugin):
                 "quantized_linear_count": len(matched_names),
                 "compile_options": compile_options,
                 "source_adapter_unchanged": False,
+                **sampler_metadata,
             },
         )
+
+
+class TorchAOInt8MaskedViewBackend(TorchAOInt8Backend):
+    """Compose component INT8 with contract-checked padded-view elision."""
+
+    _OPTIONS = TorchAOInt8Backend._OPTIONS | {
+        "image_view_order",
+        "elided_image_views",
+        "elided_image_indices",
+    }
+
+    def __init__(
+        self,
+        *,
+        quantize_fn: Callable[..., Any] | None = None,
+        config_factory: Callable[[], Any] | None = None,
+        compile_fn: Callable[..., Any] | None = None,
+        sampler_factory: Callable[[Any, Sequence[int]], Callable[..., Any]] | None = None,
+    ) -> None:
+        super().__init__(
+            quantize_fn=quantize_fn,
+            config_factory=config_factory,
+            compile_fn=compile_fn,
+        )
+        if sampler_factory is None:
+            from .masked_views import build_masked_view_sample_actions
+
+            sampler_factory = build_masked_view_sample_actions
+        self._sampler_factory = sampler_factory
+
+    @property
+    def backend_id(self) -> str:
+        return "torchao_int8_masked_views"
+
+    def _sample_actions_for_compile(
+        self,
+        torch_model: Any,
+        profile: OptimizationProfile,
+    ) -> tuple[Callable[..., Any], dict[str, Any]]:
+        from .masked_views import _resolve_elision_plan
+
+        indices, view_contract = _resolve_elision_plan(profile.options)
+        return self._sampler_factory(torch_model, indices), {
+            "transform": (
+                "torchao.int8_weight_only+static_masked_view_elision+torch.compile"
+            ),
+            "elided_image_indices": list(indices),
+            "elided_image_views": (
+                list(view_contract.masked_views) if view_contract is not None else None
+            ),
+            "input_view_contract": (
+                view_contract.to_dict() if view_contract is not None else None
+            ),
+            "mask_contract": "all_batch_entries_false",
+        }

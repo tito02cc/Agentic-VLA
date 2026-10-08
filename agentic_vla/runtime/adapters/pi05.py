@@ -144,7 +144,10 @@ class Pi05Adapter(PolicyAdapter):
         payload = self._request_encoder(request)
         call_kwargs: dict[str, Any] = {}
         if "noise" in request.metadata:
-            call_kwargs["noise"] = request.metadata["noise"]
+            if isinstance(self._sample_kwargs, MutableMapping):
+                call_kwargs["noise"] = request.metadata["noise"]
+            else:
+                payload["runtime_noise"] = request.metadata["noise"]
 
         with self._lock:
             previous_steps: Any = None
@@ -222,6 +225,14 @@ class LegacyPolicyClientBridge:
             controls = InferenceControls()
 
         trace_context = payload.get("runtime_trace_context")
+        trace_mapping = trace_context if isinstance(trace_context, Mapping) else {}
+        risk_mapping = trace_mapping.get("risk")
+        risk_mapping = risk_mapping if isinstance(risk_mapping, Mapping) else {}
+        evidence_mapping = risk_mapping.get("evidence")
+        evidence_mapping = (
+            evidence_mapping if isinstance(evidence_mapping, Mapping) else {}
+        )
+        action_age_steps = evidence_mapping.get("action_age_steps")
         clean_payload = {
             key: value
             for key, value in payload.items()
@@ -244,7 +255,8 @@ class LegacyPolicyClientBridge:
             ),
             metadata={
                 "raw_payload": clean_payload,
-                "trace_context": trace_context if isinstance(trace_context, Mapping) else {},
+                "trace_context": trace_mapping,
+                "action_age_steps": action_age_steps,
             },
         )
         return self.runtime.infer(request).as_legacy_output()

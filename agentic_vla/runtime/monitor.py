@@ -15,10 +15,15 @@ class MonitorConfig:
     """Thresholds for an auditable, training-free execution monitor."""
 
     window_size: int = 4
+    warmup_steps: int = 0
     command_threshold: float = 0.03
     state_response_threshold: float = 0.002
     visual_response_threshold: float = 0.004
     stale_action_steps: int = 8
+    no_progress_steps: int | None = None
+    idle_command_threshold: float = 0.01
+    idle_state_response_threshold: float = 0.015
+    idle_visual_response_threshold: float = 0.004
     low_slack_ms: float = 30.0
     stall_weight: float = 0.45
     staleness_weight: float = 0.20
@@ -28,8 +33,19 @@ class MonitorConfig:
     def __post_init__(self) -> None:
         if self.window_size < 2:
             raise ValueError("window_size must be at least 2")
+        if self.warmup_steps < 0:
+            raise ValueError("warmup_steps must be non-negative")
         if self.stale_action_steps <= 0:
             raise ValueError("stale_action_steps must be positive")
+        if self.no_progress_steps is not None and self.no_progress_steps <= 0:
+            raise ValueError("no_progress_steps must be positive or disabled")
+        idle_thresholds = (
+            self.idle_command_threshold,
+            self.idle_state_response_threshold,
+            self.idle_visual_response_threshold,
+        )
+        if any(value < 0 for value in idle_thresholds):
+            raise ValueError("idle thresholds must be non-negative")
         weights = (
             self.stall_weight,
             self.staleness_weight,
@@ -66,6 +82,8 @@ class ExecutionRiskMonitor:
         self._previous_frame: np.ndarray | None = None
         self._last_event: str | None = None
         self._event_streak = 0
+        self._idle_streak = 0
+        self._updates = 0
 
     def reset(self) -> None:
         self._commands.clear()
@@ -75,6 +93,8 @@ class ExecutionRiskMonitor:
         self._previous_frame = None
         self._last_event = None
         self._event_streak = 0
+        self._idle_streak = 0
+        self._updates = 0
 
     @staticmethod
     def _vector(value: Any) -> np.ndarray:
@@ -129,8 +149,12 @@ class ExecutionRiskMonitor:
         self._visual_responses.append(visual_response)
         self._previous_state = state.copy()
         self._previous_frame = None if image is None else image.copy()
+        self._updates += 1
 
-        warm = len(self._commands) >= self.config.window_size
+        warm = bool(
+            len(self._commands) >= self.config.window_size
+            and self._updates > self.config.warmup_steps
+        )
         mean_command = float(np.mean(self._commands))
         mean_state_response = float(np.mean(self._state_responses))
         mean_visual_response = float(np.mean(self._visual_responses))
@@ -141,7 +165,22 @@ class ExecutionRiskMonitor:
             and (image is None or mean_visual_response < self.config.visual_response_threshold)
         )
 
+        idle = bool(
+            warm
+            and self.config.no_progress_steps is not None
+            and mean_command < self.config.idle_command_threshold
+            and mean_state_response < self.config.idle_state_response_threshold
+            and (image is None or mean_visual_response < self.config.idle_visual_response_threshold)
+        )
+        self._idle_streak = self._idle_streak + 1 if idle else 0
+        no_progress = bool(
+            self.config.no_progress_steps is not None
+            and self._idle_streak >= self.config.no_progress_steps
+        )
+
         stall_risk = 1.0 if stalled else 0.0
+        no_progress_risk = 1.0 if no_progress else 0.0
+        movement_risk = max(stall_risk, no_progress_risk)
         staleness_risk = min(1.0, action_age_steps / self.config.stale_action_steps)
         uncertainty_risk = 0.0 if uncertainty is None else min(1.0, max(0.0, float(uncertainty)))
         if deadline_slack_ms is None:
@@ -161,12 +200,20 @@ class ExecutionRiskMonitor:
             dtype=np.float64,
         )
         values = np.asarray(
-            [stall_risk, staleness_risk, uncertainty_risk, deadline_risk],
+            [movement_risk, staleness_risk, uncertainty_risk, deadline_risk],
             dtype=np.float64,
         )
         score = float(np.dot(weights, values) / weights.sum())
         bucket = "high" if score >= 0.65 else "medium" if score >= 0.35 else "low"
-        event = "stall" if stalled else "stale_action" if staleness_risk >= 1.0 else None
+        event = (
+            "stall"
+            if stalled
+            else "no_progress"
+            if no_progress
+            else "stale_action"
+            if staleness_risk >= 1.0
+            else None
+        )
         if event is not None and event == self._last_event:
             self._event_streak += 1
         elif event is not None:
@@ -180,16 +227,22 @@ class ExecutionRiskMonitor:
             event=event,
             components={
                 "stall": stall_risk,
+                "no_progress": no_progress_risk,
                 "staleness": staleness_risk,
                 "uncertainty": uncertainty_risk,
                 "deadline": deadline_risk,
             },
             evidence={
                 "window_ready": warm,
+                "warmup_steps_remaining": max(
+                    0,
+                    self.config.warmup_steps - self._updates + 1,
+                ),
                 "mean_command": mean_command,
                 "mean_state_response": mean_state_response,
                 "mean_visual_response": mean_visual_response,
                 "action_age_steps": int(action_age_steps),
+                "idle_streak": self._idle_streak,
                 "deadline_slack_ms": deadline_slack_ms,
                 "event_streak": self._event_streak,
             },

@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-tokens", type=int, default=12)
     parser.add_argument(
         "--semantic-protocol",
-        choices=("label_v1", "code_v2"),
+        choices=("label_v1", "code_v2", "code_v3", "code_v4", "code_v5"),
         default="label_v1",
     )
     parser.add_argument("--timeout-sec", type=float, default=30.0)
@@ -138,7 +138,11 @@ def main() -> int:
         "severe_intervention_recall": metrics["severe_intervention_recall"] >= gates["severe_intervention_recall_min"],
     }
     payload = {
-        "gate": "CARVE semantic intervention precision",
+        "gate": (
+            "CARVE semantic plan-validity precision"
+            if args.semantic_protocol in {"code_v3", "code_v4", "code_v5"}
+            else "CARVE semantic intervention precision"
+        ),
         "model": args.model,
         "max_tokens": int(args.max_tokens),
         "semantic_protocol": str(args.semantic_protocol),
@@ -157,12 +161,21 @@ def main() -> int:
     markdown_path.write_text(
         "\n".join(
             [
-                "# CARVE Semantic Precision Gate",
+                (
+                    "# CARVE Semantic Plan-Validity Gate"
+                    if args.semantic_protocol in {"code_v3", "code_v4", "code_v5"}
+                    else "# CARVE Semantic Precision Gate"
+                ),
                 "",
                 "## Protocol",
                 "",
                 f"- Samples: `{metrics['samples']}` temporal pairs.",
-                "- Hard labels: no-op should remain nominal; severe displacement should trigger intervention.",
+                (
+                    "- Hard labels: no-op should preserve the existing plan; severe "
+                    "task-object displacement should invalidate it."
+                    if args.semantic_protocol in {"code_v3", "code_v4", "code_v5"}
+                    else "- Hard labels: no-op should remain nominal; severe displacement should trigger intervention."
+                ),
                 "- Mild displacement is a gray zone and is reported without a pass/fail target.",
                 "- The VLM receives only before/after RGB, task text, and a generic deployable anomaly signal.",
                 "",

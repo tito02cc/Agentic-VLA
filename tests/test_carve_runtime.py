@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import pathlib
 import tempfile
@@ -20,8 +21,11 @@ from agentic_vla.runtime import (
     ExecutionMode,
     DeadlineAwareSemanticScheduler,
     ExecutionRiskMonitor,
+    FailureEpisodeRecord,
+    FailureMemory,
     InferenceControls,
     InferenceRequest,
+    JointControllerConfig,
     JointRecoveryComputeController,
     JsonlTraceSink,
     MonitorConfig,
@@ -29,6 +33,7 @@ from agentic_vla.runtime import (
     PrefetchDutyCycle,
     RecoveryContext,
     RecoveryMemory,
+    RecoverySkillRegistry,
     RecoveryStatus,
     RiskAssessment,
     RiskDeadlineController,
@@ -38,6 +43,7 @@ from agentic_vla.runtime import (
     StatefulRecoveryExecutor,
     UnsupportedControlError,
     build_cartesian_retreat_plan,
+    build_release_retreat_plan,
 )
 from agentic_vla.runtime.adapters import LegacyPolicyClientBridge, Pi05Adapter
 from agentic_vla.experiments import (
@@ -323,7 +329,7 @@ class CarveRuntimeTest(unittest.TestCase):
             controls=InferenceControls(inference_steps=2, max_actions=3),
             episode_id="episode-1",
             timestep=4,
-            metadata={"noise": "fixed-noise"},
+            metadata={"noise": "fixed-noise", "action_age_steps": 3},
         )
 
         chunk = runtime.infer(request)
@@ -337,6 +343,11 @@ class CarveRuntimeTest(unittest.TestCase):
         self.assertEqual(runtime.last_trace.applied_controls["inference_steps"], 2)
         self.assertEqual(runtime.last_trace.dropped_controls, ())
         self.assertEqual(runtime.last_trace.model_latency_ms, 12.5)
+        self.assertGreaterEqual(
+            runtime.last_trace.reaction_latency_ms,
+            runtime.last_trace.runtime_latency_ms,
+        )
+        self.assertEqual(runtime.last_trace.action_age_steps, 3)
 
     def test_remote_client_gracefully_drops_native_step_control(self) -> None:
         policy = FakeRemotePi05()
@@ -352,6 +363,22 @@ class CarveRuntimeTest(unittest.TestCase):
         self.assertEqual(chunk.action_count, 2)
         self.assertEqual(runtime.last_trace.dropped_controls, ("inference_steps",))
         self.assertIsNone(runtime.last_trace.applied_controls["inference_steps"])
+
+    def test_remote_pi05_sends_fixed_noise_in_payload(self) -> None:
+        policy = FakeControlledRemotePi05()
+        runtime = CarveRuntime(Pi05Adapter(policy), fallback_mode="strict")
+        noise = np.zeros((10, 32), dtype=np.float32)
+
+        runtime.infer(
+            InferenceRequest(
+                observation={},
+                instruction="move",
+                controls=InferenceControls(inference_steps=2),
+                metadata={"noise": noise},
+            )
+        )
+
+        np.testing.assert_array_equal(policy.payloads[0]["runtime_noise"], noise)
 
     def test_controlled_remote_applies_native_step_control(self) -> None:
         policy = FakeControlledRemotePi05()
@@ -529,6 +556,10 @@ class CarveRuntimeTest(unittest.TestCase):
             recovery_attempts=0,
         )
         self.assertEqual(recovery.mode, ExecutionMode.RECOVERY)
+        self.assertEqual(
+            recovery.recovery_skill_id,
+            "release_retract_lift_reobserve",
+        )
 
         unsupported_collision = type(risk)(
             score=0.9,
@@ -543,6 +574,112 @@ class CarveRuntimeTest(unittest.TestCase):
             deadline_slack_ms=50.0,
         )
         self.assertEqual(collision_decision.mode, ExecutionMode.ACCURATE_VLA)
+
+    def test_deployable_monitor_suppresses_startup_stall_during_warmup(self) -> None:
+        monitor = ExecutionRiskMonitor(
+            MonitorConfig(
+                window_size=3,
+                warmup_steps=4,
+                stall_weight=1.0,
+                staleness_weight=0.0,
+                uncertainty_weight=0.0,
+                deadline_weight=0.0,
+            )
+        )
+
+        risks = [
+            monitor.update(
+                proprio=np.zeros(8),
+                commanded_action=np.asarray([0.2] * 6 + [0.0]),
+                frame=np.zeros((8, 8, 3), dtype=np.uint8),
+            )
+            for _ in range(5)
+        ]
+
+        self.assertTrue(all(risk.event is None for risk in risks[:4]))
+        self.assertEqual(risks[3].evidence["warmup_steps_remaining"], 1)
+        self.assertEqual(risks[4].event, "stall")
+
+    def test_monitor_detects_sustained_no_progress_without_misclassifying_stall(self) -> None:
+        monitor = ExecutionRiskMonitor(
+            MonitorConfig(
+                window_size=3,
+                no_progress_steps=4,
+                idle_command_threshold=0.01,
+                idle_state_response_threshold=0.02,
+                idle_visual_response_threshold=0.01,
+            )
+        )
+
+        risks = [
+            monitor.update(
+                proprio=np.full(8, index * 0.001, dtype=np.float32),
+                commanded_action=np.full(8, 0.001, dtype=np.float32),
+                frame=np.zeros((8, 8, 3), dtype=np.uint8),
+            )
+            for index in range(7)
+        ]
+
+        self.assertTrue(all(risk.event is None for risk in risks[:5]))
+        self.assertEqual(risks[5].event, "no_progress")
+        self.assertEqual(risks[5].evidence["idle_streak"], 4)
+        self.assertEqual(risks[5].components["stall"], 0.0)
+        self.assertEqual(risks[5].components["no_progress"], 1.0)
+
+    def test_no_progress_escalates_to_semantic_planner_without_physical_recovery(self) -> None:
+        controller = JointRecoveryComputeController()
+        first = RiskAssessment(
+            score=0.45,
+            bucket="medium",
+            event="no_progress",
+            evidence={"event_streak": 1},
+            components={"no_progress": 1.0},
+        )
+        repeated = dataclasses.replace(first, evidence={"event_streak": 2})
+
+        replan = controller.decide(
+            first,
+            deadline_ms=350.0,
+            deadline_slack_ms=100.0,
+            planner_available=True,
+        )
+        escalate = controller.decide(
+            repeated,
+            deadline_ms=350.0,
+            deadline_slack_ms=100.0,
+            planner_available=True,
+        )
+
+        self.assertEqual(replan.mode, ExecutionMode.ACCURATE_VLA)
+        self.assertEqual(escalate.mode, ExecutionMode.PLANNER)
+        self.assertIsNone(escalate.recovery_skill_id)
+
+    def test_joint_controller_can_disable_request_level_inference_steps(self) -> None:
+        controller = JointRecoveryComputeController(
+            JointControllerConfig(
+                fast_inference_steps=None,
+                accurate_inference_steps=None,
+                low_risk_commit=25,
+                high_risk_commit=5,
+            )
+        )
+        risk = RiskAssessment(
+            score=0.0,
+            bucket="low",
+            event=None,
+            evidence={},
+            components={},
+        )
+
+        decision = controller.decide(
+            risk,
+            deadline_ms=100.0,
+            deadline_slack_ms=100.0,
+        )
+
+        self.assertEqual(decision.mode, ExecutionMode.FAST_VLA)
+        self.assertIsNone(decision.controls.inference_steps)
+        self.assertEqual(decision.controls.max_actions, 25)
 
     def test_confirmed_stall_exhaustion_escalates_or_stops(self) -> None:
         risk = RiskAssessment(
@@ -616,6 +753,104 @@ class CarveRuntimeTest(unittest.TestCase):
         self.assertEqual(outcome.actions_executed, 12)
         self.assertTrue(outcome.request_replan)
         self.assertEqual(memory.success_rate(trigger_event="stall", skill_id=plan.skill_id), 1.0)
+        self.assertEqual(plan.verification_rule, "reobserve_and_confirm_progress")
+        self.assertTrue(plan.safe_hold_on_failure)
+        self.assertGreater(plan.timeout_s, 0.0)
+
+    def test_recovery_registry_builds_release_skill_with_open_gripper(self) -> None:
+        spec = ActionSpec(
+            action_dim=7,
+            representation="normalized_delta_cartesian_pose",
+            coordinate_frame="robot_base",
+            gripper_convention="-1=close,+1=open",
+            control_frequency_hz=20.0,
+            minimum=-1.0,
+            maximum=1.0,
+        )
+        registry = RecoverySkillRegistry.with_default_skills()
+
+        plan = registry.build(
+            "release_retract_lift_reobserve",
+            spec,
+            [0.2, -0.1, -0.2, 0.0, 0.0, 0.0, -1.0],
+        )
+
+        self.assertEqual(
+            registry.skill_ids,
+            (
+                "cartesian_retract_lift_reobserve",
+                "release_retract_lift_reobserve",
+            ),
+        )
+        self.assertEqual(plan.skill_id, "release_retract_lift_reobserve")
+        self.assertTrue(
+            all(action[-1] == 1.0 for phase in plan.phases for action in phase.actions)
+        )
+        self.assertEqual(plan.action_count, 12)
+
+    def test_release_recovery_builder_requires_open_gripper_contract(self) -> None:
+        spec = ActionSpec(
+            action_dim=7,
+            representation="normalized_delta_cartesian_pose",
+            coordinate_frame="robot_base",
+            gripper_convention="0=open,1=close",
+            control_frequency_hz=20.0,
+            minimum=-1.0,
+            maximum=1.0,
+        )
+
+        with self.assertRaisesRegex(ValueError, "gripper convention"):
+            build_release_retreat_plan(spec, [0.0] * 7)
+
+    def test_failure_memory_filters_expired_structured_evidence(self) -> None:
+        memory = FailureMemory(max_records=3)
+        shared = {
+            "episode_id": "episode-memory",
+            "task": "place the mug on the plate",
+            "subgoal": "grasp mug",
+            "policy_id": "pi05-base",
+            "deployment_profile_id": "bf16-2step-h10",
+            "failure_type": "misgrasp",
+            "monitor_evidence": {"progress": 0.0, "event_streak": 3},
+            "action_age_steps": 1,
+            "intervention": "cartesian_retract_lift_reobserve",
+            "retry_budget_consumed": 1,
+            "recovery_budget_consumed": 1,
+            "verification_result": "object_not_lifted",
+            "terminal_outcome": "failed",
+            "confidence": 0.8,
+        }
+        expired = FailureEpisodeRecord(
+            context_fingerprint="scene-a",
+            created_at_s=100.0,
+            expires_at_s=110.0,
+            **shared,
+        )
+        active = FailureEpisodeRecord(
+            context_fingerprint="scene-a",
+            created_at_s=101.0,
+            expires_at_s=120.0,
+            **shared,
+        )
+        other = FailureEpisodeRecord(
+            context_fingerprint="scene-b",
+            created_at_s=102.0,
+            expires_at_s=120.0,
+            **shared,
+        )
+        memory.record(expired)
+        memory.record(active)
+        memory.record(other)
+
+        records = memory.retrieve(
+            context_fingerprint="scene-a",
+            failure_type="misgrasp",
+            now_s=115.0,
+        )
+
+        self.assertEqual(records, (active,))
+        self.assertEqual(len(memory), 3)
+        self.assertNotIn("actions", active.to_dict())
 
     def test_cartesian_recovery_projects_finite_seed_to_action_bounds(self) -> None:
         spec = ActionSpec(

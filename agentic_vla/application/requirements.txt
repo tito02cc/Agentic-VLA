@@ -1,0 +1,12 @@
+# Optional CPU-only application environment, tested with Python 3.13.
+# Do not install into the StarVLA, RoboDojo, or OpenPI environments.
+langgraph==1.2.11
+fastapi==0.141.1
+uvicorn==0.52.4
+httpx==0.28.1
+pydantic==2.13.5
+numpy==2.5.3
+pillow==12.3.0
+pyyaml==6.0.3
+pytest==9.1.1
+ruff==0.16.6

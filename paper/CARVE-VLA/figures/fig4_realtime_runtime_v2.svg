@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="780" viewBox="0 0 1900 780">
+  <defs>
+    <style>
+      .title{font:700 29px "Liberation Sans",Arial,sans-serif;fill:#172033}
+      .lane{font:700 23px "Liberation Sans",Arial,sans-serif}
+      .head{font:700 18px "Liberation Sans",Arial,sans-serif;fill:#171c24}
+      .txt{font:16px "Liberation Sans",Arial,sans-serif;fill:#2d3440}
+      .sub{font:italic 15px "Liberation Sans",Arial,sans-serif;fill:#4a5260}
+      .purple{fill:none;stroke:#6c36b2;stroke-width:2.5;marker-end:url(#p)}
+      .black{fill:none;stroke:#18212a;stroke-width:2.3;marker-end:url(#a)}
+      .red{fill:none;stroke:#b62d24;stroke-width:2.3;marker-end:url(#r)}
+    </style>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#18212a"/></marker>
+    <marker id="p" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#6c36b2"/></marker>
+    <marker id="r" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#b62d24"/></marker>
+  </defs>
+  <rect width="1900" height="780" fill="#fff"/>
+  <text x="950" y="42" text-anchor="middle" class="title">Optimize Runtime: Evidence-gated Deployment and Reaction-time Accounting</text>
+
+  <!-- Offline admission -->
+  <rect x="30" y="72" width="1840" height="278" rx="18" fill="#faf7ff" stroke="#6c36b2" stroke-width="2"/>
+  <text x="60" y="108" class="lane" fill="#6c36b2">Offline profile admission</text>
+
+  <rect x="60" y="136" width="275" height="150" rx="12" fill="#fff" stroke="#6c36b2"/>
+  <text x="198" y="169" text-anchor="middle" class="head">Candidate Profile</text>
+  <text x="198" y="200" text-anchor="middle" class="txt">checkpoint + adapter + hardware</text>
+  <text x="198" y="228" text-anchor="middle" class="txt">backend + precision + controls</text>
+  <text x="198" y="256" text-anchor="middle" class="txt">prompt / schema for VLM planner</text>
+
+  <rect x="405" y="136" width="265" height="150" rx="12" fill="#fff" stroke="#6c36b2"/>
+  <text x="538" y="169" text-anchor="middle" class="head">1. Fidelity / Validity</text>
+  <text x="538" y="200" text-anchor="middle" class="txt">VLA: action + endpoint + gripper</text>
+  <text x="538" y="228" text-anchor="middle" class="txt">VLM: schema + intent + agreement</text>
+  <text x="538" y="256" text-anchor="middle" class="sub">paired reference inputs</text>
+
+  <rect x="740" y="136" width="265" height="150" rx="12" fill="#fff" stroke="#6c36b2"/>
+  <text x="873" y="169" text-anchor="middle" class="head">2. Runtime Gate</text>
+  <text x="873" y="200" text-anchor="middle" class="txt">warm P50 / P95 / P99</text>
+  <text x="873" y="228" text-anchor="middle" class="txt">deadline misses + peak VRAM</text>
+  <text x="873" y="256" text-anchor="middle" class="sub">cold start reported separately</text>
+
+  <rect x="1075" y="136" width="265" height="150" rx="12" fill="#fff" stroke="#6c36b2"/>
+  <text x="1208" y="169" text-anchor="middle" class="head">3. Closed-loop Gate</text>
+  <text x="1208" y="200" text-anchor="middle" class="txt">same restored state / seed</text>
+  <text x="1208" y="228" text-anchor="middle" class="txt">task + recovery non-inferiority</text>
+  <text x="1208" y="256" text-anchor="middle" class="sub">safety before promotion</text>
+
+  <rect x="1410" y="136" width="200" height="150" rx="12" fill="#f3faf3" stroke="#315d3a" stroke-width="2"/>
+  <text x="1510" y="185" text-anchor="middle" class="head" fill="#315d3a">PROMOTED</text>
+  <text x="1510" y="218" text-anchor="middle" class="txt">hardware-bound</text>
+  <text x="1510" y="246" text-anchor="middle" class="txt">profile manifest</text>
+
+  <rect x="1650" y="136" width="180" height="150" rx="12" fill="#fff4f2" stroke="#b62d24" stroke-width="2"/>
+  <text x="1740" y="185" text-anchor="middle" class="head" fill="#a9231d">REJECTED</text>
+  <text x="1740" y="218" text-anchor="middle" class="txt">retained as</text>
+  <text x="1740" y="246" text-anchor="middle" class="txt">negative evidence</text>
+
+  <path class="purple" d="M335 211H405"/><path class="purple" d="M670 211H740"/><path class="purple" d="M1005 211H1075"/><path class="purple" d="M1340 211H1410"/>
+  <path class="red" d="M538 286V319H1740V286"/>
+  <text x="1080" y="338" text-anchor="middle" class="sub" fill="#a9231d">any failed gate prevents deployment promotion</text>
+
+  <!-- Online path -->
+  <rect x="30" y="382" width="1840" height="204" rx="18" fill="#fbfcfd" stroke="#343b44" stroke-width="2"/>
+  <text x="60" y="418" class="lane" fill="#252c34">Online admitted path</text>
+
+  <rect x="65" y="451" width="238" height="94" rx="12" fill="#f3faf3" stroke="#315d3a"/>
+  <text x="184" y="484" text-anchor="middle" class="head">Profile Receipt</text>
+  <text x="184" y="515" text-anchor="middle" class="txt">identity + admission + fallback</text>
+
+  <rect x="365" y="451" width="250" height="94" rx="12" fill="#faf7ff" stroke="#6c36b2"/>
+  <text x="490" y="484" text-anchor="middle" class="head">Capability Negotiation</text>
+  <text x="490" y="515" text-anchor="middle" class="txt">apply or explicitly drop controls</text>
+
+  <rect x="677" y="451" width="250" height="94" rx="12" fill="#faf7ff" stroke="#6c36b2"/>
+  <text x="802" y="484" text-anchor="middle" class="head">Prepared Backend</text>
+  <text x="802" y="515" text-anchor="middle" class="txt">compile | SMVE | precision</text>
+
+  <rect x="989" y="451" width="225" height="94" rx="12" fill="#edf4ff" stroke="#2057b7"/>
+  <text x="1102" y="484" text-anchor="middle" class="head" fill="#2057b7">VLA / VLM Call</text>
+  <text x="1102" y="515" text-anchor="middle" class="txt">prewarmed admitted shape</text>
+
+  <rect x="1276" y="451" width="230" height="94" rx="12" fill="#fff8ef" stroke="#b87813"/>
+  <text x="1391" y="484" text-anchor="middle" class="head">Deadline &amp; Fallback</text>
+  <text x="1391" y="515" text-anchor="middle" class="txt">narrow contract-based retry</text>
+
+  <rect x="1568" y="451" width="250" height="94" rx="12" fill="#f4faf4" stroke="#315d3a"/>
+  <text x="1693" y="484" text-anchor="middle" class="head">Typed Output + Trace</text>
+  <text x="1693" y="515" text-anchor="middle" class="txt">actions / decision + receipt</text>
+
+  <path class="black" d="M303 498H365"/><path class="black" d="M615 498H677"/><path class="black" d="M927 498H989"/><path class="black" d="M1214 498H1276"/><path class="black" d="M1506 498H1568"/>
+
+  <!-- Three clocks -->
+  <rect x="30" y="618" width="1840" height="130" rx="18" fill="#fff" stroke="#6c727a" stroke-width="1.8"/>
+  <text x="60" y="652" class="lane" fill="#252c34">Three clocks, reported separately</text>
+  <rect x="355" y="645" width="360" height="74" rx="11" fill="#faf7ff" stroke="#6c36b2"/>
+  <text x="535" y="675" text-anchor="middle" class="head">Model latency</text>
+  <text x="535" y="702" text-anchor="middle" class="txt">preprocess + model + transport</text>
+  <rect x="770" y="645" width="360" height="74" rx="11" fill="#fff8ef" stroke="#b87813"/>
+  <text x="950" y="675" text-anchor="middle" class="head">Reaction latency</text>
+  <text x="950" y="702" text-anchor="middle" class="txt">observation to first conditioned action</text>
+  <rect x="1185" y="645" width="360" height="74" rx="11" fill="#f4faf4" stroke="#315d3a"/>
+  <text x="1365" y="675" text-anchor="middle" class="head">Task-cycle time</text>
+  <text x="1365" y="702" text-anchor="middle" class="txt">sense + route + infer + execute + wait</text>
+  <text x="1690" y="679" text-anchor="middle" class="head">Also trace</text>
+  <text x="1690" y="706" text-anchor="middle" class="txt">queue age | action age | VRAM</text>
+</svg>

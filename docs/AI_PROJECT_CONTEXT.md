@@ -1,23 +1,41 @@
 # CARVE-VLA AI Project Context
 
-更新时间：2026-07-20
+历史正文日期：2026-08-27；导航更新：2026-09-22
+
+> 本文正文是历史技术说明，不是当前实验队列。唯一执行依据是
+> [收敛后的计划](plans/ROBODOJO_AGENT_MEMORY_EXECUTION_PLAN.md)：P1核验既有证据，
+> P2筛出必补缺口，P3按需补测，P4同步论文收口。新缓存、身份修复和预设扩跑已取消，
+> 不自行增加平行候选，不以新框架开发替代投稿收口。
+> 当前主验证为RoboMME的VideoUnmaskSwap/VideoRepick，PI0.5 JAX GroundSG79999 +
+> Qwen3-VL-4B BF16官方LoRA1200，不是RoboDojo59999或旧LIBERO权重。
+> [主报告10.7/10.8/16.2](reports/AGENTIC_VLA_TECHNICAL_REPORT.md)分别记录身份记忆
+> 五初态1/5→5/5、非干扰两例1/2→1/2及下一步。后者不是新增收益；两份VideoRepick
+> 记忆未准入。推理优化仍须在当前链路独立验证，不能借用旧后端提速。
+> RoboDojo、RouteStick、新平台/模型、自动微调及其他候选不在当前队列；论文、
+> 失败数据、视频与历史代码保留，不因收敛路线删除。历史AW--AZ见归档，不再执行。
 
 本文档用于新电脑上的 AI 助手或新协作者快速理解项目，并在不夸大实验结论的
 前提下撰写中期报告、论文概述或汇报材料。
 
-## 1. 推荐阅读顺序
+## 1. 八月材料阅读顺序（历史）
 
-1. `README.md`：项目定位和当前主结果。
-2. `docs/status/CARVE_VLA_COMPLETED_WORK.md`：完成度和统一结论入口。
-3. `docs/reports/CARVE_VLA_MIDTERM_REPORT_20260717.md`：中期报告正文。
-4. `docs/architecture/CARVE_RUNTIME_ARCHITECTURE.md`：Agentic Harness 与运行时接口。
-5. `docs/architecture/CARVE_OPTIMIZE_RUNTIME.md`：推理优化、门控和部署策略。
-6. `paper/CARVE-VLA/root.pdf` 或 `root.tex`：当前论文叙事。
-7. `paper/CARVE-VLA/generated/runtime_results_summary.json`：统一机器可读结果。
-8. `results/CARVE_EVIDENCE_README.md`：已上传证据范围与索引。
+1. `docs/reports/CARVE_VLA_CURRENT_EXPERIMENT_REPORT_20260827.md`：当前框架、
+   实验结果、证据边界以及毕业论文/简历使用方式。
+2. `README.md`：项目定位和当前主结果。
+3. `docs/architecture/CARVE_COMPLETE_RESEARCH_LOOP.md`：Agentic RAG-VLM、
+   CARVE Harness、Harness VLA/RPent 参考边界和 Optimize Runtime 的统一闭环。
+4. `docs/status/CARVE_VLA_COMPLETED_WORK.md`：完成度和统一结论入口。
+5. `docs/archive/midterm/20260717/CARVE_VLA_MIDTERM_REPORT_20260717.md`：
+   历史中期报告正文。
+6. `docs/architecture/CARVE_RUNTIME_ARCHITECTURE.md`：Agentic Harness 与运行时接口。
+7. `docs/architecture/CARVE_OPTIMIZE_RUNTIME.md`：推理优化、门控和部署策略。
+8. `paper/CARVE-VLA/root.pdf` 或 `root.tex`：当前论文叙事。
+9. `paper/CARVE-VLA/generated/runtime_results_summary.json`：统一机器可读结果。
+10. `results/CARVE_EVIDENCE_README.md`：已上传证据范围与索引。
 
-`docs/status/EXPERIMENT_AND_PAPER_STATUS_20260612.md` 是历史阶段记录，不覆盖
-当前完成度文档。`paper/archive/` 中的旧投稿只用于追溯，不代表当前论文主张。
+`docs/archive/status/EXPERIMENT_AND_PAPER_STATUS_20260612.md` 是历史阶段记录，
+不覆盖当前完成度文档。`paper/archive/` 中的旧投稿只用于追溯，不代表当前
+论文主张。
 
 ## 2. 研究问题
 
@@ -50,8 +68,24 @@
   `openpi/scripts/serve_policy.py` 和 `openpi/src/openpi/training/config.py`。
 - 当前正结果包括 flow-step calibration、`torch.compile` BF16 和 Static
   Masked-View Elision (SMVE)。
+- SMVE 当前定位为 L0 静态输入压缩。完整优化路线还包括 optimized backend、
+  training-free temporal reuse、event-coherent invalidation、admitted adaptive
+  compute、VLA 专用低比特 backend 和 VLM/VLA 多模型调度。
 
 ## 4. 当前主要实验结论
+
+### 完整 benchmark 与具身 Agent
+
+- 已完成 4 suites、40 tasks、10 个配对状态和 3 种方法，共 1,200 个真实
+  MuJoCo episode；Frozen/Fixed/Agentic 为 `180/181/183` 成功。
+- Agentic 净增 3 个成功但不具统计显著性；control steps 和 VLA calls 分别
+  减少 `7.2%/8.4%`，PI0.5 P95 为 `59.54 ms`。
+- 完整 VLM Planner、Harness、Critic、可信记忆、恢复、冻结 PI0.5 和
+  Optimize Runtime 在 Object T8 三个官方状态上达到 `3/3`，并产生视频与
+  可审计 trace。
+- verified-procedure memory 已在两个任务族、7 个 memory-routed 官方状态上
+  验证。第二任务族中 Memory+4B 保持 `3/3`，相对 Direct 9B 将平均回合时间
+  降低 `73.1%`，所有 198 次配对 VLA 调用满足 80 ms deadline。
 
 ### Agentic Recovery Challenge
 
@@ -70,8 +104,13 @@
 - Eager BF16 P95：`159.59 ms`。
 - Compiled BF16 P95：`67.40 ms`，80 ms miss 为 `0%`。
 - Compiled BF16 + SMVE P95：`56.19 ms`，45/45 replay fidelity 通过。
-- W8A16 虽降低部分显存，但闭环丢失一次恢复成功，因此被 deployment gate
-  否决，不能表述为已经完成可部署参数量化。
+- early4 W8A16 虽降低部分显存，但闭环丢失一次恢复成功，因此被否决。
+- 新的 late-language INT8 profile 通过 `45/45` replay 与 T6/T9 `2/2`
+  恢复门控，峰值 `6.36 GB`，作为低显存档获准；其 P95 `71.61 ms`，因此
+  SMVE 仍是实时默认档。
+- INT8+SMVE 虽达到 P95 `58.71 ms`，但 T9 恢复失败，组合被否决。
+- P0 Planner 与 late-INT8 同卡时，连续/5 秒 cooldown 的 80 ms miss 分别为
+  `95.4%/19.4%`，因此低显存档不进入当前同卡 Agentic 配置。
 
 ### Agentic 与 Optimize 联合实验
 

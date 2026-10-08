@@ -1,0 +1,103 @@
+{
+  "schema_version": "carve.robodojo.controlled-fault-pairs.v1",
+  "benchmark": "RoboDojo",
+  "task": "build_tower",
+  "policy": "StarVLA PI-v3",
+  "protocol": {
+    "fault": "stale_action_hold",
+    "fault_step": 640,
+    "nominal_profile": "Flow2/h16",
+    "recovery_profile": "Flow4/h16",
+    "recovery_calls": 2,
+    "semantic_decision": "fixed accepted VLM replay ticket",
+    "planner_replay_ticket_sha256": "029ed724f793c0b6c5ac5632dab317ebeeee7b28b9f8964c52d90e6264865a2e"
+  },
+  "pairs": [
+    {
+      "layout_set": 0,
+      "layout_id_within_set": 0,
+      "seed": 0,
+      "valid": true,
+      "validation_errors": [],
+      "c1_success": false,
+      "c3_success": true,
+      "c1_video_frames": 1051,
+      "c3_video_frames": 754,
+      "no_progress_step": 674,
+      "c3_compute_phase_calls": {
+        "nominal_fast_path": 43,
+        "recovery_boost": 2
+      },
+      "c3_low_cost_replans": 1,
+      "c3_semantic_planner_calls": 1,
+      "c3_accepted_semantic_interventions": 1,
+      "planner_replay_ticket_sha256": "029ed724f793c0b6c5ac5632dab317ebeeee7b28b9f8964c52d90e6264865a2e",
+      "c1_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c1_v2_build_tower_flow2_seed0_20260902/summary.json",
+      "c3_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c3_replay_build_tower_flow2_flow4_seed0_20260902/summary.json"
+    },
+    {
+      "layout_set": 1,
+      "layout_id_within_set": 0,
+      "seed": 1,
+      "valid": true,
+      "validation_errors": [],
+      "c1_success": false,
+      "c3_success": true,
+      "c1_video_frames": 1051,
+      "c3_video_frames": 773,
+      "no_progress_step": 676,
+      "c3_compute_phase_calls": {
+        "nominal_fast_path": 44,
+        "recovery_boost": 2
+      },
+      "c3_low_cost_replans": 1,
+      "c3_semantic_planner_calls": 1,
+      "c3_accepted_semantic_interventions": 1,
+      "planner_replay_ticket_sha256": "029ed724f793c0b6c5ac5632dab317ebeeee7b28b9f8964c52d90e6264865a2e",
+      "c1_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c1_build_tower_flow2_seed1_20260902/summary.json",
+      "c3_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c3_replay_build_tower_flow2_flow4_seed1_20260902/summary.json"
+    },
+    {
+      "layout_set": 2,
+      "layout_id_within_set": 0,
+      "seed": 2,
+      "valid": true,
+      "validation_errors": [],
+      "c1_success": false,
+      "c3_success": true,
+      "c1_video_frames": 1051,
+      "c3_video_frames": 773,
+      "no_progress_step": 676,
+      "c3_compute_phase_calls": {
+        "nominal_fast_path": 44,
+        "recovery_boost": 2
+      },
+      "c3_low_cost_replans": 1,
+      "c3_semantic_planner_calls": 1,
+      "c3_accepted_semantic_interventions": 1,
+      "planner_replay_ticket_sha256": "029ed724f793c0b6c5ac5632dab317ebeeee7b28b9f8964c52d90e6264865a2e",
+      "c1_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c1_build_tower_flow2_seed2_20260902/summary.json",
+      "c3_summary": "/home/admin1/ct/CARVE-VLA/artifacts/robodojo/fault640_c3_replay_build_tower_flow2_flow4_seed2_20260902/summary.json"
+    }
+  ],
+  "aggregate": {
+    "pairs": 3,
+    "c1_successes": 0,
+    "c1_success_rate": 0.0,
+    "c1_success_wilson95": [
+      5.551115123125783e-17,
+      0.5614970317550454
+    ],
+    "c3_successes": 3,
+    "c3_success_rate": 1.0,
+    "c3_success_wilson95": [
+      0.4385029682449546,
+      1.0
+    ],
+    "failure_to_success": 3,
+    "success_to_failure": 0,
+    "paired_success_rate_delta": 1.0,
+    "mcnemar_exact_two_sided_p": 0.25
+  },
+  "claim_boundary": "Controlled-fault mechanism evidence only. The three official layout sets do not establish natural-task gains or statistical significance."
+}

@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "artifact_dir": "/home/admin1/ct/CARVE-VLA/Agentic-RAG-VLM/output/qwen35_challenge_v4_agent_routing_main",
+  "runs_checked": 100,
+  "agent_tool_calls_checked": 60,
+  "errors": []
+}

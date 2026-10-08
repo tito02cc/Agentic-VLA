@@ -3,11 +3,12 @@
 from .eager import EagerBackend
 from .masked_views import MaskedViewElisionBackend
 from .torch_compile import TorchCompileBackend
-from .torchao_int8 import TorchAOInt8Backend
+from .torchao_int8 import TorchAOInt8Backend, TorchAOInt8MaskedViewBackend
 
 __all__ = [
     "EagerBackend",
     "MaskedViewElisionBackend",
     "TorchAOInt8Backend",
+    "TorchAOInt8MaskedViewBackend",
     "TorchCompileBackend",
 ]

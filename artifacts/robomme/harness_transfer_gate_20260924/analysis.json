@@ -1,0 +1,974 @@
+{
+  "protocol": "carve.robomme.frozen_harness_transfer.v1",
+  "claim_boundary": "Purposefully selected positive/risk task families; not a random benchmark sample or full memory/Optimize evaluation.",
+  "tasks": [
+    "RouteStick",
+    "PickHighlight"
+  ],
+  "episode_range": [
+    22,
+    37
+  ],
+  "source_sha256": "a3e0551d1b76f25cc6fe05a3e751d4b8e39de977061fed820fdf93fca1cafdfe",
+  "overall": {
+    "pairs": 32,
+    "raw_success": 3,
+    "harness_success": 4,
+    "rescues": 1,
+    "harms": 0,
+    "mcnemar_exact_two_sided_p": 1.0,
+    "budget_exhausted": {
+      "R": 1,
+      "H": 2
+    },
+    "both_success_pairs": 3,
+    "both_success_cost": {
+      "wall_time_s": {
+        "R": 53.433946134005964,
+        "H": 55.009451857004024
+      },
+      "planner_calls": {
+        "R": 58,
+        "H": 60
+      },
+      "policy_calls": {
+        "R": 58,
+        "H": 60
+      },
+      "steps": {
+        "R": 908,
+        "H": 927
+      }
+    }
+  },
+  "per_task": {
+    "RouteStick": {
+      "pairs": 16,
+      "raw_success": 0,
+      "harness_success": 1,
+      "rescues": 1,
+      "harms": 0,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "budget_exhausted": {
+        "R": 0,
+        "H": 0
+      },
+      "both_success_pairs": 0,
+      "both_success_cost": {
+        "wall_time_s": {
+          "R": 0,
+          "H": 0
+        },
+        "planner_calls": {
+          "R": 0,
+          "H": 0
+        },
+        "policy_calls": {
+          "R": 0,
+          "H": 0
+        },
+        "steps": {
+          "R": 0,
+          "H": 0
+        }
+      }
+    },
+    "PickHighlight": {
+      "pairs": 16,
+      "raw_success": 3,
+      "harness_success": 3,
+      "rescues": 0,
+      "harms": 0,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "budget_exhausted": {
+        "R": 1,
+        "H": 2
+      },
+      "both_success_pairs": 3,
+      "both_success_cost": {
+        "wall_time_s": {
+          "R": 53.433946134005964,
+          "H": 55.009451857004024
+        },
+        "planner_calls": {
+          "R": 58,
+          "H": 60
+        },
+        "policy_calls": {
+          "R": 58,
+          "H": 60
+        },
+        "steps": {
+          "R": 908,
+          "H": 927
+        }
+      }
+    }
+  },
+  "rows": [
+    {
+      "task": "RouteStick",
+      "episode": 22,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 60,
+        "planner_calls": 4,
+        "policy_calls": 4,
+        "wall_time_s": 11.03042344700225,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep22_R/RouteStick_ep22_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 177,
+        "planner_calls": 12,
+        "policy_calls": 12,
+        "wall_time_s": 17.709571915002016,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep22_H/RouteStick_ep22_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 23,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 8.90115441299713,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep23_R/RouteStick_ep23_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 48,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 8.80591783100681,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep23_H/RouteStick_ep23_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 24,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 50,
+        "planner_calls": 4,
+        "policy_calls": 4,
+        "wall_time_s": 8.261971592997725,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep24_R/RouteStick_ep24_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 49,
+        "planner_calls": 4,
+        "policy_calls": 4,
+        "wall_time_s": 8.08799737499794,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep24_H/RouteStick_ep24_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 25,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 7.315044176997617,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep25_R/RouteStick_ep25_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 7.517028277994541,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep25_H/RouteStick_ep25_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 26,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 73,
+        "planner_calls": 5,
+        "policy_calls": 5,
+        "wall_time_s": 11.754884255999059,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep26_R/RouteStick_ep26_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 10.164961415997823,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep26_H/RouteStick_ep26_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 27,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 46,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.743949775998772,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep27_R/RouteStick_ep27_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 46,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.781115113000851,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep27_H/RouteStick_ep27_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 28,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 54,
+        "planner_calls": 4,
+        "policy_calls": 4,
+        "wall_time_s": 9.051555398997152,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep28_R/RouteStick_ep28_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 45,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 8.090649154997664,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep28_H/RouteStick_ep28_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 29,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 95,
+        "planner_calls": 6,
+        "policy_calls": 6,
+        "wall_time_s": 9.9118651280005,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep29_R/RouteStick_ep29_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 48,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 7.17548108399933,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep29_H/RouteStick_ep29_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 30,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 46,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.994900144003623,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep30_R/RouteStick_ep30_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 99,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 13.385613682003168,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep30_H/RouteStick_ep30_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 31,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.099546470999485,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep31_R/RouteStick_ep31_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 206,
+        "planner_calls": 13,
+        "policy_calls": 13,
+        "wall_time_s": 17.287504885003727,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep31_H/RouteStick_ep31_vlm_groundsg.mp4"
+      },
+      "rescue": true,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 32,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 127,
+        "planner_calls": 8,
+        "policy_calls": 8,
+        "wall_time_s": 11.821300158000668,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep32_R/RouteStick_ep32_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 45,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 7.191696372996375,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep32_H/RouteStick_ep32_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 33,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 152,
+        "planner_calls": 10,
+        "policy_calls": 10,
+        "wall_time_s": 14.639569831997505,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep33_R/RouteStick_ep33_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 152,
+        "planner_calls": 10,
+        "policy_calls": 10,
+        "wall_time_s": 15.024753969002631,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep33_H/RouteStick_ep33_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 34,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.820957457995974,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep34_R/RouteStick_ep34_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 9.673552649997873,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep34_H/RouteStick_ep34_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 35,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 103,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 15.163008073002857,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep35_R/RouteStick_ep35_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 140,
+        "planner_calls": 9,
+        "policy_calls": 9,
+        "wall_time_s": 17.319244798003638,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep35_H/RouteStick_ep35_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 36,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 100,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 10.536608438000258,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep36_R/RouteStick_ep36_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 47,
+        "planner_calls": 3,
+        "policy_calls": 3,
+        "wall_time_s": 7.107919449001201,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep36_H/RouteStick_ep36_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "RouteStick",
+      "episode": 37,
+      "instruction": "watch the video carefully, then use the stick attached to the robot to navigate around the sticks on the table, following the same path",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 195,
+        "planner_calls": 13,
+        "policy_calls": 13,
+        "wall_time_s": 17.239824972995848,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep37_R/RouteStick_ep37_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 104,
+        "planner_calls": 7,
+        "policy_calls": 7,
+        "wall_time_s": 12.031045670999447,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/RouteStick_ep37_H/RouteStick_ep37_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 22,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 209,
+        "planner_calls": 14,
+        "policy_calls": 14,
+        "wall_time_s": 13.395246700994903,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep22_R/PickHighlight_ep22_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 251,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 15.121308677000343,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep22_H/PickHighlight_ep22_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 23,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 345,
+        "planner_calls": 22,
+        "policy_calls": 22,
+        "wall_time_s": 19.547435645996302,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep23_R/PickHighlight_ep23_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "ongoing",
+        "success": false,
+        "budget_exhausted": true,
+        "steps": 1300,
+        "planner_calls": 82,
+        "policy_calls": 82,
+        "wall_time_s": 79.57904023100127,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep23_H/PickHighlight_ep23_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 24,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 251,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 14.522259785997448,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep24_R/PickHighlight_ep24_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 252,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 14.981798151995463,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep24_H/PickHighlight_ep24_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 25,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 235,
+        "planner_calls": 15,
+        "policy_calls": 15,
+        "wall_time_s": 14.044448878004914,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep25_R/PickHighlight_ep25_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 235,
+        "planner_calls": 15,
+        "policy_calls": 15,
+        "wall_time_s": 13.852887535002083,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep25_H/PickHighlight_ep25_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 26,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 246,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 15.272573654001462,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep26_R/PickHighlight_ep26_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "ongoing",
+        "success": false,
+        "budget_exhausted": true,
+        "steps": 1300,
+        "planner_calls": 82,
+        "policy_calls": 82,
+        "wall_time_s": 69.3786482170035,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep26_H/PickHighlight_ep26_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 27,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 238,
+        "planner_calls": 15,
+        "policy_calls": 15,
+        "wall_time_s": 14.758058435996645,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep27_R/PickHighlight_ep27_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 289,
+        "planner_calls": 19,
+        "policy_calls": 19,
+        "wall_time_s": 18.581427657998574,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep27_H/PickHighlight_ep27_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 28,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 324,
+        "planner_calls": 21,
+        "policy_calls": 21,
+        "wall_time_s": 18.861344106000615,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep28_R/PickHighlight_ep28_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 350,
+        "planner_calls": 22,
+        "policy_calls": 22,
+        "wall_time_s": 19.94918632900226,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep28_H/PickHighlight_ep28_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 29,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 203,
+        "planner_calls": 13,
+        "policy_calls": 13,
+        "wall_time_s": 12.065366352995625,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep29_R/PickHighlight_ep29_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 210,
+        "planner_calls": 14,
+        "policy_calls": 14,
+        "wall_time_s": 13.146920070001215,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep29_H/PickHighlight_ep29_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 30,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 432,
+        "planner_calls": 27,
+        "policy_calls": 27,
+        "wall_time_s": 24.51180798900168,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep30_R/PickHighlight_ep30_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 449,
+        "planner_calls": 29,
+        "policy_calls": 29,
+        "wall_time_s": 26.04321075000189,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep30_H/PickHighlight_ep30_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 31,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 319,
+        "planner_calls": 20,
+        "policy_calls": 20,
+        "wall_time_s": 18.780485809998936,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep31_R/PickHighlight_ep31_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 458,
+        "planner_calls": 29,
+        "policy_calls": 29,
+        "wall_time_s": 26.761104152996268,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep31_H/PickHighlight_ep31_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 32,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 212,
+        "planner_calls": 14,
+        "policy_calls": 14,
+        "wall_time_s": 12.996173695995822,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep32_R/PickHighlight_ep32_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 201,
+        "planner_calls": 13,
+        "policy_calls": 13,
+        "wall_time_s": 12.04782399200485,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep32_H/PickHighlight_ep32_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 33,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 241,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 14.877689266999369,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep33_R/PickHighlight_ep33_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "success",
+        "success": true,
+        "budget_exhausted": false,
+        "steps": 243,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 15.113353572000051,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep33_H/PickHighlight_ep33_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 34,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 341,
+        "planner_calls": 22,
+        "policy_calls": 22,
+        "wall_time_s": 20.141629354999168,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep34_R/PickHighlight_ep34_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 264,
+        "planner_calls": 17,
+        "policy_calls": 17,
+        "wall_time_s": 15.788752936998208,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep34_H/PickHighlight_ep34_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 35,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 317,
+        "planner_calls": 20,
+        "policy_calls": 20,
+        "wall_time_s": 18.58547058499971,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep35_R/PickHighlight_ep35_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 273,
+        "planner_calls": 18,
+        "policy_calls": 18,
+        "wall_time_s": 16.959036297994317,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep35_H/PickHighlight_ep35_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 36,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 251,
+        "planner_calls": 16,
+        "policy_calls": 16,
+        "wall_time_s": 14.623292664000473,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep36_R/PickHighlight_ep36_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 277,
+        "planner_calls": 18,
+        "policy_calls": 18,
+        "wall_time_s": 16.372581014999014,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep36_H/PickHighlight_ep36_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    },
+    {
+      "task": "PickHighlight",
+      "episode": 37,
+      "instruction": "first press the button, then pick up all cubes that have been highlighteted with white areas on the table",
+      "R": {
+        "status": "ongoing",
+        "success": false,
+        "budget_exhausted": true,
+        "steps": 1300,
+        "planner_calls": 82,
+        "policy_calls": 82,
+        "wall_time_s": 75.76746077599819,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep37_R/PickHighlight_ep37_vlm_groundsg.mp4"
+      },
+      "H": {
+        "status": "fail",
+        "success": false,
+        "budget_exhausted": false,
+        "steps": 297,
+        "planner_calls": 19,
+        "policy_calls": 19,
+        "wall_time_s": 17.02694880600029,
+        "video": "artifacts/robomme/harness_transfer_gate_20260924/rollouts/PickHighlight_ep37_H/PickHighlight_ep37_vlm_groundsg.mp4"
+      },
+      "rescue": false,
+      "harm": false
+    }
+  ]
+}
