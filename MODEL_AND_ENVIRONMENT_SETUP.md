@@ -92,5 +92,6 @@ The upstream checkouts are not vendored into this repository. The RoboDojo check
 
 - Open `paper/CARVE-VLA/ral_draft/main.pdf` and `TECHNICAL_REPORT.md`.
 - Inspect the tracked `results/` and `artifacts/` aggregate JSON/CSV; they are **saved evidence**, not newly rerunnable rollouts.
+- For selected original LIBERO-PRO, RoboMME, RoboDojo, and Agentic RAG-VLM outputs omitted from GitHub, log into `Minth-Group` and download the [private Hugging Face evidence dataset](https://huggingface.co/datasets/Minth-Group/Agentic-VLA-reproduction). Its [dataset card](docs/handoff/HF_EVIDENCE_DATASET_CARD_20261008.md) lists archive contents, extraction steps, checksums, and claim boundaries. These are raw records, **not** model weights.
 - Run the CPU contract tests in `tests/` only after creating a compatible Python environment. A passing test suite does not establish simulator task success.
 - Before a GPU run, verify checkpoint files, normalizers, observation cameras, action representation, task/episode list and the package's upstream commit IDs. The technical report states which results are development-stage and which comparisons were fixed pairs.

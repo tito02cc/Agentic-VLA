@@ -1,0 +1,4 @@
+c24524e63ac2b7f8115a37bb3b951a17a48ecb594213b0f69b4037debce00d5e  archives/agentic-rag-vlm-selected-raw-202609.tar.zst
+dde7a0d8ed5088f6366dffd505921f6f5725478e0a9e9ae4f302bb1503158a9d  archives/libero-pro-raw-20260825.tar.zst
+7ba43a3712de25403706fcc1fc30cc41e0e029c8620a1280dffed293992adc71  archives/robodojo-selected-raw-202609.tar.zst
+bc52c4d81d33d36bb9c9e8057fc1b903e33e2cba76f6144cc9a901df6d391b70  archives/robomme-raw-20260831-20260924.tar.zst

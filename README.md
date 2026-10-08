@@ -26,11 +26,12 @@ cd Agentic-VLA
 | Figure/chart prompts and source rules | [Figure and table brief](paper/CARVE-VLA/ral_draft/FIGURE_AND_TABLE_BRIEF.md), [provenance](paper/CARVE-VLA/ral_draft/FIGURE_PROVENANCE.md) |
 | Model weights, paths and upstream software | [Model and environment setup](MODEL_AND_ENVIRONMENT_SETUP.md) |
 | Videos and what each actually shows | [Video evidence index](paper/CARVE-VLA/ral_draft/VIDEO_EVIDENCE_INDEX.md), [RoboDojo shortlist](deliverables/BIND_VLA_VIDEO_SHORTLIST_20260924/README.md), [paired and cross-benchmark video guide](deliverables/BIND_VLA_PAPER_HANDOFF_20260924/videos/VIDEO_GUIDE.md) |
+| Larger original experiment outputs | [Private Hugging Face evidence dataset](https://huggingface.co/datasets/Minth-Group/Agentic-VLA-reproduction), [download and checksum instructions](docs/handoff/HF_EVIDENCE_DATASET_CARD_20261008.md) |
 | Current research route | [Execution plan](docs/plans/ROBODOJO_AGENT_MEMORY_EXECUTION_PLAN.md) |
 | Historical work | [Agentic RAG-VLM](paper/Agentic-RAG-VLM/), [archive](paper/archive/) |
 | Agentic RAG-VLM code and its own reproduction limits | [Earlier project README](Agentic-RAG-VLM/README.md), [reproduction notes](Agentic-RAG-VLM/docs/REPRODUCTION.md) |
 
-The repository includes both projects' code, documentation and paper sources, plus key aggregate evidence and selected short videos. It **does not include model weights, the school-provided Guanghua robot meshes, full simulator assets, Python environments, personal midterm files, all per-step rollouts or every video listed by the source-machine catalog**. See the explicit [public upload scope](docs/handoff/PUBLIC_REPOSITORY_SCOPE_20261008.md). No model checkpoint or existing paper was removed from this local workspace during publication. The previous root README is preserved at [docs/archive/README_20260922.md](docs/archive/README_20260922.md).
+The repository includes both projects' code, documentation and paper sources, plus key aggregate evidence and selected short videos. Additional selected raw outputs are in the **private** Hugging Face dataset linked above. Neither location includes model weights, the school-provided Guanghua robot meshes, full simulator assets, Python environments, personal midterm files, all per-step rollouts or every video listed by the source-machine catalog. See the explicit [public upload scope](docs/handoff/PUBLIC_REPOSITORY_SCOPE_20261008.md). No model checkpoint or existing paper was removed from this local workspace during publication. The previous root README is preserved at [docs/archive/README_20260922.md](docs/archive/README_20260922.md).
 
 ## Current Evidence, With Scope
 
