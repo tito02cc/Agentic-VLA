@@ -21,6 +21,7 @@ cd Agentic-VLA
 
 | Need | Entry point |
 | --- | --- |
+| 中文新机器交接导航 | [导航.md](导航.md) |
 | Full method, protocol, results and limitations | [BIND-VLA technical report](paper/CARVE-VLA/ral_draft/TECHNICAL_REPORT.md) |
 | Editable paper and current PDF | [LaTeX](paper/CARVE-VLA/ral_draft/main.tex), [PDF](paper/CARVE-VLA/ral_draft/main.pdf) |
 | Figure/chart prompts and source rules | [Figure and table brief](paper/CARVE-VLA/ral_draft/FIGURE_AND_TABLE_BRIEF.md), [provenance](paper/CARVE-VLA/ral_draft/FIGURE_PROVENANCE.md) |
